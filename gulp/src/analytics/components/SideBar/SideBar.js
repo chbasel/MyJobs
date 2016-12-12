@@ -1,22 +1,30 @@
 import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
-import {switchMainDimension} from '../../actions/sidebar-actions';
+// import {switchMainDimension} from '../../actions/sidebar-actions';
 import SideBarDimension from './SideBarDimensionList';
 
 class SideBar extends Component {
   constructor(props) {
     super(props);
   }
-  activeDimension() {
-    const {dispatch} = this.props;
-    dispatch(switchMainDimension());
+
+  handleSelectDimension(value) {
+    const {history} = this.props;
+    console.log('handleSelectDimension', value, history);
+    history.push({pathname: '', state: {dimension: value}});
+    // dispatch(switchMainDimension());
   }
+
   render() {
     const {analytics} = this.props;
-    const primaryDimensions = analytics.primaryDimensions.dimensionList.reports.map((report, i) => {
+    const reports = analytics.primaryDimensions.dimensionList.reports;
+    const primaryDimensions = reports.map((report, i) => {
       return (
-        <SideBarDimension active={this.activeDimension.bind(this)} key={i} dimension={report} />
+        <SideBarDimension
+          onSelect={(v) => this.handleSelectDimension(v)}
+          key={i}
+          dimension={report} />
       );
     });
     return (
@@ -34,6 +42,7 @@ class SideBar extends Component {
 }
 
 SideBar.propTypes = {
+  history: React.PropTypes.object.isRequired,
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
 };

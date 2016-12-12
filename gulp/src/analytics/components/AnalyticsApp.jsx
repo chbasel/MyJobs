@@ -13,11 +13,27 @@ class AnalyticsApp extends React.Component {
     const endDate = moment().format('MM/DD/YYYY');
     startDate = startDate.subtract(30, 'days');
     startDate = startDate.format('MM/DD/YYYY');
-    const {dispatch} = this.props;
+
+    const {dispatch, history} = this.props;
+    this.unsubscribeToHistory = history.listen(
+      (...args) => this.handleNewLocation(...args));
+
     dispatch(doGetPageData(startDate, endDate));
   }
+
+  componentWillUnmount() {
+    this.unsubscribeToHistory();
+  }
+
+  async handleNewLocation(_, loc) {
+    const {history} = this.props;
+    const {state} = loc.location;
+
+    console.log('handleNewLocation', state, history);
+  }
+
   render() {
-    const {analytics} = this.props;
+    const {analytics, history} = this.props;
     if (analytics.fetching) {
       return (
         <LoadingSpinner/>
@@ -25,7 +41,7 @@ class AnalyticsApp extends React.Component {
     }
     return (
       <div id="page_wrapper">
-          <SideBar/>
+          <SideBar history={history}/>
           <Header/>
         <div id="page_content">
           <TabsContainer/>
@@ -37,6 +53,7 @@ class AnalyticsApp extends React.Component {
 }
 
 AnalyticsApp.propTypes = {
+  history: React.PropTypes.object.isRequired,
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
 };
