@@ -13,32 +13,23 @@ class ChartContainer extends Component {
   }
   render() {
     const {chartData} = this.props;
-    const chartType = chartData.PageLoadData.column_names[0].key;
+    const chartType = chartData.PageLoadData.chart_type;
     // Grab the row data to check and make sure the data coming back isn't empty
     const dataPresent = chartData.PageLoadData.rows;
     const helpError = 'We couldn\'t find any results using the filters applied. Please change your criteria.';
     let chartDisplay;
     switch (chartType) {
-    case 'country':
+    case 'map:world':
       chartDisplay = <WorldMap width={1920} height={600} scale={115} chartData={chartData} />;
       break;
-    case 'state':
+    case 'map:nation':
       chartDisplay = <USAMap width={1920} height={600} scale={1100} chartData={chartData} />;
       break;
-    case 'city':
+    case 'map:state':
       chartDisplay = <USAMap width={1920} height={600} scale={1100} chartData={chartData} />;
-      break;
-    case 'found_on':
-      chartDisplay = <SimpleBarChart chartData={chartData} />;
-      break;
-    case 'title':
-      chartDisplay = <SimpleBarChart chartData={chartData} />;
-      break;
-    case 'job_guid':
-      chartDisplay = <SimpleBarChart chartData={chartData} />;
       break;
     default:
-      chartDisplay = <WorldMap width={1920} height={600} scale={115} chartData={chartData} />;
+      chartDisplay = <SimpleBarChart width={600} height={250} chartData={chartData} />;
     }
     return (
         <div id={'chart_tab_' + chartData.navId} className="charts">
