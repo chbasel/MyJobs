@@ -21,12 +21,16 @@ class Calendar extends Component {
     };
   }
   setRangeSelection(range) {
-    const {dispatch, analytics} = this.props;
+    const {dispatch, analytics, hideCalendarRangePicker} = this.props;
     const startRange = range[0];
     const endRange = range[1];
     const activeMainDimension = analytics.activePrimaryDimension;
     const activeFilters = analytics.activeFilters;
     dispatch(doSetSelectedRange(startRange, endRange, activeMainDimension, activeFilters));
+    this.setState({
+      showCalendar: false,
+    });
+    hideCalendarRangePicker();
   }
   showCalendar() {
     this.setState({
@@ -78,12 +82,16 @@ class Calendar extends Component {
     dispatch(doSetSelectedStartDay(day));
   }
   applyCustomRange() {
-    const {dispatch, analytics} = this.props;
+    const {dispatch, analytics, hideCalendarRangePicker} = this.props;
     const startDate = `${analytics.startMonth + 1}/${analytics.startDay}/${analytics.startYear}`;
     const endDate = `${analytics.endMonth + 1}/${analytics.endDay}/${analytics.endYear}`;
     const activeMainDimension = analytics.activePrimaryDimension;
     const activeFilters = analytics.activeFilters;
     dispatch(doSetCustomRange(startDate, endDate, activeMainDimension, activeFilters));
+    this.setState({
+      showCalendar: false,
+    });
+    hideCalendarRangePicker();
   }
   render() {
     const {analytics, showCalendarRangePicker, hideCalendarRangePicker, onMouseDown, onMouseUp} = this.props;
@@ -117,8 +125,14 @@ class Calendar extends Component {
         <ul>
           <li className="calendar-pick full-calendar">
             <div className={this.state.showCalendar ? 'show-calendar' : 'hide-calendar'}>
-              {startCalendar}
-              {endCalendar}
+              <div className="start-calendar">
+                <p className="date-label">Start Date</p>
+                {startCalendar}
+              </div>
+              <div className="end-calendar">
+                <p className="date-label">End Date</p>
+                {endCalendar}
+              </div>
             </div>
             <RangeSelection applySelection={() => this.applyCustomRange()} cancelSelection={hideCalendarRangePicker} showCalendar={this.showCalendar.bind(this)} showCustomRange={() => this.showCalendar()} setRange={y => this.setRangeSelection(y)}/>
           </li>
