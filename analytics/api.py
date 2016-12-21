@@ -482,6 +482,8 @@ def dynamic_chart(request):
              ],
         "rows":
             [format_return_dict(r, group_by.column_name) for r in records],
+        "chart_type": group_by.filter_interface_type,
+        "group_by": group_by.column_name
     }
 
     return HttpResponse(json.dumps(response))

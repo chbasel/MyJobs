@@ -14,7 +14,8 @@ import {findIndex} from 'lodash-compat';
  *  year stores the current month for when the app boots
  *  activeReport stores the current report type for sending back to the API
  *  primaryDimensions stores the primary dimensions given back from the API to create the sidebar list
- * activePrimaryDimension stores the current primary dimension that is actively chosen at that time
+ *  activePrimaryDimension stores the current primary dimension that is actively chosen at that time
+ *  startDate and endDate are added to the tab object when the page is created. They are used to store the dates for sending off to the API when the call is made
  */
 
 let navCount = 1;
@@ -47,6 +48,7 @@ export default handleActions({
     };
   },
   'SET_PAGE_DATA': (state, action) => {
+    const loadData = action.payload;
     return {
       ...state,
       navigation: [
@@ -54,7 +56,9 @@ export default handleActions({
         {
           navId: navCount++,
           active: true,
-          PageLoadData: action.payload,
+          startDate: loadData.startDate,
+          endDate: loadData.endDate,
+          PageLoadData: loadData.pageData,
         },
       ],
     };
@@ -99,6 +103,7 @@ export default handleActions({
     };
   },
   'SET_SELECTED_FILTER_DATA': (state, action) => {
+    const filterData = action.payload;
     return {
       ...state,
       navigation: [
@@ -106,7 +111,9 @@ export default handleActions({
         {
           navId: navCount++,
           active: true,
-          PageLoadData: action.payload,
+          startDate: filterData.date.startDate,
+          endDate: filterData.date.endDate,
+          PageLoadData: filterData.data,
         },
       ],
     };
@@ -130,13 +137,16 @@ export default handleActions({
     };
   },
   'SWITCH_MAIN_DIMENSION': (state, action) => {
+    const mainDimensionData = action.payload;
     return {
       ...state,
       navigation: [
         {
           navId: navCount++,
           active: true,
-          PageLoadData: action.payload,
+          startDate: mainDimensionData.startDate,
+          endDate: mainDimensionData.endDate,
+          PageLoadData: mainDimensionData.pageData,
         },
       ],
       activeFilters: [],
@@ -211,7 +221,9 @@ export default handleActions({
         if (nav.active === true) {
           return {
             ...nav,
-            PageLoadData: selectedRangeData,
+            startDate: selectedRangeData.startDate,
+            endDate: selectedRangeData.endDate,
+            PageLoadData: selectedRangeData.data,
           };
         }
         return nav;

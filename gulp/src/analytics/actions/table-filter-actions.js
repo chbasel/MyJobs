@@ -22,12 +22,28 @@ export function doGetSelectedFilterData(tableValue, typeValue) {
     dispatch(doStoreActiveFilter(typeValue, tableValue));
     // Storing the current filters inside of the state to send off in the request to the API
     const storedFilters = [];
+    // Storing the dates in order to update the reducer with them
+    let storedDates;
     getState().pageLoadData.activeFilters.map((filter) => {
       storedFilters.push(filter);
     });
+    getState().pageLoadData.navigation.map((nav) => {
+      if (nav.active) {
+        storedDates = {
+          startDate: nav.startDate,
+          endDate: nav.endDate,
+        };
+      }
+    });
+    // Grabbing the current report selected from the state to send to the API
     const currentReport = getState().pageLoadData.activeReport;
-    const selectedFilterData = await api.getSelectedFilterData(tableValue, typeValue, storedFilters, currentReport);
-    dispatch(setSelectedFilterData(selectedFilterData));
+    const selectedFilterData = await api.getSelectedFilterData(tableValue, typeValue, storedFilters, currentReport, storedDates);
+    // Creating object from the filter selection data to send off to the reducer to update
+    const navFilterData = {
+      data: selectedFilterData,
+      date: storedDates,
+    };
+    dispatch(setSelectedFilterData(navFilterData));
     dispatch(markNavLoadingAction(false));
   };
 }

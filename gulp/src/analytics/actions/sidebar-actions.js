@@ -28,7 +28,13 @@ export function doSwitchMainDimension(mainDimension, start, end) {
     dispatch(markNavLoadingAction(true));
     dispatch(storeActiveReport(mainDimension));
     const currentDimensionData = await api.getMainDimensionData(mainDimension, start, end);
-    dispatch(switchMainDimension(currentDimensionData));
+    // Creating object of data coming back from the API along with the starting and ending date to send to reducer when the main dimension is changed
+    const allLoadData = {
+      startDate: start,
+      endDate: end,
+      pageData: currentDimensionData,
+    };
+    dispatch(switchMainDimension(allLoadData));
     dispatch(markNavLoadingAction(false));
     dispatch(setMainDimension(mainDimension));
   };
