@@ -3,6 +3,7 @@ import {Component} from 'react';
 import d3 from 'd3';
 import Paths from '../Common/Paths';
 import ToolTip from '../Common/ToolTip';
+// import Legend from '../Common/Legend';
 import mapData from 'common/resources/maps/us';
 
 class USAMap extends Component {
@@ -34,7 +35,7 @@ class USAMap extends Component {
     const path = d3.geo.path().projection(projection);
     const fill = (stateData) => {
       const rowData = chartData.PageLoadData.rows;
-      const color = d3.scale.linear().domain([0, d3.max(rowData, function(d) {return d.job_views;})]).range(['rgb(222,235,247)', 'rgb(90,109,129)', 'rgb(49,130,189)']);
+      const color = d3.scale.linear().domain([0, d3.max(rowData, (d) => d.job_views)]).range(['rgb(222,235,247)', 'rgb(90,109,129)', 'rgb(49,130,189)']);
       for (let i = 0; i < rowData.length; i++) {
         if (rowData[i].state === stateData.properties.STUSPS) {
           return color(rowData[i].job_views);

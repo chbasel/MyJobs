@@ -3,7 +3,7 @@ import {Component} from 'react';
 import d3 from 'd3';
 import Paths from '../Common/Paths';
 import ToolTip from '../Common/ToolTip';
-import Legend from '../Common/Legend';
+// import Legend from '../Common/Legend';
 import mapData from 'common/resources/maps/countries';
 
 class WorldMap extends Component {
@@ -31,25 +31,20 @@ class WorldMap extends Component {
   }
   render() {
     const {chartData, width, height, margin, scale} = this.props;
-    // console.log('Map Props: ', this.props);
     const transform = 'translate(' + margin.left + ',' + margin.top + ')';
     const projection = d3.geo.mercator().translate([width / 2, height / 2]).scale(scale);
     const path = d3.geo.path().projection(projection);
-    // console.log('Row Data: ', chartData.PageLoadData.rows);
-
     const fill = (countryData) => {
       const rowData = chartData.PageLoadData.rows;
-      const color = d3.scale.linear().domain([0, d3.max(rowData, function(d) {return d.job_views;})]).range(['rgb(222,235,247)', 'rgb(90,109,129)', 'rgb(49,130,189)']);
+      const color = d3.scale.linear().domain([0, d3.max(rowData, (d) => d.job_views)]).range(['rgb(222,235,247)', 'rgb(90,109,129)', 'rgb(49,130,189)']);
       for (let i = 0; i < rowData.length; i++) {
         if (rowData[i].country === countryData.id) {
-          // return '#5A6D81';
           return color(rowData[i].job_views);
         }
       }
       return '#E6E6E6';
     };
     const paths = mapData.features.map((country, i) => {
-      // console.log('Country Data: ', country);
       return (
         <Paths showToolTip={this.showToolTip.bind(this, country)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(country)} class="country" stroke="#5A6D81" fill={fill(country)}/>
       );
@@ -67,7 +62,6 @@ class WorldMap extends Component {
          <g transform={transform}>
            {paths}
          </g>
-         <Legend mapProps={this.props}/>
          </svg>
          <ToolTip activeToolTip={this.state.showToolTip} data={this.state.country} x={this.state.x} y={this.state.y}/>
       </div>

@@ -57,9 +57,6 @@ class Header extends Component {
                   <span className="dashboard-date">{localizeDate} {localizeTime}</span>
               </Button>
             </li>
-            <li><a href="#"><span className="head-icon fa fa-envelope-o"></span></a></li>
-            <li><a href="#"><span className="head-icon fa fa-print"></span></a></li>
-            <li><a href="#"><span className="head-icon fa fa-file-excel-o"></span></a></li>
           </ul>
         </nav>
         <Calendar onMouseDown={this.mouseDownHandler.bind(this)} onMouseUp={this.mouseUpHandler.bind(this)} showCalendarRangePicker={this.state.showPicker} hideCalendarRangePicker={this.hideCalendarRangePicker.bind(this)}/>
