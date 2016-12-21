@@ -4,18 +4,32 @@ import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveC
 
 class SimpleBarChart extends Component {
   render() {
+    function truncate(length, value) {
+      return value.substring(0, length);
+    }
     const {chartData, width, height} = this.props;
     const barData = chartData.PageLoadData.rows;
-    // const xAxis = chartData.PageLoadData.column_names[0].key;
+    const xAxis = chartData.PageLoadData.column_names[0].key;
+    const truncatedBarData = [];
+    for (let i = 0; i < barData.length; i++) {
+      truncatedBarData.push({...barData[i]});
+    }
+    truncatedBarData.map((bar) => {
+      for (const key in bar) {
+        if (key === xAxis) {
+          bar[key] = truncate(15, bar[key]);
+        }
+      }
+    });
     return (
       <div style={{width: '100%', height: '500'}}>
         <ResponsiveContainer>
           <BarChart
             width={width}
             height={height}
-            data={barData}
+            data={truncatedBarData}
             margin={{top: 5, right: 30, left: 20, bottom: 5}}>
-           <XAxis/>
+           <XAxis dataKey={xAxis}/>
            <YAxis/>
            <CartesianGrid strokeDasharray="3 3"/>
            <Tooltip/>

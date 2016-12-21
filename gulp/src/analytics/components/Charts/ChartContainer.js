@@ -28,8 +28,15 @@ class ChartContainer extends Component {
     case 'map:state':
       chartDisplay = <USAMap width={1920} height={600} scale={1100} chartData={chartData} />;
       break;
+    case 'string':
+      if (dataPresent.length < 5) {
+        chartDisplay = <NoResults type="div" errorMessage="No results found" helpErrorMessage={helpError}/>;
+      } else {
+        chartDisplay = <SimpleBarChart width={600} height={250} chartData={chartData} />;
+      }
+      break;
     default:
-      chartDisplay = <SimpleBarChart width={600} height={250} chartData={chartData} />;
+      chartDisplay = <NoResults type="div" errorMessage="No results found" helpErrorMessage={helpError}/>;
     }
     return (
         <div id={'chart_tab_' + chartData.navId} className="charts">

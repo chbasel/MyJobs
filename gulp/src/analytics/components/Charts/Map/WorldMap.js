@@ -65,9 +65,9 @@ class WorldMap extends Component {
          <g transform={transform}>
            {paths}
          </g>
+         <Legend mapProps={this.props}/>
          </svg>
          <ToolTip activeToolTip={this.state.showToolTip} data={this.state.country} x={this.state.x} y={this.state.y}/>
-         <Legend mapProps={chartData}/>
       </div>
     );
   }
