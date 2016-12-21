@@ -3,8 +3,8 @@
 
 box  = "ubuntu/trusty64"
 ip = "192.168.33.11"
-memory = "3072"
-cpus = "2"
+memory = "4096"
+cpus = "3"
 
 $provision = <<SCRIPT
 set -x
@@ -88,6 +88,12 @@ sudo su solr -c "/opt/solr/bin/solr create -c seo -d /home/web/deployment/search
 sudo su solr -c "/opt/solr/bin/solr create -c seo_test -d /home/web/deployment/search/solr/conf/seo*"
 
 sudo service solr restart
+
+
+# Set up nginx.
+sudo apt-get install --yes nginx
+sudo cp /home/web/MyJobs/vagrant/confs/nginx.conf /etc/nginx/nginx.conf
+sudo service nginx restart
 
 
 # Set up all the JavaScript stuff.
