@@ -33,6 +33,9 @@ class SideBar extends Component {
             <div className="clearfix"></div>
            </li>
           {primaryDimensions}
+          <li className="side-dimension-feedback">
+            <a className="side-dimension-title feedback" href="http://www.directemployers.org/beta-feedback" target="_blank">Leave Us Feedback</a>
+          </li>
         </ul>
       </div>
     );
