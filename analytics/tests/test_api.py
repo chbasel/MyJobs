@@ -1,5 +1,8 @@
 import json
 
+from pymongoenv import connect_db
+from dateutil import parser as dateparser
+
 from myjobs.tests.setup import MyJobsBase
 import myreports.models as myreports_models
 
@@ -9,9 +12,11 @@ from analytics.api import (get_available_analytics, get_report_info,
                            dynamic_chart)
 
 
-class TestStartingPointApi(MyJobsBase):
+class TestApi(MyJobsBase):
+    collection_names = ['job_views']
+
     def setUp(self):
-        super(TestStartingPointApi, self).setUp()
+        super(TestApi, self).setUp()
         self.maxDiff = 10000
         self.role.add_activity("view analytics")
         self.rit_analytics = myreports_models.ReportingType.objects.create(
@@ -225,6 +230,52 @@ class TestStartingPointApi(MyJobsBase):
             multi_value_expansion=0,
             is_active=True)
 
+    def populate_mongo_data(self):
+        job_views = connect_db().db.job_views
+        mongo_data = [
+            {
+                "time_first_viewed": dateparser.parse("10/17/2012 01:00:00"),
+                "country": "GER",
+                "state": "Gutentag",
+                "city": "Braunshweiger",
+                "found_on": "www.google.de",
+                "view_count": 3,
+             },
+            {
+                "time_first_viewed": dateparser.parse("10/18/2012 01:00:00"),
+                "country": "GER",
+                "state": "Gutentag",
+                "city": "Braunshweiger",
+                "found_on": "www.google.de",
+                "view_count": 3,
+             },
+            {
+                "time_first_viewed": dateparser.parse("10/18/2012 01:00:00"),
+                "country": "USA",
+                "state": "IN",
+                "city": "Peru",
+                "found_on": "www.google.com",
+                "view_count": 2,
+             },
+            {
+                "time_first_viewed": dateparser.parse("10/18/2012 01:00:00"),
+                "country": "USA",
+                "state": "IN",
+                "city": "Indianapolis",
+                "found_on": "www.google.com",
+                "view_count": 7,
+             },
+            {
+                "time_first_viewed": dateparser.parse("10/18/2012 01:00:00"),
+                "country": "USA",
+                "state": "MI",
+                "city": "Muskegon",
+                "found_on": "www.google.com",
+                "view_count": 1,
+             },
+            ]
+        job_views.insert_many(mongo_data)
+
     def test_available(self):
         response = self.client.get(reverse(get_available_analytics))
         result = json.loads(response.content)
@@ -304,10 +355,31 @@ class TestStartingPointApi(MyJobsBase):
         self.assertIn('analytics_report_id', fields)
 
     def test_valid_dynamic_charts_request(self):
+        expected_rows = [{u"country": u"USA", u"job_views": 10, u"visitors": 3},
+                         {u"country": u"GER", u"job_views": 3, u"visitors": 1}]
+        self.populate_mongo_data()
         request_data = {"date_start": "10/18/2012 00:00:00",
-                        "date_end": "10/18/2012 00:00:00",
+                        "date_end": "10/19/2012 00:00:00",
                         "active_filters": [],
-                        "report": "job-found-on",
+                        "report": "job-locations"}
+        response = self.client.post(reverse(dynamic_chart),
+                                    {"request": json.dumps(request_data)})
+
+        result = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue('rows' in result)
+        self.assertEqual(result['rows'], expected_rows)
+
+    def test_group_overwrite_dynamic_charts_request(self):
+        expected_rows = [{u"found_on": u"www.google.com", u"job_views": 10,
+                          u"visitors": 3},
+                         {u"found_on": u"www.google.de", u"job_views": 3,
+                          u"visitors": 1}]
+        self.populate_mongo_data()
+        request_data = {"date_start": "10/18/2012 00:00:00",
+                        "date_end": "10/19/2012 00:00:00",
+                        "active_filters": [],
+                        "report": "job-locations",
                         "group_overwrite": "found_on"}
         response = self.client.post(reverse(dynamic_chart),
                                     {"request": json.dumps(request_data)})
@@ -315,6 +387,59 @@ class TestStartingPointApi(MyJobsBase):
         result = json.loads(response.content)
         self.assertEqual(200, response.status_code)
         self.assertTrue('rows' in result)
+        self.assertEqual(result['rows'], expected_rows)
+
+    def test_active_filter_dynamic_charts_request(self):
+        expected_rows = [{u"state": u"IN", u"job_views": 9, u"visitors": 2},
+                         {u"state": u"MI", u"job_views": 1, u"visitors": 1}]
+        self.populate_mongo_data()
+        request_data = {"date_start": "10/18/2012 00:00:00",
+                        "date_end": "10/19/2012 00:00:00",
+                        "active_filters": [{"type":"country", "value":"USA"}],
+                        "report": "job-locations"}
+        response = self.client.post(reverse(dynamic_chart),
+                                    {"request": json.dumps(request_data)})
+
+        result = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue('rows' in result)
+        self.assertEqual(result['rows'], expected_rows)
+
+    def test_2_active_filters_dynamic_charts_request(self):
+        expected_rows = [{u"city": u"Indianapolis", u"job_views": 7,
+                          u"visitors": 1},
+                         {u"city": u"Peru", u"job_views": 2, u"visitors": 1}]
+        self.populate_mongo_data()
+        request_data = {"date_start": "10/18/2012 00:00:00",
+                        "date_end": "10/19/2012 00:00:00",
+                        "active_filters": [{"type":"country", "value":"USA"},
+                                           {"type":"state", "value":"IN"}],
+                        "report": "job-locations"}
+        response = self.client.post(reverse(dynamic_chart),
+                                    {"request": json.dumps(request_data)})
+
+        result = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue('rows' in result)
+        self.assertEqual(result['rows'], expected_rows)
+
+    def test_3_active_filters_dynamic_charts_request(self):
+        expected_rows = [{u"found_on": u"www.google.com", u"job_views": 7,
+                          u"visitors": 1}]
+        self.populate_mongo_data()
+        request_data = {"date_start": "10/18/2012 00:00:00",
+                        "date_end": "10/19/2012 00:00:00",
+                        "active_filters": [{"type":"country", "value":"USA"},
+                                           {"type":"state", "value":"IN"},
+                                           {"type":"city", "value":"Indianapolis"}],
+                        "report": "job-locations"}
+        response = self.client.post(reverse(dynamic_chart),
+                                    {"request": json.dumps(request_data)})
+
+        result = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue('rows' in result)
+        self.assertEqual(result['rows'], expected_rows)
 
     def test_dynamic_charts_report_info_missing_date(self):
         request_data = {"date_end": "11/28/2016 00:00:00"}
