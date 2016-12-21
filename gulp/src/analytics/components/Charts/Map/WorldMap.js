@@ -36,12 +36,14 @@ class WorldMap extends Component {
     const projection = d3.geo.mercator().translate([width / 2, height / 2]).scale(scale);
     const path = d3.geo.path().projection(projection);
     // console.log('Row Data: ', chartData.PageLoadData.rows);
-    // const color = d3.scale.linear().domain([0, d3.max(rowData, function(d) {return d.job_views;})]).range(['rgb(237,248,177)','rgb(127,205,187)','rgb(44,127,184)']);
+
     const fill = (countryData) => {
       const rowData = chartData.PageLoadData.rows;
+      const color = d3.scale.linear().domain([0, d3.max(rowData, function(d) {return d.job_views;})]).range(['rgb(222,235,247)', 'rgb(90,109,129)', 'rgb(49,130,189)']);
       for (let i = 0; i < rowData.length; i++) {
         if (rowData[i].country === countryData.id) {
-          return '#5A6D81';
+          // return '#5A6D81';
+          return color(rowData[i].job_views);
         }
       }
       return '#E6E6E6';

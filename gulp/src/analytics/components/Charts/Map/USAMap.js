@@ -34,9 +34,10 @@ class USAMap extends Component {
     const path = d3.geo.path().projection(projection);
     const fill = (stateData) => {
       const rowData = chartData.PageLoadData.rows;
+      const color = d3.scale.linear().domain([0, d3.max(rowData, function(d) {return d.job_views;})]).range(['rgb(222,235,247)', 'rgb(90,109,129)', 'rgb(49,130,189)']);
       for (let i = 0; i < rowData.length; i++) {
         if (rowData[i].state === stateData.properties.STUSPS) {
-          return '#5A6D81';
+          return color(rowData[i].job_views);
         }
       }
       return '#E6E6E6';
