@@ -16,7 +16,7 @@ class ChartContainer extends Component {
     const chartType = chartData.PageLoadData.chart_type;
     // Grab the row data to check and make sure the data coming back isn't empty
     const dataPresent = chartData.PageLoadData.rows;
-    const helpError = 'We couldn\'t find any results using the filters applied. Please change your criteria.';
+    const helpError = 'We couldn\'t find any charts using the filters applied.';
     let chartDisplay;
     switch (chartType) {
     case 'map:world':
@@ -30,13 +30,13 @@ class ChartContainer extends Component {
       break;
     case 'string':
       if (dataPresent.length < 5) {
-        chartDisplay = <NoResults type="div" errorMessage="No results found" helpErrorMessage={helpError}/>;
+        chartDisplay = <NoResults type="div" errorMessage="No charts found" helpErrorMessage={helpError}/>;
       } else {
         chartDisplay = <SimpleBarChart width={600} height={250} chartData={chartData} />;
       }
       break;
     default:
-      chartDisplay = <NoResults type="div" errorMessage="No results found" helpErrorMessage={helpError}/>;
+      chartDisplay = <NoResults type="div" errorMessage="No charts found" helpErrorMessage={helpError}/>;
     }
     return (
         <div id={'chart_tab_' + chartData.navId} className="charts">
@@ -50,7 +50,7 @@ class ChartContainer extends Component {
           <hr/>
             <Row>
               <Col md={12}>
-                {isEmpty(dataPresent) ? <NoResults type="div" errorMessage="No results found" helpErrorMessage={helpError}/> : chartDisplay}
+                {isEmpty(dataPresent) ? <NoResults type="div" errorMessage="No charts found" helpErrorMessage={helpError}/> : chartDisplay}
               </Col>
             </Row>
         </div>
