@@ -42,7 +42,7 @@ utils.logoutTimer = function readCookie(url) {
       if (utils.readCookie('loggedout') && window.location.pathname !== url) {
         window.location.assign(url);
       } else if ((!utils.readCookie('exp')) && (window.location.pathname !== url)) {
-        window.location.assign(url);
+        window.location.reload(true);
       }
 
     }, 500);
