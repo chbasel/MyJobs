@@ -86,6 +86,7 @@ class Select extends React.Component {
     fakeEvent.target.name = name;
     fakeEvent.target.type = 'advanced-select';
     fakeEvent.target.value = itemKey.value;
+    fakeEvent.target.obj = itemKey;
 
     onChange(fakeEvent);
 

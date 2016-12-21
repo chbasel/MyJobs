@@ -7,6 +7,8 @@ import {createAction} from 'redux-actions';
  */
 export const markPageLoadingAction = createAction('MARK_PAGE_LOADING');
 
+export const markNavLoadingAction = createAction('MARK_NAV_LOADING');
+
 
 /**
  * Marks a field as loading or not.

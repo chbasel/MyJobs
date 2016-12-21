@@ -24,7 +24,6 @@
       <script src="{{wp_base_url}}/manageusers.js"/></script>
     {% else %}
       {% compress js %}
-          <script src="{% static "bundle/vendor.js" %}"></script>
           <script src="{% static "bundle/manageusers.js" %}"></script>
       {% endcompress %}
     {% endif %}

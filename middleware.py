@@ -137,8 +137,16 @@ class MultiHostMiddleware:
 
         """
         host = None
+
+        # Allow for specifying a domain to use as the current site rather
+        # than using the site that matches the current domain.
+        # Intended use is for testing specific Sites/Configurations
+        # in QC/Staging.
         if request.user.is_authenticated() and request.user.is_staff:
             host = request.REQUEST.get('domain')
+            # If a user is domain switching, assume they really do know
+            # where they want to go.
+            setattr(settings, 'WILDCARD_REDIRECT', False)
 
         if host is None:
             host = request.get_host()

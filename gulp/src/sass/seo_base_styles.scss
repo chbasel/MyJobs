@@ -128,7 +128,6 @@ legend{
   font-size: 12px;
   border: none;
   border-radius: 3px;
-  font-weight: 100;
 }
 
 .show-more {
@@ -185,7 +184,6 @@ legend{
     }
   }
   .company-box {
-    margin: 0px 15px;
     border: 1px solid $extra-light-gray;
     background-color: $medium-gray;
     border-top: none;
@@ -211,8 +209,9 @@ legend{
 }
 
 .site-name {
-  color: #3a4135;
   position: relative;
+  color: $primary-navy-blue;
+  font-weight: 800;
 }
 .direct_hiddenOption {display:none;}
 
@@ -227,10 +226,7 @@ a.direct_optionsLess {
 	margin: 0 auto;
 	width: 75%;
 }
-.share-icon {
-	height: 22px;
-	width: 30px;
-}
+
 .direct_highlightedText {
   padding-top: 20px;
 }
@@ -306,11 +302,23 @@ a.direct_optionsLess {
       box-shadow: 0 0px 5px rgba(0,0,0,0.15);
     }
   }
+
+  .jobs-logo{
+    a, a:visited, a:hover, a:active {
+        text-decoration:none;
+    }
+  }
+
   .my-jobs-logo {
     font-size: 24px;
     font-weight: bold;
     color: $white;
+    img {
+      height: 2.5rem;
+
+    }
   }
+
   .navbar-nav.navbar-right.right-nav {
     a {
       font-weight: 200;
@@ -360,17 +368,10 @@ a.direct_optionsLess {
   }
   .logo-text {
     position: relative;
-    color: $primary-navy-blue;
-    font-weight: 800;
-  }
-  .header-logo-text {
-    position: relative;
-    right: 5px;
   }
 }
 
 #mobile_direct-saved-search-box, #direct-saved-search-box {
-  padding: 0 15px;
   margin-bottom: -3.1rem;
 
   h3 {
@@ -395,7 +396,6 @@ a.direct_optionsLess {
     border-radius: 3px;
     box-sizing: border-box;
     box-shadow: 2px 2px 3px #bbb;
-    margin-top: 75px;
     padding: 0px 10px;
   }
   .search-sent-text {
@@ -436,6 +436,15 @@ a.direct_optionsLess {
   }
 }
 
+.mobile-search-btn {
+  background-color: $btn-gray;
+  color: $primary-navy-blue;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 2px;
+  font-weight: 900;
+}
+
 .filter-box {
   border: 1px solid $extra-light-gray;
   background-color: $medium-gray;
@@ -445,7 +454,7 @@ a.direct_optionsLess {
   box-sizing: border-box;
   box-shadow: 2px 2px 3px #bbb;
   padding: 0px 10px;
-  margin: 0 15px;
+  margin: 0;
 }
 
 .filter-panel {
@@ -585,9 +594,6 @@ margin-bottom: 50px;
     @extend .global-btn;
     text-align: center;
   }
-  .share-social.search-submit-moc {
-    min-width: 7rem;
-  }
   .search-show-all {
     font-size: 12px;
     position: relative;
@@ -605,9 +611,9 @@ margin-bottom: 50px;
 
     i {
       position: absolute;
-      left: 10px;
-			font-size: 24px;
-			top: 10px;
+      left: .45rem;
+      font-size: 24px;
+      top: 10px;
       color: $blue;
     }
     .helptext {
@@ -622,7 +628,7 @@ margin-bottom: 50px;
     #q{
       @extend .search-input-boxes;
       width: 100%;
-      padding: 0 0 0 40px;
+      padding: 0 0 0 3rem;
 
       &::-webkit-input-placeholder {
         color: $blue;
@@ -645,9 +651,9 @@ margin-bottom: 50px;
 
     i {
       position: absolute;
-      left: 10px;
-			font-size: 24px;
-			top: 10px;
+      left: .45rem;
+      font-size: 24px;
+      top: 10px;
       color: $blue;
     }
     .helptext {
@@ -662,7 +668,7 @@ margin-bottom: 50px;
     #location {
       @extend .search-input-boxes;
       width: 100%;
-      padding: 0 0 0 40px;
+      padding: 0 0 0 3rem;
 
       &::-webkit-input-placeholder {
         color: $blue;
@@ -685,9 +691,9 @@ margin-bottom: 50px;
 
     i {
       position: absolute;
-      left: 10px;
-			font-size: 24px;
-			top: 10px;
+      left: .45rem;
+      font-size: 24px;
+      top: 10px;
       color: $blue;
     }
     .helptext {
@@ -702,7 +708,7 @@ margin-bottom: 50px;
     #moc {
       @extend .search-input-boxes;
       width: 100%;
-      padding: 0 0 0 40px;
+      padding: 0 0 0 2.9rem;
 
       &::-webkit-input-placeholder {
         color: $blue;
@@ -718,27 +724,18 @@ margin-bottom: 50px;
       }
     }
   }
-  .search-submit {
+  .search-submit, .search-submit-moc {
     display: inline-block;
     margin: 0 15px 10px 0;
     padding: 9px;
     font-size: 18px;
     border-radius: 3px;
-    font-weight: 100;
-  }
-  .search-submit-moc {
-    display: inline-block;
-    margin: 0 15px 10px 0;
-    padding: 9px;
-    font-size: 18px;
-    border-radius: 3px;
-    font-weight: 100;
+    font-weight: 500;
   }
 }
 /*MAIN PAGE CONTENT STYLES*/
 
 #main_content {
-	margin-top: 100px;
   margin-bottom: 35px;
 }
 
@@ -751,10 +748,9 @@ margin-bottom: 50px;
     }
     .jobs-found {
       border-bottom: 1px solid #d3d3d3;
-      padding-bottom: 10px;
       margin-top: 0;
       color: $primary-navy-blue;
-			font-size: 16px;
+      font-size: 16px;
       font-weight: bold;
     }
     .direct_joblisting {
@@ -775,7 +771,6 @@ margin-bottom: 50px;
     .email-box {
       @extend .gray-section-boxes;
       padding: 10px;
-      margin-top: 75px;
 
       #mobile_enter_email {
         position: relative;
@@ -980,22 +975,13 @@ margin-bottom: 50px;
     }
   }
   .apply {
-    background-color: $primary-navy-blue;
-    color: #ffffff;
-    font-size: 12px;
     border: none;
     border-radius: 3px;
     display: inline-block;
     margin: 0 15px 10px 0;
     padding: 10px 75px;
-    font-size: 18px;
+    font-size: 1.9rem;
     border-radius: 3px;
-    font-weight: 100;
-    font-weight: 100;
-
-		&:hover {
-			background-color: $red-maroon;
-		}
   }
 }
 
@@ -1005,9 +991,23 @@ margin-bottom: 50px;
 
 /*==========  Mobile First Approach  ==========*/
 
+@media only screen and (min-width: 320px) {
+  .site-name {
+    font-size: 2rem;
+  }
+
+  #mobile_direct-saved-search-box, #direct-saved-search-box {
+    padding: 0 15px
+  }
+
+  .filter-box {
+    margin: 0 15px;
+  }
+}
+
 /* Custom, iPhone Retina */
 @media only screen and (min-width: 320px) and (max-width: 480px) {
-    /** Be default iOS devices hides scroll bar,
+    /** Be default iOS devices hides scroll bar,                                                                              g
   this makes all devices show scrollbar for nested sub menus **/
   ::-webkit-scrollbar {
     -webkit-appearance: none;
@@ -1021,15 +1021,6 @@ margin-bottom: 50px;
 
 @media only screen and (min-width : 320px) and (max-width: 768px) {
 
-  #main_nav {
-    margin-bottom: 3.5rem;
-  }
-
-  #main_content {
-	margin-top: 0px;
-    margin-bottom: 0px;
-  }
-
   #brand_logo {
     .logo{
       width: 100%;
@@ -1040,8 +1031,8 @@ margin-bottom: 50px;
       margin-bottom: .2rem;
     }
 
-    .site-name {
-      font-size: 2.1rem;
+    .logo-text {
+     text-align: center;
     }
   }
 
@@ -1163,9 +1154,8 @@ margin-bottom: 50px;
     display: none;
   }
   #mobile_social_media {
-    padding-top: 50px;
-    margin: 0 auto;
-    width: 63%;
+    margin: 5rem auto 7rem auto;
+    width: 76%;
   }
 
   .mobile-search-facets {
@@ -1178,21 +1168,12 @@ margin-bottom: 50px;
   .mobile-search-facets.show-mobile-search-facets {
     display: block;
   }
-  .facets {
-    display: none;
-  }
   .social-media {
     margin-top: 75px;
   }
   .mobile-search-criteria {
     text-align: center;
     padding: 25px 0px;
-  }
-  .mobile-search-btn {
-    background-color: $btn-gray;
-    color: $primary-navy-blue;
-    padding: 10px 20px;
-    border-radius: 2px;
   }
   #main_nav {
     .right-nav {
@@ -1204,9 +1185,8 @@ margin-bottom: 50px;
     }
   }
   #brand_logo {
-    .location-logo-text, .logo, .site-name {
+    .location-logo-text, .logo {
       display: block;
-      text-align: center;
     }
 
   }
@@ -1234,12 +1214,6 @@ margin-bottom: 50px;
     }
     .search-submit-moc {
       width: 94%;
-    }
-    .share-social.search-submit {
-      display: none;
-    }
-    .share-social.search-submit-moc {
-      display: none;
     }
     .breadcrumb-row {
       display: none;
@@ -1285,7 +1259,6 @@ margin-bottom: 50px;
 		padding: 0 20px;
 
 		.apply {
-			margin: 0 auto;
 			width: 100%;
 			text-align: center;
 		}
@@ -1310,11 +1283,6 @@ margin-bottom: 50px;
       margin-left: calc(-1 * ((100vw - 100%) / 2));
       right: 7%;
   }
-  #mobile_social_media {
-    padding-top: 50px;
-    margin: 0 auto;
-    width: 32%;
-  }
   #direct_jobListingTitle, .jobs-found {
     width: 95%;
   }
@@ -1328,6 +1296,17 @@ margin-bottom: 50px;
       }
     }
 
+  ::-webkit-input-placeholder {
+    font-size: 1.2rem;
+  }
+}
+
+@media only screen and (min-width: 769px) {
+  #mobile_social_media {
+    padding-top: 50px;
+    margin: 0 auto;
+    width: 35%;
+  }
 }
 
 /* Newer Higher Res Tablets */
@@ -1347,15 +1326,16 @@ margin-bottom: 50px;
   #direct_companyModule {
     display: none;
   }
-  #mobile_social_media {
-    display: none;
-  }
 
   .mobile-search-facets {
     display: none;
   }
 
-  #direct_jobListingTitle, .jobs-found {
+  .search-section, .breadcrumb-tags {
+    padding: 1rem 0 0 2rem;
+  }
+
+  #direct_jobListingTitle {
     margin: 0 auto;
     width: 91%;
   }
@@ -1364,24 +1344,13 @@ margin-bottom: 50px;
     display: block;
   }
 
-  .facets {
-    display: none;
-  }
-
   .social-media {
     margin-top: 75px;
   }
 
   .mobile-search-criteria {
     text-align: center;
-    padding: 25px 0px;
-  }
-
-  .mobile-search-btn {
-    background-color: $btn-gray;
-    color: $primary-navy-blue;
-    padding: 10px 20px;
-    border-radius: 2px;
+    padding: 0 0 1.6rem 0;
   }
 
   .right-content {
@@ -1452,6 +1421,7 @@ margin-bottom: 50px;
       padding: 1rem;
     }
   }
+
   #brand_logo {
     .logo{
       width: 100%;
@@ -1460,10 +1430,9 @@ margin-bottom: 50px;
     .location-logo {
       margin-bottom: 1.5rem;
     }
-    .site-name{
-      font-size: 2.7rem;
+   .logo-text {
+     text-align: center;
     }
-
   }
 
 }
@@ -1471,11 +1440,16 @@ margin-bottom: 50px;
 /* Medium Devices, Desktops */
 @media only screen and (min-width : 992px) {
 
+  #mobile_direct-saved-search-box, #direct-saved-search-box {
+    padding: 0 0;
+  }
+
+  .filter-box {
+    margin: 0 0;
+  }
+
   #direct_companyModule {
     display: block;
-  }
-  #mobile_social_media {
-    display: none;
   }
   #direct_jobListingTitle, .jobs-found {
     width: 100%;
@@ -1491,16 +1465,11 @@ margin-bottom: 50px;
   .mobile-search-criteria {
     display: none;
   }
-  .mobile-search-facets.show-mobile-search-facets {
-    display: none;
-  }
+
   .facets {
     display: block;
   }
   .mobile-facets {
-    display: none;
-  }
-  .mobile-social-media {
     display: none;
   }
   .right-content {
@@ -1535,25 +1504,25 @@ margin-bottom: 50px;
       padding: 0 10px;
     }
   }
+
+  .right-content {
+    .jobs-found {
+      border-bottom: none;
+      margin-top: -4.1rem;
+    }
+  }
+
   #search {
     margin-bottom: 20px;
 
     .breadcrumb-row {
       display: block;
-      padding-top: 5px;
-    }
-    .search-submit {
-      width: 32%;
     }
     .search-submit-moc {
       width: auto;
     }
     .caret-up {
       left: 63%;
-    }
-    .social-media {
-      margin: 0 20% 0 15%;
-      padding-top: 10px;
     }
     .what-section {
       width: 100% !important;
@@ -1569,12 +1538,6 @@ margin-bottom: 50px;
     }
     .submit-section {
       padding: 0;
-    }
-    .share-social.search-submit {
-      display: inline-block;
-    }
-    .share-social.search-submit-moc {
-      display: inline-block;
     }
   }
   #direct_listingDiv {
@@ -1601,35 +1564,17 @@ margin-bottom: 50px;
   }
   #brand_logo {
     .logo{
-      width: 100%;
+      width: auto;
       height: 8rem;
     }
-    .location-logo {
-      margin-bottom: 30px;
-    }
-    .site-name{
-      font-size: 2rem;
-      margin-left: calc(-1 * ((100vw - 100%) / 15));
-    }
-
   }
-	#direct_listingDiv {
-		padding: 0;
+  #direct_listingDiv {
+      padding: 0;
 
-		.apply {
-			width: 35%;
-		}
-	}
-}
-
-/* The M.O.C. place holder text is long,
-    this makes it easier to read at certain screen sizes. */
-@media only screen and (min-width : 769px) and (max-width: 1290px){
-
-  #moc::-webkit-input-placeholder {
-    font-size: 1.1rem;
+      .apply {
+          width: 35%;
+      }
   }
-
 }
 
 /* Large Devices, Wide Screens */
@@ -1637,13 +1582,9 @@ margin-bottom: 50px;
 
   #brand_logo {
     .logo-text {
-      font-size: 34px;
-      left: 9%;
-      bottom: 20px;
     }
     .site-name {
       font-size: 2.3rem;
-      margin-left: calc(-1 * ((100vw - 100%) / 55));
     }
   }
   #direct-saved-search-box {

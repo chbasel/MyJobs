@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
+from mock import patch
+
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
+from django.template.loader import TemplateDoesNotExist
 
 from seo.tests import factories
 from seo.models import Company, CustomFacet, SeoSite, SiteTag
 from myjobs.tests.factories import AppAccessFactory
 from myjobs.tests.factories import RoleFactory
 from seo.tests.setup import DirectSEOBase
-from registration.models import Invitation
 
 
 class ModelsTestCase(DirectSEOBase):
@@ -16,6 +18,75 @@ class ModelsTestCase(DirectSEOBase):
     app belong here.
 
     """
+    @patch('newrelic.agent.add_custom_parameter')
+    @patch('django.template.loader.get_template')
+    def test_configuration_get_template_is_v1(self, mock_get_template,
+                                              mock_add_custom_param):
+        """
+        Configurations on v1 should not get the v2 template, even if a
+        v2 template is available.
+
+        django.template.loader.get_template is patched to ensure that
+        the requested template does exist.
+
+        """
+        v1 = 'v1'
+        template_string = 'this/does_not_exist'
+        configuration = factories.ConfigurationFactory(template_version=v1)
+
+        actual_template_string = configuration.get_template(template_string)
+
+        self.assertEqual(template_string, actual_template_string)
+        # New Relic should also be receiving the correct information.
+        mock_add_custom_param.assert_called_with("template_version", v1)
+
+    @patch('newrelic.agent.add_custom_parameter')
+    @patch('django.template.loader.get_template')
+    def test_configuration_get_template_fail(self, mock_get_template,
+                                             mock_add_custom_param):
+        """
+        Configurations on v2 templates should still get the v1 template if
+        no v2 template is available.
+
+        django.template.loader.get_template is patched to ensure that
+        the requested template does not exist.
+        """
+        mock_get_template.side_effect = TemplateDoesNotExist
+
+        v2 = 'v2'
+        template_string = 'this/does_not_exist'
+        configuration = factories.ConfigurationFactory(template_version=v2)
+        self.assertEqual(configuration.template_version, v2)
+
+        actual_template_string = configuration.get_template(template_string)
+
+        self.assertEqual(template_string, actual_template_string)
+        # New Relic should also be receiving the correct information.
+        mock_add_custom_param.assert_called_with("template_version", "v1")
+
+    @patch('newrelic.agent.add_custom_parameter')
+    @patch('django.template.loader.get_template')
+    def test_configuration_get_template_is_v2(self, mock_get_template,
+                                              mock_add_custom_param):
+        """
+        If a Configuration is on v2 and a v2 template is available, the v2
+        template string should be the the one returned.
+
+        django.template.loader.get_template is patched to ensure that
+        the requested template does exist.
+
+        """
+        v2 = 'v2'
+        template_string = 'this/does_not_exist'
+        expected_template_string = "%s/%s" % (v2, template_string)
+        configuration = factories.ConfigurationFactory(template_version=v2)
+
+        actual_template_string = configuration.get_template(template_string)
+
+        self.assertEqual(expected_template_string, actual_template_string)
+        # New Relic should also be receiving the correct information.
+        mock_add_custom_param.assert_called_with("template_version", v2)
+
     def test_unique_redirect(self):
         """
         Test to ensure that we can't create a redirect for the same
@@ -132,6 +203,7 @@ class ModelsTestCase(DirectSEOBase):
 
         company = Company.objects.create(name="Test Company")
         self.assertIn('Admin', company.role_set.values_list('name', flat=True))
+
 
 class TestRoles(DirectSEOBase):
     """

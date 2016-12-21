@@ -1,6 +1,7 @@
 import operator
 from DNS import DNSError
 from boto.route53.exception import DNSServerError
+import newrelic.agent
 from slugify import slugify
 import Queue
 
@@ -1042,16 +1043,21 @@ class Configuration(models.Model):
         :return: Original path or v2 path if exists and enabled
 
         """
-        if self.template_version in ('v1', None):
-            return template_string
+        template_version = 'v1'
 
-        try:
-            version_string = '%s/%s' % (self.template_version, template_string)
-            loader.get_template(version_string)
-            return version_string
-        except loader.TemplateDoesNotExist:
-            return template_string
+        if self.template_version not in ('v1', None):
+            try:
+                version_string = '%s/%s' % (self.template_version, template_string)
+                loader.get_template(version_string)
+                template_string = version_string
+                template_version = self.template_version
+            except loader.TemplateDoesNotExist:
+                pass
 
+        param = "template_version"
+        newrelic.agent.add_custom_parameter(param, template_version)
+
+        return template_string
 
     title = models.CharField(max_length=50, null=True)
     # version control

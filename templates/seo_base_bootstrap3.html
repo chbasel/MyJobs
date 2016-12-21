@@ -57,9 +57,11 @@
     {% if site_config.meta %} {{site_config.meta|safe}} {% endif %}
 
     {% block direct_extraMetaOpenGraph %}{% endblock %}
+
+    {% block meta_serp_schema %}{% endblock meta_serp_schema %}
 </head>
 <body {% block directseo_bodySchema %}{% endblock directseo_bodySchema %}>
-<div id="page_content">
+<main id="page_content">
   <section id="main_nav" class="text-center direct_dotjobsWideHeader">
    {% comment - need this for the topbar %} {% endcomment %}
   </section>
@@ -69,78 +71,71 @@
     <div id="direct_innerContainer">
       <section id="main_content">
         <div class="row">
-          <div class="hidden-xs col-md-1"></div>
-          <div class="col-xs-12 col-md-3">
-            <div class="left-content">
-              <section id="brand_logo" class="text-center">
-                <div class="row">
-                  <div class="col-xs-12 col-md-12">
-                    <div class="location-logo">
+            <article class="col-xs-12 col-md-3 col-md-offset-1">
+                <section id="brand_logo">
+                    <figure class="location-logo">
                     {% with site_heading|cut:".jobs" as site_heading_base %}
                       {%if site_heading_base == site_heading %}
                         {% with site_heading|case_insensitive_cut:" Jobs" as site_heading_base2 %}
                           {%if site_heading_base2 == site_heading %}
-                            <h1 class="logo-text noDotJobs">
-                              <img class="logo" src="{{ STATIC_URL }}images/dotJobsLogo.svg" id="page_logo" alt="dot jobs logo">
-                              {{site_heading}}
-                            </h1>
-                              {% else %}
-                            <h1 class="logo-text">
+                            <figcaption class="logo-text noDotJobs">
+                              <img class="logo" src="{{ STATIC_URL }}svg/dotjobs-logo.svg" id="page_logo" alt="dot jobs logo">
+                              <span class="site-name">{{site_heading}}</span>
+                            </figcaption>
+                          {% else %}
+                            <figcaption class="logo-text">
                               <a class="location-logo-text"  href="/">
-                                <img class="logo" src="{{ STATIC_URL }}images/dotJobsLogo.svg" id="page_logo" alt="dot jobs logo">
+                                <img class="logo" src="{{ STATIC_URL }}svg/dotjobs-logo.svg" id="page_logo" alt="dot jobs logo">
                                 {%if site_heading_base2 == "My"%}
                                   <span class="site-name">Network</span>
                                 {%else%}
                                   <span class="site-name">{{site_heading_base2}}</span>
                                 {% endif %}
                               </a>
-                            </h1>
+                            </figcaption>
                           {% endif %}
                         {% endwith %}
                       {% else %}
-                        <h1 class="logo-text">
+                        <figcaption class="logo-text">
                           <a class="location-logo-text"  href="/">
-                            <img class="logo" src="{{ STATIC_URL }}images/dotJobsLogo.svg" id="page_logo" alt="dot jobs logo">
-                            {{site_heading_base}}
+                            <img class="logo" src="{{ STATIC_URL }}svg/dotjobs-logo.svg" id="page_logo" alt="dot jobs logo">
+                            <span class="site-name">{{site_heading_base}}</span>
                           </a>
-                        </h1>
+                        </figcaption>
                       {% endif %}
                     {% endwith %}
-                    </div>
-                  </div>
-                </div>
-              </section>
+                    </figure>
+                </section>
+            </article>
+            <article class="col-xs-12 col-md-8">
+                {% if site_config.browse_moc_show %}
+                  {% include "v2/includes/search_box_vets_widget.html" %}
+                {% else %}
+                  {% include 'v2/includes/search_box_widget.html' %}
+                {% endif %}
+            </article>
+        </div>
+        <div class="row">
+            <article class="col-xs-12 col-md-3 col-md-offset-1">
                 {% block directseo_right_hand_column %}{% endblock directseo_right_hand_column %}
+            </article>
+            <article class="col-xs-12 col-md-8">
+                <section class="right-content">
+                    {% block directseo_main_content %}{% endblock %}
+                    <div id="mobile_social_media">
+                      {% include 'v2/includes/add_this.html' %}
+                    </div>
+                </section>
+            </article>
         </div>
-      </div>
-
-      <div class="col-xs-12 col-md-8">
-        <div class="right-content">
-            {% if site_config.browse_moc_show %}
-              {% include "v2/includes/search_box_vets_widget.html" %}
-            {% else %}
-              {% include 'v2/includes/search_box_widget.html' %}
-            {% endif %}
-
-            {% block directseo_mobile_facets %}{% endblock directseo_mobile_facets %}
-            {% block directseo_main_content %}{% endblock %}
-            <div id="mobile_save_email_search">
-              {% block mobile_directseo_save_email %}{% endblock %}
-            </div>
-            <div id="mobile_social_media">
-              {% include 'v2/includes/add_this.html' %}
-            </div>
-        </div>
-      </div>
-    </div>
     </section><!-- main_content -->
-    {% endblock directseo_outer_container %}
+ {% endblock directseo_outer_container %}
 
     </div><!-- direct_innerContainer -->
   </section><!-- direct_container -->
 <div class="clearfooter"></div>
 <div class="overlay"></div>
-</div><!-- page_content -->
+</main><!-- page_content -->
 
 <section id="footer"><!--FOOTER START -->
   <div class="container-fluid f-padding">
@@ -162,15 +157,19 @@
   </div>
 </section><!--FOOTER END-->
 
-<script defer src="{{ STATIC_URL }}jquery-2.2.4.min.js"></script>
-<script defer src="{{ STATIC_URL }}jquery-ui-1.12.1.custom.min.js"></script>
-<script defer src="{% static "seo-base-scripts-181-27.js" %}"></script>
-<script defer src="{% static "utils.181-20.js" %}"></script>
-<script defer src="{% static "secure-blocks/secure-block.181-20.js" %}"></script>
-<script defer src="{% static "pager.164-21.js" %}"></script>
+<script src="{{ STATIC_URL }}jquery-2.2.4.min.js"></script>
+<script src="{{ STATIC_URL }}jquery-ui-1.12.1.custom.min.js"></script>
+
+{% if wp_base_url %}
+  <script src="{{wp_base_url}}/seo_base_scripts.js"></script>
+{% else %}
+  {% compress js %}
+      <script src="{% static "bundle/seo_base_scripts.js" %}"></script>
+  {% endcompress %}
+{% endif %}
 
 {% if site_config.use_secure_blocks %}
-    <script defer>
+    <script>
       var pager_num_items = {{ site_config.num_subnav_items_to_show }};
       var parent_site_url = "{% if testing_host_prefix %}http://{% else %}https://{% endif %}{{ secure_blocks_domain.domain }}";
       $(document).on("ready", function() {
@@ -180,7 +179,7 @@
 {% endif %}
 
 {% if "network" in site_tags %}
-    <script defer>
+    <script>
         var site_name = "{{ site_name }}";
         var ABSOLUTE_URL = "{{ ABSOLUTE_URL }}",
             impersonating = {% if request.impersonator %}true{% else %}false{% endif %};

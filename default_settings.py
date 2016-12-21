@@ -226,6 +226,10 @@ CELERY_ROUTES = {
         'queue': 'priority',
         'routing_key': 'priority.requeue_failures'
     },
+    'tasks.check_total_throughput': {
+        'queue': 'priority',
+        'routing_key': 'priority.check_total_throughput'
+    },
 }
 CELERYBEAT_SCHEDULE = {
     'weekly-partner-library-update': {
@@ -255,6 +259,10 @@ CELERYBEAT_SCHEDULE = {
     'requeue-failed-tasks': {
         'task': 'tasks.requeue_failures',
         'schedule': crontab(hour=7, minute=5)
+    },
+    'check-total-throughput': {
+        'task': 'tasks.check_total_throughput',
+        'schedule': crontab(hour=7, minute=15)
     },
     'tasks.clean_import_records': {
         'task': 'tasks.clean_import_records',

@@ -159,7 +159,7 @@ export default handleActions({
     }
 
     if (!Object.keys(admins).length) {
-      errors.push('Each company must have at leat one user assigned to the ' +
+      errors.push('Each company must have at least one user assigned to the ' +
                   'Admin role.');
     }
 

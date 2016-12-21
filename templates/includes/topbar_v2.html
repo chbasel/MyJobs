@@ -9,7 +9,7 @@
             <section class="navbar-left left-logo">
                 <div class="jobs-logo">
                     <a id="anchor-logo" class="my-jobs-logo" href="http://www.my.jobs/">
-                        <span class="header-logo-text"><strong>.jobs</strong></span>
+                        <img src="{{ STATIC_URL }}svg/topbar-dotjobs-logo.svg" alt="dot jobs logo">
                     </a>
                     {% get_ms_name as last_microsite_name %}
                     {% if current_microsite_name or last_microsite_name %}
@@ -116,4 +116,4 @@
     </script>
 {% endif %}
 
-<script defer src="{% static "topbar_v2-181-27.js" %}"></script>
+<script defer src="{% static "topbar_v2-183-9.js" %}"></script>

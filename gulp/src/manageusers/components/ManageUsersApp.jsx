@@ -94,6 +94,7 @@ export class ManageUsersApp extends React.Component {
     }
 
     dispatch(markPageLoadingAction(false));
+    this.callRolesAPI();
   }
 
   async callRolesAPI() {
