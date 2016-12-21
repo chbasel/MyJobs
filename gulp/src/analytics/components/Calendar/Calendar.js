@@ -79,16 +79,14 @@ class Calendar extends Component {
   }
   applyCustomRange() {
     const {dispatch, analytics} = this.props;
-    console.log(analytics);
-    const startDate = (analytics.startMonth + 1) + '/' + analytics.startDay + '/' + analytics.startYear;
-    const endDate = (analytics.endMonth + 1) + '/' + analytics.endDay + '/' + analytics.endYear;
+    const startDate = `${analytics.startMonth + 1}/${analytics.startDay}/${analytics.startYear}`;
+    const endDate = `${analytics.endMonth + 1}/${analytics.endDay}/${analytics.endYear}`;
     const activeMainDimension = analytics.activePrimaryDimension;
     const activeFilters = analytics.activeFilters;
     dispatch(doSetCustomRange(startDate, endDate, activeMainDimension, activeFilters));
   }
   render() {
     const {analytics, showCalendarRangePicker, hideCalendarRangePicker, onMouseDown, onMouseUp} = this.props;
-    console.log(analytics);
     const endDay = analytics.endDay;
     const endMonth = analytics.endMonth;
     const endYear = analytics.endYear;

@@ -1,5 +1,6 @@
 import {createAction} from 'redux-actions';
 import {markNavLoadingAction} from '../../common/actions/loading-actions';
+import {errorAction} from '../../common/actions/error-actions';
 
 export const setSelectedEndMonth = createAction('SET_SELECTED_END_MONTH');
 export const setSelectedEndYear = createAction('SET_SELECTED_END_YEAR');
@@ -15,7 +16,11 @@ export const setCustomRange = createAction('SET_CUSTOM_RANGE');
  */
 export function doSetSelectedEndMonth(month) {
   return async(dispatch) => {
-    dispatch(setSelectedEndMonth(month));
+    try {
+      dispatch(setSelectedEndMonth(month));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
   };
 }
 /**
@@ -23,7 +28,11 @@ export function doSetSelectedEndMonth(month) {
  */
 export function doSetSelectedStartMonth(month) {
   return async(dispatch) => {
-    dispatch(setSelectedStartMonth(month));
+    try {
+      dispatch(setSelectedStartMonth(month));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
   };
 }
 /**
@@ -31,7 +40,11 @@ export function doSetSelectedStartMonth(month) {
  */
 export function doSetSelectedEndYear(year) {
   return async(dispatch) => {
-    dispatch(setSelectedEndYear(year));
+    try {
+      dispatch(setSelectedEndYear(year));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
   };
 }
 /**
@@ -39,7 +52,11 @@ export function doSetSelectedEndYear(year) {
  */
 export function doSetSelectedStartYear(year) {
   return async(dispatch) => {
-    dispatch(setSelectedStartYear(year));
+    try {
+      dispatch(setSelectedStartYear(year));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
   };
 }
 /**
@@ -47,8 +64,12 @@ export function doSetSelectedStartYear(year) {
  */
 export function doSetSelectedEndDay(day) {
   return async(dispatch) => {
-    const currentDay = day.day;
-    dispatch(setSelectedEndDay(currentDay));
+    try {
+      const currentDay = day.day;
+      dispatch(setSelectedEndDay(currentDay));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
   };
 }
 /**
@@ -56,8 +77,12 @@ export function doSetSelectedEndDay(day) {
  */
 export function doSetSelectedStartDay(day) {
   return async(dispatch) => {
-    const currentDay = day.day;
-    dispatch(setSelectedStartDay(currentDay));
+    try {
+      const currentDay = day.day;
+      dispatch(setSelectedStartDay(currentDay));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
   };
 }
 /**
@@ -65,20 +90,24 @@ export function doSetSelectedStartDay(day) {
  */
 export function doSetSelectedRange(start, end, mainDimension, activeFilters) {
   return async(dispatch, _, {api}) => {
-    dispatch(markNavLoadingAction(true));
-    const currentStartRange = start;
-    const currentEndRange = end;
-    const currentDimension = mainDimension;
-    const currentFilters = activeFilters;
-    const rangeData = await api.getDateRangeData(currentStartRange, currentEndRange, currentDimension, currentFilters);
-    // Creating object to send to reducer with date range data and start and end dates
-    const updatedRangeData = {
-      data: rangeData,
-      startDate: start,
-      endDate: end,
-    };
-    dispatch(setSelectedRange(updatedRangeData));
-    dispatch(markNavLoadingAction(false));
+    try {
+      dispatch(markNavLoadingAction(true));
+      const currentStartRange = start;
+      const currentEndRange = end;
+      const currentDimension = mainDimension;
+      const currentFilters = activeFilters;
+      const rangeData = await api.getDateRangeData(currentStartRange, currentEndRange, currentDimension, currentFilters);
+      // Creating object to send to reducer with date range data and start and end dates
+      const updatedRangeData = {
+        data: rangeData,
+        startDate: start,
+        endDate: end,
+      };
+      dispatch(setSelectedRange(updatedRangeData));
+      dispatch(markNavLoadingAction(false));
+    } catch (err) {
+      dispatch(errorAction(err.message));
+    }
   };
 }
 /**
@@ -86,19 +115,23 @@ export function doSetSelectedRange(start, end, mainDimension, activeFilters) {
  */
 export function doSetCustomRange(start, end, mainDimension, activeFilters) {
   return async(dispatch, _, {api}) => {
-    dispatch(markNavLoadingAction(true));
-    const currentStartRange = start;
-    const currentEndRange = end;
-    const currentDimension = mainDimension;
-    const currentFilters = activeFilters;
-    const rangeData = await api.customDateRangeData(currentStartRange, currentEndRange, currentDimension, currentFilters);
-    // Creating object to send to reducer with date range data and start and end dates
-    const updatedRangeData = {
-      data: rangeData,
-      startDate: start,
-      endDate: end,
-    };
-    dispatch(setCustomRange(updatedRangeData));
-    dispatch(markNavLoadingAction(false));
+    try {
+      dispatch(markNavLoadingAction(true));
+      const currentStartRange = start;
+      const currentEndRange = end;
+      const currentDimension = mainDimension;
+      const currentFilters = activeFilters;
+      const rangeData = await api.customDateRangeData(currentStartRange, currentEndRange, currentDimension, currentFilters);
+      // Creating object to send to reducer with date range data and start and end dates
+      const updatedRangeData = {
+        data: rangeData,
+        startDate: start,
+        endDate: end,
+      };
+      dispatch(setCustomRange(updatedRangeData));
+      dispatch(markNavLoadingAction(false));
+    } catch (err) {
+      dispatch(errorAction(err.message));
+    }
   };
 }
