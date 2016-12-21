@@ -10,6 +10,7 @@ import {doSetSelectedStartDay} from '../../actions/calendar-actions';
 import {doSetSelectedRange} from '../../actions/calendar-actions';
 import {doSetCustomRange} from '../../actions/calendar-actions';
 import CalendarPanel from 'common/ui/CalendarPanel';
+import HelpText from 'common/ui/HelpText';
 import RangeSelection from './RangeSelection';
 
 class Calendar extends Component {
@@ -18,6 +19,7 @@ class Calendar extends Component {
 
     this.state = {
       showCalendar: false,
+      errorMessage: false,
     };
   }
   setRangeSelection(range) {
@@ -85,13 +87,21 @@ class Calendar extends Component {
     const {dispatch, analytics, hideCalendarRangePicker} = this.props;
     const startDate = `${analytics.startMonth + 1}/${analytics.startDay}/${analytics.startYear}`;
     const endDate = `${analytics.endMonth + 1}/${analytics.endDay}/${analytics.endYear}`;
-    const activeMainDimension = analytics.activePrimaryDimension;
-    const activeFilters = analytics.activeFilters;
-    dispatch(doSetCustomRange(startDate, endDate, activeMainDimension, activeFilters));
-    this.setState({
-      showCalendar: false,
-    });
-    hideCalendarRangePicker();
+    if (Date.parse(startDate) < Date.parse(endDate)) {
+      const activeMainDimension = analytics.activePrimaryDimension;
+      const activeFilters = analytics.activeFilters;
+      dispatch(doSetCustomRange(startDate, endDate, activeMainDimension, activeFilters));
+      this.setState({
+        showCalendar: false,
+        errorMessage: false,
+      });
+      hideCalendarRangePicker();
+    } else {
+      this.setState({
+        showCalendar: true,
+        errorMessage: true,
+      });
+    }
   }
   render() {
     const {analytics, showCalendarRangePicker, hideCalendarRangePicker, onMouseDown, onMouseUp} = this.props;
@@ -101,6 +111,7 @@ class Calendar extends Component {
     const startDay = analytics.startDay;
     const startMonth = analytics.startMonth;
     const startYear = analytics.startYear;
+    const errorMessage = `INVALID DATE RANGE: Start Date must be before End Date`;
 
     const startCalendar = ( <CalendarPanel
                       year={startYear}
@@ -125,6 +136,7 @@ class Calendar extends Component {
         <ul>
           <li className="calendar-pick full-calendar">
             <div className={this.state.showCalendar ? 'show-calendar' : 'hide-calendar'}>
+              {this.state.errorMessage ? <HelpText message={errorMessage}/> : ''}
               <div className="start-calendar">
                 <p className="date-label">Start Date</p>
                 {startCalendar}
