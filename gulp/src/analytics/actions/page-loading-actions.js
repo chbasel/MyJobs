@@ -1,5 +1,6 @@
 import {createAction} from 'redux-actions';
 import {markPageLoadingAction} from '../../common/actions/loading-actions';
+import {errorAction} from '../../common/actions/error-actions';
 
 export const setPageData = createAction('SET_PAGE_DATA');
 export const setPrimaryDimensions = createAction('SET_PRIMARY_DIMENSIONS');
@@ -17,29 +18,33 @@ export const setCurrentStartDay = createAction('SET_CURRENT_START_DAY');
  */
 export function doGetPageData(start, end, currentEndMonth, currentEndDay, currentEndYear, currentStartMonth, currentStartDay, currentStartYear) {
   return async (dispatch, _, {api}) => {
-    dispatch(markPageLoadingAction(true));
-    const rawPageData = await api.getInitialPageData(start, end);
-    const splitEnd = end.split(' ')[0];
-    const splitStart = start.split(' ')[0];
-    const range = splitStart + ' - ' + splitEnd;
-    // Creating object of data coming back from the API along with the starting and ending date to send to reducer
-    const allLoadData = {
-      startDate: start,
-      endDate: end,
-      pageData: rawPageData,
-      loadRange: range,
-    };
-    const dimensionData = await api.getPrimaryDimensions();
-    const reportType = await api.getStartingPointReport();
-    dispatch(setPageData(allLoadData));
-    dispatch(setCurrentEndMonth(currentEndMonth));
-    dispatch(setCurrentEndYear(currentEndYear));
-    dispatch(setCurrentEndDay(currentEndDay));
-    dispatch(setCurrentStartMonth(currentStartMonth));
-    dispatch(setCurrentStartYear(currentStartYear));
-    dispatch(setCurrentStartDay(currentStartDay));
-    dispatch(setPrimaryDimensions(dimensionData));
-    dispatch(storeInitialReport(reportType));
-    dispatch(markPageLoadingAction(false));
+    try {
+      dispatch(markPageLoadingAction(true));
+      const rawPageData = await api.getInitialPageData(start, end);
+      const splitEnd = end.split(' ')[0];
+      const splitStart = start.split(' ')[0];
+      const range = splitStart + ' - ' + splitEnd;
+      // Creating object of data coming back from the API along with the starting and ending date to send to reducer
+      const allLoadData = {
+        startDate: start,
+        endDate: end,
+        pageData: rawPageData,
+        loadRange: range,
+      };
+      const dimensionData = await api.getPrimaryDimensions();
+      const reportType = await api.getStartingPointReport();
+      dispatch(setPageData(allLoadData));
+      dispatch(setCurrentEndMonth(currentEndMonth));
+      dispatch(setCurrentEndYear(currentEndYear));
+      dispatch(setCurrentEndDay(currentEndDay));
+      dispatch(setCurrentStartMonth(currentStartMonth));
+      dispatch(setCurrentStartYear(currentStartYear));
+      dispatch(setCurrentStartDay(currentStartDay));
+      dispatch(setPrimaryDimensions(dimensionData));
+      dispatch(storeInitialReport(reportType));
+      dispatch(markPageLoadingAction(false));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
   };
 }

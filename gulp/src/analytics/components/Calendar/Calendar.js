@@ -32,7 +32,6 @@ class Calendar extends Component {
         activeFilters = nav.activeFilters;
       }
     });
-    console.log(analytics);
     const activeMainDimension = analytics.activePrimaryDimension;
     // const activeFilters = analytics.activeFilters;
     dispatch(doSetSelectedRange(startRange, endRange, activeMainDimension, activeFilters));
