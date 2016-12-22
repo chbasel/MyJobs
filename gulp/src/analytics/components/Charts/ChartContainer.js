@@ -29,11 +29,7 @@ class ChartContainer extends Component {
       chartDisplay = <USAMap width={1920} height={600} scale={1100} chartData={chartData} />;
       break;
     case 'string':
-      if (dataPresent.length < 5) {
-        chartDisplay = <NoResults type="div" errorMessage="No charts found" helpErrorMessage={helpError}/>;
-      } else {
-        chartDisplay = <SimpleBarChart width={600} height={250} chartData={chartData} />;
-      }
+      chartDisplay = <SimpleBarChart width={600} height={250} chartData={chartData} />;
       break;
     default:
       chartDisplay = <NoResults type="div" errorMessage="No charts found" helpErrorMessage={helpError}/>;
