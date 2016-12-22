@@ -18,7 +18,7 @@ class RangeSelection extends Component {
     };
   }
   render() {
-    const {setRange, showCustomRange, cancelSelection} = this.props;
+    const {setRange, showCustomRange, cancelSelection, applySelection} = this.props;
     const generateRanges = this.state.ranges.map((range, i) => {
       return (
         <li key={i} className="range" onClick={() => setRange(range.date)}>{range.name}</li>
@@ -29,7 +29,7 @@ class RangeSelection extends Component {
         <ul className="range-selections">
           {generateRanges}
           <li onClick={() => showCustomRange()} className="range">Custom Range</li>
-          <li className="apply-cancel"><button className="range-btn apply-range">APPLY</button><button onClick={cancelSelection} className="range-btn cancel-range">CANCEL</button></li>
+          <li className="apply-cancel"><button onClick={applySelection} className="range-btn apply-range">APPLY</button><button onClick={cancelSelection} className="range-btn cancel-range">CANCEL</button></li>
         </ul>
       </div>
     );
@@ -49,6 +49,10 @@ RangeSelection.propTypes = {
    * Closes the calendar and cancels the date change
    */
   cancelSelection: React.PropTypes.func,
+  /**
+   * Applies the current range from the custom calendar selection
+   */
+  applySelection: React.PropTypes.func,
 };
 
 export default RangeSelection;

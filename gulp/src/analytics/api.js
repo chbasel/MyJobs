@@ -49,7 +49,7 @@ export default class Api {
     };
     return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(mainDimensionDataRequest)});
   }
-  // Get the date range data selected from the Calendar
+  // Get the date range data selected from the Quick Range Selections
   async getDateRangeData(start, end, mainDimension, activeFilters) {
     const setDateRangeDataRequest = {
       'date_start': start,
@@ -58,5 +58,15 @@ export default class Api {
       'report': mainDimension,
     };
     return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(setDateRangeDataRequest)});
+  }
+  // Get the custom date range selected from the Range Calendars
+  async customDateRangeData(start, end, mainDimension, activeFilters) {
+    const setCustomDateRangeDataRequest = {
+      'date_start': start + ' 00:00:00',
+      'date_end': end + ' 23:59:59',
+      'active_filters': activeFilters,
+      'report': mainDimension,
+    };
+    return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(setCustomDateRangeDataRequest)});
   }
 }

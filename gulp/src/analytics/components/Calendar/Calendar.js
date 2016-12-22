@@ -1,11 +1,16 @@
 import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
-import {doSetSelectedMonth} from '../../actions/calendar-actions';
-import {doSetSelectedYear} from '../../actions/calendar-actions';
-import {doSetSelectedDay} from '../../actions/calendar-actions';
+import {doSetSelectedEndMonth} from '../../actions/calendar-actions';
+import {doSetSelectedEndYear} from '../../actions/calendar-actions';
+import {doSetSelectedEndDay} from '../../actions/calendar-actions';
+import {doSetSelectedStartMonth} from '../../actions/calendar-actions';
+import {doSetSelectedStartYear} from '../../actions/calendar-actions';
+import {doSetSelectedStartDay} from '../../actions/calendar-actions';
 import {doSetSelectedRange} from '../../actions/calendar-actions';
+import {doSetCustomRange} from '../../actions/calendar-actions';
 import CalendarPanel from 'common/ui/CalendarPanel';
+import HelpText from 'common/ui/HelpText';
 import RangeSelection from './RangeSelection';
 
 class Calendar extends Component {
@@ -14,29 +19,43 @@ class Calendar extends Component {
 
     this.state = {
       showCalendar: false,
+      errorMessage: false,
     };
   }
   setRangeSelection(range) {
-    const {dispatch, analytics} = this.props;
+    const {dispatch, analytics, hideCalendarRangePicker} = this.props;
     const startRange = range[0];
     const endRange = range[1];
     const activeMainDimension = analytics.activePrimaryDimension;
     const activeFilters = analytics.activeFilters;
     dispatch(doSetSelectedRange(startRange, endRange, activeMainDimension, activeFilters));
+    this.setState({
+      showCalendar: false,
+    });
+    hideCalendarRangePicker();
   }
   showCalendar() {
     this.setState({
       showCalendar: true,
     });
   }
-  updateMonth(month) {
+  updateStartMonth(month) {
     const updatedMonth = (month - 1);
     const {dispatch} = this.props;
-    dispatch(doSetSelectedMonth(updatedMonth));
+    dispatch(doSetSelectedStartMonth(updatedMonth));
   }
-  updateYear(year) {
+  updateStartYear(year) {
     const {dispatch} = this.props;
-    dispatch(doSetSelectedYear(year));
+    dispatch(doSetSelectedStartYear(year));
+  }
+  updateEndMonth(month) {
+    const updatedMonth = (month - 1);
+    const {dispatch} = this.props;
+    dispatch(doSetSelectedEndMonth(updatedMonth));
+  }
+  updateEndYear(year) {
+    const {dispatch} = this.props;
+    dispatch(doSetSelectedEndYear(year));
   }
   generateYearChoices() {
     const now = new Date();
@@ -53,23 +72,60 @@ class Calendar extends Component {
     }
     return yearChoices;
   }
-  daySelected(day) {
+  endDaySelected(day) {
     const {dispatch} = this.props;
-    dispatch(doSetSelectedDay(day));
+    dispatch(doSetSelectedEndDay(day));
+  }
+  startDaySelected(day) {
+    const {dispatch} = this.props;
+    dispatch(doSetSelectedStartDay(day));
+  }
+  applyCustomRange() {
+    const {dispatch, analytics, hideCalendarRangePicker} = this.props;
+    const startDate = `${analytics.startMonth + 1}/${analytics.startDay}/${analytics.startYear}`;
+    const endDate = `${analytics.endMonth + 1}/${analytics.endDay}/${analytics.endYear}`;
+    if (Date.parse(startDate) < Date.parse(endDate)) {
+      const activeMainDimension = analytics.activePrimaryDimension;
+      const activeFilters = analytics.activeFilters;
+      dispatch(doSetCustomRange(startDate, endDate, activeMainDimension, activeFilters));
+      this.setState({
+        showCalendar: false,
+        errorMessage: false,
+      });
+      hideCalendarRangePicker();
+    } else {
+      this.setState({
+        showCalendar: true,
+        errorMessage: true,
+      });
+    }
   }
   render() {
     const {analytics, showCalendarRangePicker, hideCalendarRangePicker, onMouseDown, onMouseUp} = this.props;
-    const day = analytics.day;
-    const month = analytics.month;
-    const year = analytics.year;
+    const endDay = analytics.endDay;
+    const endMonth = analytics.endMonth;
+    const endYear = analytics.endYear;
+    const startDay = analytics.startDay;
+    const startMonth = analytics.startMonth;
+    const startYear = analytics.startYear;
+    const errorMessage = `INVALID DATE RANGE: Start Date must be before End Date`;
 
-    const calendar = ( <CalendarPanel
-                      year={year}
-                      month={month}
-                      day={day}
-                      onYearChange={y => this.updateYear(y)}
-                      onMonthChange={m => this.updateMonth(m)}
-                      onSelect={d => this.daySelected(d)}
+    const startCalendar = ( <CalendarPanel
+                      year={startYear}
+                      month={startMonth}
+                      day={startDay}
+                      onYearChange={y => this.updateStartYear(y)}
+                      onMonthChange={m => this.updateStartMonth(m)}
+                      onSelect={d => this.startDaySelected(d)}
+                      yearChoices={this.generateYearChoices()}
+                    />);
+    const endCalendar = ( <CalendarPanel
+                      year={endYear}
+                      month={endMonth}
+                      day={endDay}
+                      onYearChange={y => this.updateEndYear(y)}
+                      onMonthChange={m => this.updateEndMonth(m)}
+                      onSelect={d => this.endDaySelected(d)}
                       yearChoices={this.generateYearChoices()}
                     />);
     return (
@@ -77,9 +133,17 @@ class Calendar extends Component {
         <ul>
           <li className="calendar-pick full-calendar">
             <div className={this.state.showCalendar ? 'show-calendar' : 'hide-calendar'}>
-              {calendar}
+              {this.state.errorMessage ? <HelpText message={errorMessage}/> : ''}
+              <div className="start-calendar">
+                <p className="date-label">Start Date</p>
+                {startCalendar}
+              </div>
+              <div className="end-calendar">
+                <p className="date-label">End Date</p>
+                {endCalendar}
+              </div>
             </div>
-            <RangeSelection cancelSelection={hideCalendarRangePicker} showCalendar={this.showCalendar.bind(this)} showCustomRange={() => this.showCalendar()} setRange={y => this.setRangeSelection(y)}/>
+            <RangeSelection applySelection={() => this.applyCustomRange()} cancelSelection={hideCalendarRangePicker} showCalendar={this.showCalendar.bind(this)} showCustomRange={() => this.showCalendar()} setRange={y => this.setRangeSelection(y)}/>
           </li>
         </ul>
       </div>

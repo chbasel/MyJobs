@@ -1,36 +1,88 @@
 import {createAction} from 'redux-actions';
 import {markNavLoadingAction} from '../../common/actions/loading-actions';
+import {errorAction} from '../../common/actions/error-actions';
 
-export const setSelectedMonth = createAction('SET_SELECTED_MONTH');
-export const setSelectedYear = createAction('SET_SELECTED_YEAR');
-export const setSelectedDay = createAction('SET_SELECTED_DAY');
+export const setSelectedEndMonth = createAction('SET_SELECTED_END_MONTH');
+export const setSelectedEndYear = createAction('SET_SELECTED_END_YEAR');
+export const setSelectedEndDay = createAction('SET_SELECTED_END_DAY');
+export const setSelectedStartMonth = createAction('SET_SELECTED_START_MONTH');
+export const setSelectedStartYear = createAction('SET_SELECTED_START_YEAR');
+export const setSelectedStartDay = createAction('SET_SELECTED_START_DAY');
 export const setSelectedRange = createAction('SET_SELECTED_RANGE');
+export const setCustomRange = createAction('SET_CUSTOM_RANGE');
 
 /**
- * This action sets the current month selected from the Calendar ONLY
+ * This action sets the current month selected from the  Ending Date Calendar ONLY
  */
-export function doSetSelectedMonth(month) {
+export function doSetSelectedEndMonth(month) {
   return async(dispatch) => {
-    const currentMonth = month;
-    dispatch(setSelectedMonth(currentMonth));
+    try {
+      dispatch(setSelectedEndMonth(month));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
   };
 }
 /**
- * This action sets the current year selected from the Calendar ONLY
+ * This action sets the current month selected from the Starting Date Calendar ONLY
  */
-export function doSetSelectedYear(year) {
+export function doSetSelectedStartMonth(month) {
   return async(dispatch) => {
-    const currentYear = year;
-    dispatch(setSelectedYear(currentYear));
+    try {
+      dispatch(setSelectedStartMonth(month));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
   };
 }
 /**
- * This action sets the current day selected from the Calendar ONLY
+ * This action sets the current year selected from the Ending Date Calendar ONLY
  */
-export function doSetSelectedDay(day) {
+export function doSetSelectedEndYear(year) {
   return async(dispatch) => {
-    const currentDay = day.day;
-    dispatch(setSelectedDay(currentDay));
+    try {
+      dispatch(setSelectedEndYear(year));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
+  };
+}
+/**
+ * This action sets the current year selected from the Starting Date Calendar ONLY
+ */
+export function doSetSelectedStartYear(year) {
+  return async(dispatch) => {
+    try {
+      dispatch(setSelectedStartYear(year));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
+  };
+}
+/**
+ * This action sets the current day selected from the  Ending Date Calendar ONLY
+ */
+export function doSetSelectedEndDay(day) {
+  return async(dispatch) => {
+    try {
+      const currentDay = day.day;
+      dispatch(setSelectedEndDay(currentDay));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
+  };
+}
+/**
+ * This action sets the current day selected from the Starting Date Calendar ONLY
+ */
+export function doSetSelectedStartDay(day) {
+  return async(dispatch) => {
+    try {
+      const currentDay = day.day;
+      dispatch(setSelectedStartDay(currentDay));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
   };
 }
 /**
@@ -38,19 +90,48 @@ export function doSetSelectedDay(day) {
  */
 export function doSetSelectedRange(start, end, mainDimension, activeFilters) {
   return async(dispatch, _, {api}) => {
-    dispatch(markNavLoadingAction(true));
-    const currentStartRange = start;
-    const currentEndRange = end;
-    const currentDimension = mainDimension;
-    const currentFilters = activeFilters;
-    const rangeData = await api.getDateRangeData(currentStartRange, currentEndRange, currentDimension, currentFilters);
-    // Creating object to send to reducer with date range data and start and end dates
-    const updatedRangeData = {
-      data: rangeData,
-      startDate: start,
-      endDate: end,
-    };
-    dispatch(setSelectedRange(updatedRangeData));
-    dispatch(markNavLoadingAction(false));
+    try {
+      dispatch(markNavLoadingAction(true));
+      const currentStartRange = start;
+      const currentEndRange = end;
+      const currentDimension = mainDimension;
+      const currentFilters = activeFilters;
+      const rangeData = await api.getDateRangeData(currentStartRange, currentEndRange, currentDimension, currentFilters);
+      // Creating object to send to reducer with date range data and start and end dates
+      const updatedRangeData = {
+        data: rangeData,
+        startDate: start,
+        endDate: end,
+      };
+      dispatch(setSelectedRange(updatedRangeData));
+      dispatch(markNavLoadingAction(false));
+    } catch (err) {
+      dispatch(errorAction(err.message));
+    }
+  };
+}
+/**
+ * This action sets the custom range selected from the Range Calendars
+ */
+export function doSetCustomRange(start, end, mainDimension, activeFilters) {
+  return async(dispatch, _, {api}) => {
+    try {
+      dispatch(markNavLoadingAction(true));
+      const currentStartRange = start;
+      const currentEndRange = end;
+      const currentDimension = mainDimension;
+      const currentFilters = activeFilters;
+      const rangeData = await api.customDateRangeData(currentStartRange, currentEndRange, currentDimension, currentFilters);
+      // Creating object to send to reducer with date range data and start and end dates
+      const updatedRangeData = {
+        data: rangeData,
+        startDate: start,
+        endDate: end,
+      };
+      dispatch(setCustomRange(updatedRangeData));
+      dispatch(markNavLoadingAction(false));
+    } catch (err) {
+      dispatch(errorAction(err.message));
+    }
   };
 }
