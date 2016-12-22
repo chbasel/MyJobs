@@ -13,32 +13,26 @@ class ChartContainer extends Component {
   }
   render() {
     const {chartData} = this.props;
-    const chartType = chartData.PageLoadData.column_names[0].key;
+    const chartType = chartData.PageLoadData.chart_type;
     // Grab the row data to check and make sure the data coming back isn't empty
     const dataPresent = chartData.PageLoadData.rows;
-    const helpError = 'We couldn\'t find any results using the filters applied. Please change your criteria.';
+    const helpError = 'We couldn\'t find any charts using the filters applied.';
     let chartDisplay;
     switch (chartType) {
-    case 'country':
-      chartDisplay = <WorldMap width={1920} height={800} chartData={chartData} />;
+    case 'map:world':
+      chartDisplay = <WorldMap width={1920} height={600} scale={115} chartData={chartData} />;
       break;
-    case 'state':
-      chartDisplay = <USAMap width={1920} height={700} chartData={chartData} />;
+    case 'map:nation':
+      chartDisplay = <USAMap width={1920} height={600} scale={1100} chartData={chartData} />;
       break;
-    case 'city':
-      chartDisplay = <USAMap width={1920} height={700} chartData={chartData} />;
+    case 'map:state':
+      chartDisplay = <USAMap width={1920} height={600} scale={1100} chartData={chartData} />;
       break;
-    case 'found_on':
-      chartDisplay = <SimpleBarChart chartData={chartData} />;
-      break;
-    case 'title':
-      chartDisplay = <SimpleBarChart chartData={chartData} />;
-      break;
-    case 'job_guid':
-      chartDisplay = <SimpleBarChart chartData={chartData} />;
+    case 'string':
+      chartDisplay = <SimpleBarChart width={600} height={250} chartData={chartData} />;
       break;
     default:
-      chartDisplay = <WorldMap chartData={chartData} />;
+      chartDisplay = <NoResults type="div" errorMessage="No charts found" helpErrorMessage={helpError}/>;
     }
     return (
         <div id={'chart_tab_' + chartData.navId} className="charts">
@@ -52,7 +46,7 @@ class ChartContainer extends Component {
           <hr/>
             <Row>
               <Col md={12}>
-                {isEmpty(dataPresent) ? <NoResults type="div" errorMessage="No results found" helpErrorMessage={helpError}/> : chartDisplay}
+                {isEmpty(dataPresent) ? <NoResults type="div" errorMessage="No charts found" helpErrorMessage={helpError}/> : chartDisplay}
               </Col>
             </Row>
         </div>

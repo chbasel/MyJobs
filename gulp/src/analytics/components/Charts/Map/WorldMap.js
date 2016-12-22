@@ -3,6 +3,7 @@ import {Component} from 'react';
 import d3 from 'd3';
 import Paths from '../Common/Paths';
 import ToolTip from '../Common/ToolTip';
+// import Legend from '../Common/Legend';
 import mapData from 'common/resources/maps/countries';
 
 class WorldMap extends Component {
@@ -29,15 +30,16 @@ class WorldMap extends Component {
     });
   }
   render() {
-    const {chartData, width, height, margin} = this.props;
+    const {chartData, width, height, margin, scale} = this.props;
     const transform = 'translate(' + margin.left + ',' + margin.top + ')';
-    const projection = d3.geo.mercator().translate([width / 2, height / 2]).scale(155);
+    const projection = d3.geo.mercator().translate([width / 2, height / 2]).scale(scale);
     const path = d3.geo.path().projection(projection);
     const fill = (countryData) => {
       const rowData = chartData.PageLoadData.rows;
+      const color = d3.scale.linear().domain([0, d3.max(rowData, (d) => d.job_views)]).range(['rgb(222,235,247)', 'rgb(90,109,129)', 'rgb(49,130,189)']);
       for (let i = 0; i < rowData.length; i++) {
         if (rowData[i].country === countryData.id) {
-          return '#5A6D81';
+          return color(rowData[i].job_views);
         }
       }
       return '#E6E6E6';
@@ -68,15 +70,32 @@ class WorldMap extends Component {
 }
 
 WorldMap.propTypes = {
+  /**
+   * Type of object representing the data going into the object
+   */
   chartData: React.PropTypes.object.isRequired,
+  /**
+   * Type is a number for the height of the chart
+   */
   height: React.PropTypes.number.isRequired,
+  /**
+   * Type is a number value for the width of the map
+   */
   width: React.PropTypes.number.isRequired,
+  /**
+   * Margin is an object with keys of left, right, top, bottom and values equaling numbers for the margins of the map
+   */
   margin: React.PropTypes.object.isRequired,
+  /**
+   * Scale is a type of number for the scale of the map in terms of how zoomed in or out the display is
+   */
+  scale: React.PropTypes.number.isRequired,
 };
 
 WorldMap.defaultProps = {
-  height: 1200,
+  height: 500,
   width: 1920,
+  scale: 100,
   margin: {top: 50, left: 25, right: 25, bottom: 25},
 };
 

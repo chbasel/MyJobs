@@ -28,6 +28,11 @@ class TableRows extends Component {
     const mod = modHeader.slice(0, 1);
     const getHeaders = newRowData.map((item, i) => {
       const firstCell = mod.map((colData, index) => {
+        if (isEmpty(rowData.PageLoadData.remaining_dimensions)) {
+          return (
+            <td key={index} className="last-filter">{item[colData.key]}</td>
+          );
+        }
         return (
           <td key={index}><a onClick={this.applyFilterResults.bind(this, item[colData.key], colData.key)} href="#">{item[colData.key]}</a></td>
         );
