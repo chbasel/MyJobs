@@ -9,9 +9,12 @@ import {findIndex} from 'lodash-compat';
  *  navFetching is used when there is a new tab being created through filtering or dimension switching
  *  navigation holds the tabs and their independent data
  *  activeFilters stores the current filters for sending back to the API
- *  month stores the current month for when the app boots
- *  day stores the current month for when the app boots
- *  year stores the current month for when the app boots
+ *  startMonth stores the current month for the calendar when the app boots
+ *  startDay stores the current month for the calendar when the app boots
+ *  startYear stores the current month for the calendar when the app boots
+ *  endMonth stores the end month for the calendar when the app boots
+ *  endDay stores the end day for the calendar when the app boots
+ *  endYear stores the end year for the calendar when the app boots
  *  activeReport stores the current report type for sending back to the API
  *  primaryDimensions stores the primary dimensions given back from the API to create the sidebar list
  *  activePrimaryDimension stores the current primary dimension that is actively chosen at that time
@@ -24,9 +27,12 @@ export const initialPageData = {
   navFetching: false,
   navigation: [],
   activeFilters: [],
-  month: '',
-  day: '',
-  year: '',
+  startMonth: '',
+  startDay: '',
+  startYear: '',
+  endMonth: '',
+  endDay: '',
+  endYear: '',
   activeReport: '',
   primaryDimensions: {},
   activePrimaryDimension: '',
@@ -171,46 +177,88 @@ export default handleActions({
       }),
     };
   },
-  'SET_CURRENT_MONTH': (state, action) => {
+  'SET_CURRENT_START_MONTH': (state, action) => {
     const currentMonth = action.payload;
     return {
       ...state,
-      month: currentMonth,
+      startMonth: currentMonth,
     };
   },
-  'SET_CURRENT_YEAR': (state, action) => {
+  'SET_CURRENT_START_YEAR': (state, action) => {
     const currentYear = action.payload;
     return {
       ...state,
-      year: currentYear,
+      startYear: currentYear,
     };
   },
-  'SET_CURRENT_DAY': (state, action) => {
+  'SET_CURRENT_START_DAY': (state, action) => {
     const currentDay = action.payload;
     return {
       ...state,
-      day: currentDay,
+      startDay: currentDay,
     };
   },
-  'SET_SELECTED_MONTH': (state, action) => {
+  'SET_CURRENT_END_MONTH': (state, action) => {
+    const currentMonth = action.payload;
+    return {
+      ...state,
+      endMonth: currentMonth,
+    };
+  },
+  'SET_CURRENT_END_YEAR': (state, action) => {
+    const currentYear = action.payload;
+    return {
+      ...state,
+      endYear: currentYear,
+    };
+  },
+  'SET_CURRENT_END_DAY': (state, action) => {
+    const currentDay = action.payload;
+    return {
+      ...state,
+      endDay: currentDay,
+    };
+  },
+  'SET_SELECTED_END_MONTH': (state, action) => {
     const selectedMonth = action.payload;
     return {
       ...state,
-      month: selectedMonth,
+      endMonth: selectedMonth,
     };
   },
-  'SET_SELECTED_YEAR': (state, action) => {
+  'SET_SELECTED_END_YEAR': (state, action) => {
     const selectedYear = action.payload;
     return {
       ...state,
-      year: selectedYear,
+      endYear: selectedYear,
     };
   },
-  'SET_SELECTED_DAY': (state, action) => {
+  'SET_SELECTED_END_DAY': (state, action) => {
     const selectedDay = action.payload;
     return {
       ...state,
-      day: selectedDay,
+      endDay: selectedDay,
+    };
+  },
+  'SET_SELECTED_START_MONTH': (state, action) => {
+    const selectedMonth = action.payload;
+    return {
+      ...state,
+      startMonth: selectedMonth,
+    };
+  },
+  'SET_SELECTED_START_YEAR': (state, action) => {
+    const selectedYear = action.payload;
+    return {
+      ...state,
+      startYear: selectedYear,
+    };
+  },
+  'SET_SELECTED_START_DAY': (state, action) => {
+    const selectedDay = action.payload;
+    return {
+      ...state,
+      startDay: selectedDay,
     };
   },
   'SET_SELECTED_RANGE': (state, action) => {
@@ -224,6 +272,23 @@ export default handleActions({
             startDate: selectedRangeData.startDate,
             endDate: selectedRangeData.endDate,
             PageLoadData: selectedRangeData.data,
+          };
+        }
+        return nav;
+      }),
+    };
+  },
+  'SET_CUSTOM_RANGE': (state, action) => {
+    const customRangeData = action.payload;
+    return {
+      ...state,
+      navigation: state.navigation.map((nav) => {
+        if (nav.active === true) {
+          return {
+            ...nav,
+            startDate: customRangeData.startDate,
+            endDate: customRangeData.endDate,
+            PageLoadData: customRangeData.data,
           };
         }
         return nav;
