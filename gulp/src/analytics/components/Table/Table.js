@@ -1,6 +1,5 @@
 import React from 'react';
 import {Component} from 'react';
-import TableSearch from './TableSearch';
 
 class Table extends Component {
   render() {
@@ -8,7 +7,6 @@ class Table extends Component {
     return (
       <div id={'table_data_tab_' + tableData.navId} className="table-data">
         <div id={'table_search_tab_' + tableData.navId} className="table-search">
-              <TableSearch searchData={tableData}/>
             </div>
             <div className="clearfix"></div>
         <table id={'data_table_tab_' + tableData.navId} className="title-data rwd-table">
