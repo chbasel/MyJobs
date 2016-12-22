@@ -13,11 +13,14 @@ class AnalyticsApp extends React.Component {
     const endDate = moment().format('MM/DD/YYYY H:mm:ss');
     startDate = startDate.subtract(30, 'days');
     startDate = startDate.format('MM/DD/YYYY');
-    const currentMonth = moment().month();
-    const currentDay = moment().date();
-    const currentYear = moment().year();
+    const currentEndMonth = moment().month();
+    const currentEndDay = moment().date();
+    const currentEndYear = moment().year();
+    const currentStartMonth = moment().month() - 1;
+    const currentStartDay = moment().date() + 1;
+    const currentStartYear = moment().year();
     const {dispatch} = this.props;
-    dispatch(doGetPageData(startDate, endDate, currentMonth, currentDay, currentYear));
+    dispatch(doGetPageData(startDate, endDate, currentEndMonth, currentEndDay, currentEndYear, currentStartMonth, currentStartDay, currentStartYear));
   }
   render() {
     const {analytics} = this.props;
