@@ -26,8 +26,15 @@ class Calendar extends Component {
     const {dispatch, analytics, hideCalendarRangePicker} = this.props;
     const startRange = range[0];
     const endRange = range[1];
+    let activeFilters;
+    analytics.navigation.map((nav) => {
+      if (nav.active) {
+        activeFilters = nav.activeFilters;
+      }
+    });
+    console.log(analytics);
     const activeMainDimension = analytics.activePrimaryDimension;
-    const activeFilters = analytics.activeFilters;
+    // const activeFilters = analytics.activeFilters;
     dispatch(doSetSelectedRange(startRange, endRange, activeMainDimension, activeFilters));
     this.setState({
       showCalendar: false,

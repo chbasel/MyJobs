@@ -1,6 +1,5 @@
 import {createAction} from 'redux-actions';
 import {markNavLoadingAction} from '../../common/actions/loading-actions';
-import {setCurrentRange} from './calendar-actions';
 
 export const setSelectedFilterData = createAction('SET_SELECTED_FILTER_DATA');
 export const storeActiveFilter = createAction('STORE_ACTIVE_FILTER');
@@ -36,6 +35,7 @@ export function doGetSelectedFilterData(tableValue, typeValue) {
         };
       }
     });
+    const tabFilters = getState().pageLoadData.activeFilters;
     const range = getState().pageLoadData.stateCustomRange;
     // Grabbing the current report selected from the state to send to the API
     const currentReport = getState().pageLoadData.activeReport;
@@ -44,6 +44,7 @@ export function doGetSelectedFilterData(tableValue, typeValue) {
     const navFilterData = {
       data: selectedFilterData,
       date: storedDates,
+      tabFilter: tabFilters,
       loadRange: range,
     };
     dispatch(setSelectedFilterData(navFilterData));
