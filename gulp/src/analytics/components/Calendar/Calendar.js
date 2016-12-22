@@ -41,11 +41,8 @@ class Calendar extends Component {
   generateYearChoices() {
     const now = new Date();
     const numberOfYears = 50;
-    let offset = 0;
     // how many years should come before and after the current year
-    const pivot = numberOfYears % 2 === 0 ? numberOfYears - 1 : numberOfYears;
-    offset = Math.floor(pivot / 2);
-    const startYear = now.getFullYear() + offset;
+    const startYear = now.getFullYear();
 
     const yearChoices = [];
     for (let i = 0; i < numberOfYears; i++) {
