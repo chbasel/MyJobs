@@ -19,11 +19,15 @@ export function doGetPageData(start, end, currentEndMonth, currentEndDay, curren
   return async (dispatch, _, {api}) => {
     dispatch(markPageLoadingAction(true));
     const rawPageData = await api.getInitialPageData(start, end);
+    const splitEnd = end.split(' ')[0];
+    const splitStart = start.split(' ')[0];
+    const range = splitStart + ' - ' + splitEnd;
     // Creating object of data coming back from the API along with the starting and ending date to send to reducer
     const allLoadData = {
       startDate: start,
       endDate: end,
       pageData: rawPageData,
+      loadRange: range,
     };
     const dimensionData = await api.getPrimaryDimensions();
     const reportType = await api.getStartingPointReport();

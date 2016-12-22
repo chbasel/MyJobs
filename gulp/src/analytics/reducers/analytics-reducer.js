@@ -33,6 +33,7 @@ export const initialPageData = {
   endMonth: '',
   endDay: '',
   endYear: '',
+  stateCustomRange: '',
   activeReport: '',
   primaryDimensions: {},
   activePrimaryDimension: '',
@@ -65,8 +66,10 @@ export default handleActions({
           startDate: loadData.startDate,
           endDate: loadData.endDate,
           PageLoadData: loadData.pageData,
+          currentDateRange: loadData.loadRange,
         },
       ],
+      stateCustomRange: loadData.loadRange,
     };
   },
   'SET_PRIMARY_DIMENSIONS': (state, action) => {
@@ -120,8 +123,10 @@ export default handleActions({
           startDate: filterData.date.startDate,
           endDate: filterData.date.endDate,
           PageLoadData: filterData.data,
+          currentDateRange: filterData.loadRange,
         },
       ],
+      stateCustomRange: filterData.loadRange,
     };
   },
   'SWITCH_ACTIVE_TAB': (state, action) => {
@@ -142,6 +147,13 @@ export default handleActions({
       }),
     };
   },
+  'SET_CURRENT_RANGE': (state, action) => {
+    const range = action.payload;
+    return {
+      ...state,
+      stateCustomRange: range,
+    };
+  },
   'SWITCH_MAIN_DIMENSION': (state, action) => {
     const mainDimensionData = action.payload;
     return {
@@ -153,9 +165,11 @@ export default handleActions({
           startDate: mainDimensionData.startDate,
           endDate: mainDimensionData.endDate,
           PageLoadData: mainDimensionData.pageData,
+          currentDateRange: mainDimensionData.loadRange,
         },
       ],
       activeFilters: [],
+      stateCustomRange: mainDimensionData.loadRange,
     };
   },
   'SET_MAIN_DIMENSION': (state, action) => {
@@ -272,10 +286,12 @@ export default handleActions({
             startDate: selectedRangeData.startDate,
             endDate: selectedRangeData.endDate,
             PageLoadData: selectedRangeData.data,
+            currentDateRange: selectedRangeData.loadRange,
           };
         }
         return nav;
       }),
+      stateCustomRange: selectedRangeData.loadRange,
     };
   },
   'SET_CUSTOM_RANGE': (state, action) => {
@@ -289,10 +305,12 @@ export default handleActions({
             startDate: customRangeData.startDate,
             endDate: customRangeData.endDate,
             PageLoadData: customRangeData.data,
+            currentDateRange: customRangeData.loadRange,
           };
         }
         return nav;
       }),
+      stateCustomRange: customRangeData.loadRange,
     };
   },
 }, initialPageData);

@@ -2,13 +2,21 @@ import {createAction} from 'redux-actions';
 
 export const switchActiveTab = createAction('SWITCH_ACTIVE_TAB');
 export const removeSelectedTab = createAction('REMOVE_SELECTED_TAB');
+export const setCurrentRange = createAction('SET_CURRENT_RANGE');
 
 /**
  * This action switches the current tab to a tab selected using the tabid
  */
 export function doSwitchActiveTab(tabId) {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     dispatch(switchActiveTab(tabId));
+    let rangeDate;
+    getState().pageLoadData.navigation.map((nav) => {
+      if (nav.active) {
+        rangeDate = nav.currentDateRange;
+      }
+    });
+    dispatch(setCurrentRange(rangeDate));
   };
 }
 
