@@ -346,3 +346,24 @@ class ImpersonateTimeoutMiddleware(ImpersonateMiddleware):
                              self).process_request(request)
             else:
                 return redirect(reverse('impersonate-stop'))
+
+
+class SessionTimeMiddleware(object):
+    """
+    Adds a cookie that tracks the amount of time remaining in a session.
+
+    This allows us to redirect a user to the login page via JavaScript
+    if their session expires.
+
+    """
+    def process_response(self, request, response):
+        session_expiry_age = 0
+
+        if hasattr(request, 'user') and request.user.is_authenticated():
+            session_expiry_age = request.session.get_expiry_age()
+
+        if session_expiry_age and session_expiry_age > 0:
+            response.set_cookie('exp', str(session_expiry_age),
+                                expires=session_expiry_age)
+
+        return response

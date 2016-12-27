@@ -1,10 +1,10 @@
 from django.contrib.auth.models import AnonymousUser
 from django.core.urlresolvers import reverse
+from django.http import HttpResponse
 from django.test.client import RequestFactory
 
 from setup import MyJobsBase
-from middleware import PasswordChangeRedirectMiddleware
-from myjobs.tests.factories import UserFactory
+from middleware import PasswordChangeRedirectMiddleware, SessionTimeMiddleware
 
 
 class RedirectMiddlewareTests(MyJobsBase):
@@ -54,3 +54,37 @@ class RedirectMiddlewareTests(MyJobsBase):
         request.user = AnonymousUser()
         response = self.redirect_middleware.process_request(request)
         self.assertEqual(response.status_code, 403)
+
+
+class SessionTimeMiddlewareTest(MyJobsBase):
+    def setUp(self):
+        super(SessionTimeMiddlewareTest, self).setUp()
+        self.middleware = SessionTimeMiddleware()
+        self.request_factory = RequestFactory()
+        self.response = HttpResponse()
+
+    def test_logged_in_proper_exp_cookie(self):
+        """
+        A logged in user should get a cookie 'exp' that expires at the
+        same time as the session.
+
+        """
+
+        request = self.request_factory.get(reverse('edit_account'))
+        request.user = self.user
+        request.session = self.client.session
+        response = self.middleware.process_response(request, self.response)
+
+        self.assertTrue('exp' in response.cookies)
+        self.assertEqual(response.cookies['exp']['expires'],
+                         self.client.session.get_expiry_age())
+
+    def test_not_logged_in_no_exp_cookie(self):
+        """
+        When there is no logged in user the exp cookie should never get set.
+
+        """
+        request = self.request_factory.get(reverse('edit_account'))
+        response = self.middleware.process_response(request, self.response)
+
+        self.assertFalse('exp' in response.cookies)
