@@ -7,17 +7,11 @@ import {doRemoveSelectedTab} from '../../actions/tab-actions';
 class Tab extends Component {
   constructor(props) {
     super(props);
-
-    this.state = {
-      selected: 1,
-    };
   }
-  activeTab(id) {
+  activeTab(id, event) {
+    event.preventDefault();
     const {dispatch} = this.props;
     dispatch(doSwitchActiveTab(id));
-    this.setState({
-      selected: id,
-    });
   }
   removeSelectedTab(tabId) {
     const {dispatch} = this.props;
@@ -29,10 +23,11 @@ class Tab extends Component {
       return (
         <li
           key={index}
-          className={activeTab}
-          onClick={this.activeTab.bind(this, child.props.id)}>
+          className={activeTab}>
+          <a href="#" onClick={this.activeTab.bind(this, child.props.id)}>
+            {child.props.label}
+          </a>
           <span onClick={this.removeSelectedTab.bind(this, child.props.id)} className="close-tab">X</span>
-          <span>{child.props.label}</span>
         </li>
       );
     }
