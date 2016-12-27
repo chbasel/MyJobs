@@ -2,34 +2,30 @@ import React from 'react';
 import {Component} from 'react';
 import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts';
 
+
 class SimpleBarChart extends Component {
   render() {
     function truncate(length, value) {
       return value.substring(0, length);
     }
+
+    function truncateTick(value) {
+      return truncate(15, value);
+    }
+
     const {chartData, width, height} = this.props;
     const barData = chartData.PageLoadData.rows;
     const xAxis = chartData.PageLoadData.column_names[0].key;
-    const truncatedBarData = [];
-    for (let i = 0; i < barData.length; i++) {
-      truncatedBarData.push({...barData[i]});
-    }
-    truncatedBarData.map((bar) => {
-      for (const key in bar) {
-        if (key === xAxis) {
-          bar[key] = truncate(15, bar[key]);
-        }
-      }
-    });
+
     return (
       <div style={{width: '100%', height: '500'}}>
         <ResponsiveContainer>
           <BarChart
             width={width}
             height={height}
-            data={truncatedBarData}
+            data={barData}
             margin={{top: 5, right: 30, left: 20, bottom: 5}}>
-           <XAxis dataKey={xAxis}/>
+           <XAxis dataKey={xAxis} tickFormatter={truncateTick}/>
            <YAxis/>
            <CartesianGrid strokeDasharray="3 3"/>
            <Tooltip/>
