@@ -12,30 +12,27 @@ class Tab extends Component {
       selected: 1,
     };
   }
-  activeTab(id, event) {
+  activeTab(id) {
     const {dispatch} = this.props;
     dispatch(doSwitchActiveTab(id));
-    event.preventDefault();
     this.setState({
       selected: id,
     });
   }
-  removeSelectedTab(tabId, event) {
-    event.preventDefault();
+  removeSelectedTab(tabId) {
     const {dispatch} = this.props;
     dispatch(doRemoveSelectedTab(tabId));
   }
   _renderTitles() {
     function labels(child, index) {
-      const activeClass = (this.state.selected === child.props.id ? 'active-tab' : '');
+      const activeTab = (child.props.active ? 'tab active-tab' : 'tab');
       return (
-        <li className="tab" key={index}>
-          <a href="#"
-            className={activeClass}
-            onClick={this.activeTab.bind(this, child.props.id)}>
-            {child.props.label}
-          </a>
+        <li
+          key={index}
+          className={activeTab}
+          onClick={this.activeTab.bind(this, child.props.id)}>
           <span onClick={this.removeSelectedTab.bind(this, child.props.id)} className="close-tab">X</span>
+          <span>{child.props.label}</span>
         </li>
       );
     }
