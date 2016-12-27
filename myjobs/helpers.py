@@ -3,6 +3,7 @@ from jira.client import JIRA
 from django.contrib import auth
 from django.core import mail
 from django.core.mail import EmailMessage
+from django.utils.safestring import mark_safe
 
 from secrets import options, my_agent_auth, EMAIL_TO_ADMIN
 
