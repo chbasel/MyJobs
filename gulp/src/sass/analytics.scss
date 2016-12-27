@@ -242,63 +242,19 @@ a {
 }
 
 /*CSS FOR THE TABS*/
-#tabbed {
-  float: left;
-  width: 100%;
-  margin-top: -44px;
-
-  .tab {
-    float: left;
-    display: inline-block;
-    position: relative;
-    padding: 10px 20px;
-    color: #666;
-    font-size: 13px;
-    text-decoration: none;
-    border-top: 1px solid #ddd;
-    border-radius: 5px;
-    margin: 6px -15px 0px 30px;
-    background-color: #eee;
-    cursor: pointer;
-    text-align: center;
-
-    &:before, &:after {
-      content: '';
-      display: block;
-      position: absolute;
-      top: -1px;
-      z-index: 0;
-      height: 100%;
-      width: 15px;
-      background-color: #eee;
-      border: 1px solid #ddd;
-      border-bottom: none;
-    }
-
-    &:before {
-      right: -7px;
-      border-left: none;
-      -moz-transform: skew(27deg, 0deg);
-      -ms-transform: skew(27deg, 0deg);
-      -webkit-transform: skew(27deg, 0deg);
-      transform: skew(27deg, 0deg);
-      border-radius: 0 5px 0 0;
-      box-shadow: 1px 0 0 rgba(0, 0, 0, 0.1), inset -1px 0 0 white;
-    }
-    &:after {
-      left: -7px;
-      border-right: none;
-      -moz-transform: skew(-27deg, 0deg);
-      -ms-transform: skew(-27deg, 0deg);
-      -webkit-transform: skew(-27deg, 0deg);
-      transform: skew(-27deg, 0deg);
-      border-radius: 5px 0 0 0;
-      box-shadow: -1px 0 0 rgba(0, 0, 0, 0.1), inset 1px 0 white;
-    }
-    .tab-label {
-      padding: 10px;
-    }
-  }
+.tab {
+  display: inline-block;
+  padding: 10px 20px;
+  color: #666;
+  font-size: 13px;
+  text-decoration: none;
+  border-top: 1px solid #ddd;
+  border-radius: 5px;
+  margin: 6px -15px 0px 30px;
+  background-color: #eee;
+  cursor: pointer;
+  text-align: center;
+}
   .close-tab {
     top: 7px;
     z-index: 99;
@@ -311,48 +267,15 @@ a {
   .close-tab:hover {
     cursor: pointer;
   }
-  .tab:hover {
-    background-color: #f7f7f7;
-    border-bottom: none;
+  .tab-labels li:first-of-type .close-tab {
+    visibility: hidden;
   }
-  .tab.active-tab {
-    border-bottom: 1px solid #f7f7f7;
-  }
-  .tab:hover:before, .tab:hover:after, .tab.active-tab:before, .tab.active-tab:after {
-    border-bottom-color: #bbb;
-    background-color: #f7f7f7;
-  }
-  .tab.active-tab:before, .tab.active-tab:after {
-    padding-bottom: 1px;
-  }
-  .tab.active-tab{
-    z-index: 2;
-    background: #f7f8f9;
-  }
-  .close-tab + .tab-content {
-    position: relative;
-    z-index: 1;
-    float: right;
-    box-sizing: border-box;
-    width: 100%;
-    margin: 2em 0 0 -100%;
-    padding: 5.5em 0.75em;
-  }
-  .tab.active-tab {
-    position: relative;
-    z-index: 2;
-  }
-  .tab + .close-tab + .tab-content {
+  .tab-panel {
     display: none;
   }
-  .tab.active-tab + .close-tab + .tab-content {
+  .tab-panel.active-panel {
     display: block;
   }
-}
-
-#tabbed div:first-of-type .close-tab {
-  visibility: hidden;
-}
 
 /*CSS FOR THE CALENDAR*/
 

@@ -18,7 +18,7 @@ class SideBar extends Component {
     dispatch(doSwitchMainDimension(mainDimension, startDate, endDate));
   }
   render() {
-    const {analytics, activeMobile} = this.props;
+    const {analytics} = this.props;
     const activeDimension = analytics.activePrimaryDimension;
     const primaryDimensions = analytics.primaryDimensions.dimensionList.reports.map((report, i) => {
       return (
@@ -26,7 +26,7 @@ class SideBar extends Component {
       );
     });
     return (
-      <div id="menu" className={activeMobile ? 'active-mobile' : ''}>
+      <div id="menu">
         <ul className="sidebar-container">
           <li className="side-dimension-header">
             <p className="filter-header">Primary Dimensions</p>

@@ -43,11 +43,11 @@ class Header extends Component {
     });
   }
   render() {
-    const {analytics, toggleMobile} = this.props;
+    const {analytics} = this.props;
     return (
       <div className="tabs-header">
         <nav>
-          <i onClick={toggleMobile} className="open-mobile fa fa-arrow-circle-right" aria-hidden="true"></i>
+          <i className="open-mobile fa fa-arrow-circle-right" aria-hidden="true"></i>
           <ul className="nav navbar-nav navbar-right right-options">
             <li>
               <Button onClick={this.showCalendarRangePicker.bind(this)} className="selected-date-range-btn">
