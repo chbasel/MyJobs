@@ -584,14 +584,23 @@ class PartnerSavedSearch(SavedSearch):
     def save(self, *args, **kwargs):
         new = not hasattr(self, 'id') or not self.id
         if hasattr(self, 'changed_data') and hasattr(self, 'request'):
+            # Pop request and changed_data off so they can be used,
+            # but they don't mess with pickling the saved search
+            # if sending the saved search is necessary.
+            request = self.request
+            delattr(self, 'request')
+
+            changed_data = self.changed_data
+            delattr(self, 'changed_data')
+
             # This save was initiated by a form. Update unsubscriber and send
             # notifications as appropriate.
-            if 'is_active' in self.changed_data and self.pk:
+            if 'is_active' in changed_data and self.pk:
                 if self.is_active:
                     self.unsubscriber = ''
                     self.unsubscribed = False
                 else:
-                    self.unsubscriber = self.request.user.email
+                    self.unsubscriber = request.user.email
                     self.unsubscribed = True
                     self.user.send_opt_out_notifications([self])
         super(PartnerSavedSearch, self).save(*args, **kwargs)
