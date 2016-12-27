@@ -1,18 +1,11 @@
 import React from 'react';
 import {Component} from 'react';
 import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts';
+import RotatedXAxisTick from './RotatedXAxisTick';
 
 
 class SimpleBarChart extends Component {
   render() {
-    function truncate(length, value) {
-      return value.substring(0, length);
-    }
-
-    function truncateTick(value) {
-      return truncate(15, value);
-    }
-
     const {chartData, width, height} = this.props;
     const barData = chartData.PageLoadData.rows;
     const xAxis = chartData.PageLoadData.column_names[0].key;
@@ -24,12 +17,12 @@ class SimpleBarChart extends Component {
             width={width}
             height={height}
             data={barData}
-            margin={{top: 5, right: 30, left: 20, bottom: 5}}>
-           <XAxis dataKey={xAxis} tickFormatter={truncateTick}/>
+            margin={{top: 5, right: 30, left: 20, bottom: 100}}>
+           <XAxis dataKey={xAxis} interval={0} tick={<RotatedXAxisTick />} />
            <YAxis/>
-           <CartesianGrid strokeDasharray="3 3"/>
+           <CartesianGrid strokeDasharray="3 3" />
            <Tooltip/>
-           <Legend />
+           <Legend verticalAlign="top" wrapperStyle={{top: '0px'}} />
            <Bar dataKey="job_views" fill="#5a6d81" />
           </BarChart>
         </ResponsiveContainer>
