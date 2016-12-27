@@ -895,9 +895,12 @@ color: $primary-blue;
          left: -202px;
          z-index: 99;
        }
-       #menu.active{
+       #menu.active-mobile{
          left: 0;
-         width: 100%;
+         -moz-transition: all 0.3s ease;
+         // -o-transition: border 0.3s ease;
+         -webkit-transition: all 0.3s ease;
+         transition: all 0.3s ease;
        }
        #page_content {
          padding-left: 0;
@@ -969,3 +972,15 @@ color: $primary-blue;
 
 
 /*****************************ENDING OF NEW ANALYTICS PAGE CSS*****************/
+
+
+
+
+
+
+
+/*PRACTICE CSS FOR MOBILE*/
+/* Extra Small Devices, Phones */
+@media only screen and (min-width : 320px) {
+
+}

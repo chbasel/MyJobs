@@ -22,7 +22,6 @@ class TabsContainer extends Component {
     return (
       <div id="tabbed">
         {tabs}
-        <TabsPanel/>
       </div>
     );
   }
