@@ -10,6 +10,10 @@ import moment from 'moment';
 class AnalyticsApp extends React.Component {
   constructor() {
     super();
+
+    this.state = {
+      mobileActive: false,
+    };
   }
   componentDidMount() {
     let startDate = moment();
@@ -25,6 +29,16 @@ class AnalyticsApp extends React.Component {
     const {dispatch} = this.props;
     dispatch(doGetPageData(startDate, endDate, currentEndMonth, currentEndDay, currentEndYear, currentStartMonth, currentStartDay, currentStartYear));
   }
+  openMobileMenu() {
+     this.setState({
+       mobileActive: true,
+    });
+  }
+  closeMobileMenu() {
+    this.setState({
+      mobileActive: false,
+    });
+  }
   render() {
     const {analytics} = this.props;
     if (analytics.pageFetching) {
@@ -35,8 +49,8 @@ class AnalyticsApp extends React.Component {
     return (
       <div id="page_wrapper">
           {analytics.navFetching ? <LoadingSpinner/> : ''}
-          <SideBar/>
-          <Header/>
+          <SideBar closeMenu={this.closeMobileMenu.bind(this)} activeMobile={this.state.mobileActive}/>
+          <Header openMenu={this.openMobileMenu.bind(this)}/>
         <div id="page_content">
           <TabsContainer/>
         </div>

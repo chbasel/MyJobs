@@ -847,47 +847,61 @@ color: $primary-blue;
        padding-left: 0px;
 
        #menu {
-         left: -202px;
+         left: -276px;
          z-index: 99;
+         width: 275px;
+         -moz-transition: all 300ms ease;
+         -o-transition: border 300ms ease;
+         -webkit-transition: all 300ms ease;
+         transition: all 300ms ease;
        }
        #menu.active-mobile{
          left: 0;
-         -moz-transition: all 0.3s ease;
-         // -o-transition: border 0.3s ease;
-         -webkit-transition: all 0.3s ease;
-         transition: all 0.3s ease;
+         -moz-transition: all 300ms ease;
+         -o-transition: border 300ms ease;
+         -webkit-transition: all 300ms ease;
+         transition: all 300ms ease;
        }
        #page_content {
          padding-left: 0;
          padding-right: 0;
        }
-      //  .right-options {
-      //    float: right;
-      //    position: relative;
-      //    right: 125px;
-      //    bottom: 5px;
-      //  }
-       .open-mobile {
+       .tabs-header {
+         position: relative;
+       }
+       .calendar-container.active-picker {
+         position: absolute;
+         top: 100%;
+         right: 3%;
+       }
+       #tab_header_navigation {
+         position: relative;
+       }
+       .right-options {
+         position: absolute;
+         top: -10%;
+         left: 18%;
+       }
+       .open-mobile, .close-mobile {
           font-size: 40px;
           margin-top: 10px;
           margin-left: 10px;
           color: $primary-blue;
           cursor: pointer;
        }
+       .close-mobile {
+          position: relative;
+          bottom: 15px;
+          right: 20px;
+          color: $white;
+          font-size: 40px;
+          cursor: pointer;
+          float: right;
+       }
      }
-    //  .tabs-container {
-    //    overflow: auto;
-    //    white-space: nowrap;
-    //  }
-    //  .tab-labels {
-    //    margin-top: 10px;
-    //  }
-    //  .tab {
-    //    padding: 20px 10px;
-    //  }
-    //  .tab a {
-    //    padding: 20px 15px;
-    //  }
+     .tab-labels {
+       margin: 0;
+     }
 
    }
 
