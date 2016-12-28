@@ -97,11 +97,15 @@ export function doSetSelectedRange(start, end, mainDimension, activeFilters) {
       const currentDimension = mainDimension;
       const currentFilters = activeFilters;
       const rangeData = await api.getDateRangeData(currentStartRange, currentEndRange, currentDimension, currentFilters);
+      const splitEnd = end.split(' ')[0];
+      const splitStart = start.split(' ')[0];
+      const range = splitStart + ' - ' + splitEnd;
       // Creating object to send to reducer with date range data and start and end dates
       const updatedRangeData = {
         data: rangeData,
         startDate: start,
         endDate: end,
+        loadRange: range,
       };
       dispatch(setSelectedRange(updatedRangeData));
       dispatch(markNavLoadingAction(false));
@@ -122,11 +126,15 @@ export function doSetCustomRange(start, end, mainDimension, activeFilters) {
       const currentDimension = mainDimension;
       const currentFilters = activeFilters;
       const rangeData = await api.customDateRangeData(currentStartRange, currentEndRange, currentDimension, currentFilters);
+      const splitEnd = end.split(' ')[0];
+      const splitStart = start.split(' ')[0];
+      const range = splitStart + ' - ' + splitEnd;
       // Creating object to send to reducer with date range data and start and end dates
       const updatedRangeData = {
         data: rangeData,
         startDate: start,
         endDate: end,
+        loadRange: range,
       };
       dispatch(setCustomRange(updatedRangeData));
       dispatch(markNavLoadingAction(false));

@@ -1,7 +1,6 @@
 import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
-import moment from 'moment';
 import {Button} from 'react-bootstrap';
 import Calendar from '../Calendar/Calendar';
 
@@ -44,8 +43,7 @@ class Header extends Component {
     });
   }
   render() {
-    const localizeTime = moment().format('LT');
-    const localizeDate = moment().format('MMMM Do, YYYY');
+    const {analytics} = this.props;
     return (
       <div className="tabs-header">
         <nav>
@@ -54,7 +52,7 @@ class Header extends Component {
             <li>
               <Button onClick={this.showCalendarRangePicker.bind(this)} className="selected-date-range-btn">
                   <i className="head-icon fa fa-calendar" aria-hidden="true"></i>
-                  <span className="dashboard-date">{localizeDate} {localizeTime}</span>
+                  <span className="dashboard-date">{analytics.stateCustomRange}</span>
               </Button>
             </li>
           </ul>
