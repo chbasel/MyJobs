@@ -20,17 +20,19 @@
 
         {% block meta-extra %}{% endblock meta-extra %}
 
-        {% if wp_base_url %}
-            <link rel="stylesheet" href="{% static "react-bootstrap-table.min.css" %}" type="text/css">
-            <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
-            <link rel="stylesheet" href="{{wp_base_url}}/custom.css" rel="stylesheet" type="text/css">
-        {% else %}
-            {% compress css %}
-                <link rel="stylesheet" href="{% static "react-bootstrap-table.min.css" %}" type="text/css">
+        {% block custom-css %}
+            {% if wp_base_url %}
                 <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
-                <link rel="stylesheet" href="{% static "bundle/custom.css" %}" rel="stylesheet" type="text/css">
-            {% endcompress %}
-        {% endif %}
+                <link rel="stylesheet" href="{{wp_base_url}}/custom.css" rel="stylesheet" type="text/css">
+                <link rel="stylesheet" href="{% static "react-bootstrap-table.min.css" %}" type="text/css">
+            {% else %}
+                {% compress css %}
+                    <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
+                    <link rel="stylesheet" href="{% static "bundle/custom.css" %}" rel="stylesheet" type="text/css">
+                    <link rel="stylesheet" href="{% static "react-bootstrap-table.min.css" %}" type="text/css">
+                {% endcompress %}
+            {% endif %}
+        {% endblock custom-css %}
 
         <!--[if IE]>
             <link href="{% static "my.jobs.ie.163-29.css" %}" rel="stylesheet" type="text/css">

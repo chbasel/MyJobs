@@ -10,17 +10,24 @@
 {% endblock site-title %}
 
 {% block meta-extra %}
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-        {% if wp_base_url %}
-            <link rel="stylesheet" href="{{wp_base_url}}/bootstrapdaterange.css" rel="stylesheet" type="text/css">
-            <link rel="stylesheet" href="{{wp_base_url}}/customanalytics.css" rel="stylesheet" type="text/css">
-        {% else %}
-            {% compress css %}
-                <link rel="stylesheet" href="{% static "bundle/bootstrapdaterange.css" %}" rel="stylesheet" type="text/css">
-                <link rel="stylesheet" href="{% static "bundle/customanalytics.css" %}" rel="stylesheet" type="text/css">
-            {% endcompress %}
-        {% endif %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 {% endblock meta-extra %}
+
+{% block custom-css %}
+    {% if wp_base_url %}
+        <link rel="stylesheet" href="{{wp_base_url}}/custom.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="{{wp_base_url}}/bootstrapdaterange.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="{{wp_base_url}}/customanalytics.css" rel="stylesheet" type="text/css">
+    {% else %}
+        {% compress css %}
+            <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
+            <link rel="stylesheet" href="{% static "bundle/custom.css" %}" rel="stylesheet" type="text/css">
+            <link rel="stylesheet" href="{% static "bundle/bootstrapdaterange.css" %}" rel="stylesheet" type="text/css">
+            <link rel="stylesheet" href="{% static "bundle/customanalytics.css" %}" rel="stylesheet" type="text/css">
+        {% endcompress %}
+    {% endif %}
+{% endblock custom-css %}
 
 {% block section %}
     <section id="analytics_content">
