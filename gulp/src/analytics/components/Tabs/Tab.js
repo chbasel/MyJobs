@@ -37,7 +37,7 @@ class Tab extends Component {
     }
     return (
       <nav className="tab-navigation">
-        <ul onClick={this.toggleMobileTabs.bind(this)} className="tab-labels">
+        <ul className="tab-labels">
           {this.props.children.map(labels.bind(this))}
         </ul>
       </nav>
@@ -49,9 +49,6 @@ class Tab extends Component {
         {this.props.children}
       </div>
     );
-  }
-  toggleMobileTabs() {
-    console.log('WORKING');
   }
   render() {
     return (

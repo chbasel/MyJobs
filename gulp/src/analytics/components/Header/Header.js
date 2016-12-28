@@ -66,6 +66,7 @@ class Header extends Component {
 Header.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
+  openMenu: React.PropTypes.func.isRequired,
 };
 
 export default connect(state => ({

@@ -30,8 +30,8 @@ class AnalyticsApp extends React.Component {
     dispatch(doGetPageData(startDate, endDate, currentEndMonth, currentEndDay, currentEndYear, currentStartMonth, currentStartDay, currentStartYear));
   }
   openMobileMenu() {
-     this.setState({
-       mobileActive: true,
+    this.setState({
+      mobileActive: true,
     });
   }
   closeMobileMenu() {

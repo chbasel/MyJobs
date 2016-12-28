@@ -46,6 +46,8 @@ class SideBar extends Component {
 SideBar.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
+  activeMobile: React.PropTypes.bool.isRequired,
+  closeMenu: React.PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
