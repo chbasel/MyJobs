@@ -7,6 +7,10 @@ import {doRemoveSelectedTab} from '../../actions/tab-actions';
 class Tab extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      mobileTabs: false,
+    };
   }
   activeTab(id, event) {
     event.preventDefault();
@@ -33,7 +37,7 @@ class Tab extends Component {
     }
     return (
       <nav className="tab-navigation">
-        <ul className="tab-labels">
+        <ul onClick={this.toggleMobileTabs.bind(this)} className="tab-labels">
           {this.props.children.map(labels.bind(this))}
         </ul>
       </nav>
@@ -45,6 +49,9 @@ class Tab extends Component {
         {this.props.children}
       </div>
     );
+  }
+  toggleMobileTabs() {
+    console.log('WORKING');
   }
   render() {
     return (
