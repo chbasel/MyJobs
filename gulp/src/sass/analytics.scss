@@ -242,6 +242,9 @@ a {
 }
 
 /*CSS FOR THE TABS*/
+.tab-content-container {
+  padding: 125px;
+}
 .tab {
   display: inline-block;
   padding: 15px 0px;
@@ -302,7 +305,7 @@ a {
   display: block;
 }
 .tab-labels {
-  margin: -55px 0 75px -10px;
+  margin: -55px 0 -55px -10px;
 }
 
 
