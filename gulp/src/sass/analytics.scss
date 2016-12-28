@@ -486,6 +486,9 @@ a {
 .tool-tip-text {
   margin: 0;
 }
+.recharts-legend-wrapper {
+  top: -10px !important;
+}
 
 /*CSS FOR THE DATA TABLE*/
 
@@ -493,7 +496,6 @@ a {
   padding: 10px;
   background: $white;
   position: relative;
-  margin-bottom: 50px;
 }
 .search-bar {
   border-bottom-width: 0;
