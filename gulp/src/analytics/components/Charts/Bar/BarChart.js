@@ -23,7 +23,7 @@ class SimpleBarChart extends Component {
            <CartesianGrid strokeDasharray="3 3" />
            <Tooltip/>
            <Legend verticalAlign="top" wrapperStyle={{top: '0px'}} />
-           <Bar dataKey="job_views" fill="#5a6d81" />
+           <Bar name="Job Views" dataKey="job_views" fill="#5a6d81" />
           </BarChart>
         </ResponsiveContainer>
       </div>

@@ -3,7 +3,7 @@ import {Component} from 'react';
 import d3 from 'd3';
 import Paths from '../Common/Paths';
 import ToolTip from '../Common/ToolTip';
-// import Legend from '../Common/Legend';
+import Legend from '../Common/Legend';
 import mapData from 'common/resources/maps/us';
 
 class USAMap extends Component {
@@ -35,10 +35,11 @@ class USAMap extends Component {
     const path = d3.geo.path().projection(projection);
     const fill = (stateData) => {
       const rowData = chartData.PageLoadData.rows;
-      const color = d3.scale.linear().domain([0, d3.max(rowData, (d) => d.job_views)]).range(['rgb(222,235,247)', 'rgb(90,109,129)', 'rgb(49,130,189)']);
+      // const color = d3.scale.linear().domain([0, d3.max(rowData, (d) => d.job_views)]).range(['rgb(254,229,217)', 'rgb(222,45,38)', 'rgb(165,15,21)']);
+      const colors = d3.scale.quantize().range(['rgb(254,229,217)', 'rgb(222,45,38)', 'rgb(165,15,21)']).domain(d3.extent(d3.values(rowData), (d) => d.job_views));
       for (let i = 0; i < rowData.length; i++) {
         if (rowData[i].state === stateData.properties.STUSPS) {
-          return color(rowData[i].job_views);
+          return colors(rowData[i].job_views);
         }
       }
       return '#E6E6E6';
@@ -50,6 +51,7 @@ class USAMap extends Component {
     });
     return (
       <div className="chart-container" style={{width: '100%'}}>
+        <Legend mapProps={this.props} format="%"/>
         <svg
           className="chart"
           version="1.1"
