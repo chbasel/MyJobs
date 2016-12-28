@@ -32,10 +32,11 @@ class Tab extends Component {
       );
     }
     return (
-      <ul className="tab-labels">
-        {this.props.children.map(labels.bind(this))}
-      </ul>
-
+      <nav className="tab-navigation">
+        <ul className="tab-labels">
+          {this.props.children.map(labels.bind(this))}
+        </ul>
+      </nav>
     );
   }
   _renderContent() {

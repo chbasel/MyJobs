@@ -245,20 +245,29 @@ a {
 .tab {
   display: inline-block;
   padding: 15px 0px;
-  // border-top-left-radius: 0.6em;
-  // border-top-right-radius: 0.6em;
-  background: #a9a9a9;
+  background: $primary-blue;
+  border-top: 5px solid $white;
+  margin-left: 10px;
 }
 .tab a {
-  padding: 15px 15px;
+  padding: 15px 25px;
   color: $white;
   margin-left: 15px;
 }
 .tab.active-tab {
+  border-top: 5px solid $primary-blue;
   background: $light-gray;
   color: $primary-blue;
 }
 .tab.active-tab a {
+  color: $primary-blue;
+}
+.tab:hover {
+  border-top: 5px solid $primary-blue;
+  background: $light-gray;
+  color: $primary-blue;
+}
+.tab:hover a {
   color: $primary-blue;
 }
 .close-tab {
@@ -266,11 +275,19 @@ a {
   z-index: 99;
   font-size: 8px;
   position: relative;
-  left: -3px;
+  left: -5px;
   padding: 2px 5px;
-  background: red;
-  color: $white;
+  background: $white;
+  color: $primary-blue;
   border-radius: 50%;
+}
+.tab.active-tab .close-tab {
+  color: $white;
+  background: $primary-blue;
+}
+.tab:hover .close-tab {
+  color: $white;
+  background: $primary-blue;
 }
 .close-tab:hover {
   cursor: pointer;
