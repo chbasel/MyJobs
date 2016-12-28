@@ -24,8 +24,8 @@ class Tab extends Component {
         <li
           key={index}
           className={activeTab}>
-          <a href="#" onClick={this.activeTab.bind(this, child.props.id)}>
-            {child.props.label}
+          <a className="filter-switch" href="#" onClick={this.activeTab.bind(this, child.props.id)}>
+            <span className="filter-label">{child.props.label}</span>
           </a>
           <span onClick={this.removeSelectedTab.bind(this, child.props.id)} className="close-tab">X</span>
         </li>
@@ -35,6 +35,7 @@ class Tab extends Component {
       <ul className="tab-labels">
         {this.props.children.map(labels.bind(this))}
       </ul>
+
     );
   }
   _renderContent() {
