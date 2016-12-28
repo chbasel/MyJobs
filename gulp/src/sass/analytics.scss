@@ -353,7 +353,6 @@ a {
 
 .range-container {
   background: $white;
-  border: 1px solid $black;
   z-index: 99;
   float: left;
 }
@@ -975,7 +974,8 @@ color: $primary-blue;
    /* Large Devices, Wide Screens */
    @media only screen and (min-width : 1200px) {
      #page_wrapper {
-       
+       padding-left: 200px;
+
        #menu {
          left: 0;
          z-index: 99;
@@ -985,53 +985,93 @@ color: $primary-blue;
          left: 0;
        }
        #page_content {
-         padding-left: 0;
-         padding-right: 0;
+         padding-left: 50px;
+         padding-right: 50px;
        }
        .open-mobile, .close-mobile {
          display: none;
        }
+       .calendar-container.active-picker {
+         right: 0;
+       }
+
+     /*CSS FOR THE TABS*/
+     .tab-navigation {
+       overflow: visible;
+       white-space: normal;
+       background: transparent;
+       height: auto;
+       width: 80%;
+       position: relative;
+       margin: 0;
      }
      .tab-content-container {
-       padding: 0;
-     }
-     .tab-navigation {
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        white-space: nowrap;
-        background: $white;
-        height: 80px;
-        width: 85%;
-        margin: 25px auto;
+       padding: 125px;
      }
      .tab {
-       background: $light-gray;
-       border-top: none;
+       display: inline-block;
+       padding: 15px 0px;
+       background: $primary-blue;
+       border-top: 5px solid $white;
+       margin-left: 10px;
      }
      .tab a {
-       color: $primary-blue;
-     }
-     .tab .close-tab {
-       background: $primary-blue;
+       padding: 15px 25px;
        color: $white;
+       margin-left: 15px;
      }
      .tab.active-tab {
-       background: $primary-blue;
-       border-top: none;
-
-     }
-     .tab.active-tab a {
-       color: $white;
-     }
-     .tab.active-tab .close-tab {
-       background: $white;
+       border-top: 5px solid $primary-blue;
+       background: $light-gray;
        color: $primary-blue;
      }
-    .tab-labels {
-      margin: 15px 0px;
-    }
+     .tab.active-tab a {
+       color: $primary-blue;
+     }
+     .tab:hover {
+       border-top: 5px solid $primary-blue;
+       background: $light-gray;
+       color: $primary-blue;
+     }
+     .tab:hover a {
+       color: $primary-blue;
+     }
+     .close-tab {
+       top: -15px;
+       z-index: 25;
+       font-size: 8px;
+       position: relative;
+       left: -5px;
+       padding: 2px 5px;
+       background: $white;
+       color: $primary-blue;
+       border-radius: 50%;
+     }
+     .tab.active-tab .close-tab {
+       color: $white;
+       background: $primary-blue;
+     }
+     .tab:hover .close-tab {
+       color: $white;
+       background: $primary-blue;
+     }
+     .close-tab:hover {
+       cursor: pointer;
+     }
+     .tab-labels li:first-of-type .close-tab {
+       visibility: hidden;
+     }
+     .tab-panel {
+       display: none;
+     }
+     .tab-panel.active-panel {
+       display: block;
+     }
+     .tab-labels {
+       margin: -55px 0 -53px -10px;
+     }
    }
+}
 
 
 /*****************************ENDING OF NEW ANALYTICS PAGE CSS*****************/
