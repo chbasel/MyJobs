@@ -44,6 +44,7 @@ class WorldMap extends Component {
       }
       return '#E6E6E6';
     };
+
     const paths = mapData.features.map((country, i) => {
       return (
         <Paths showToolTip={this.showToolTip.bind(this, country)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(country)} class="country" stroke="#5A6D81" fill={fill(country)}/>

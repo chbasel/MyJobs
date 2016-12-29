@@ -7,7 +7,7 @@ class ToolTip extends Component {
     const {name, x, y, xPosition, yPosition, activeToolTip} = this.props;
     return (
       <div className={activeToolTip ? 'chart-tooltip active-tooltip' : 'chart-tooltip'} style={{left: x - xPosition + 'px', top: y - yPosition + 'px'}}>
-        <p className="tool-tip-text">{isEmpty(name) ? '' : name.properties.name}</p>
+        <p className="tool-tip-text tooltip-title">{isEmpty(name) ? '' : name.properties.name}</p>
       </div>
     );
   }

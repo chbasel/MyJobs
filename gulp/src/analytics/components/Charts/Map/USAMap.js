@@ -12,7 +12,7 @@ class USAMap extends Component {
     this.state = {
       x: 0,
       y: 0,
-      state: {},
+      states: {},
       showToolTip: false,
     };
   }
@@ -20,7 +20,7 @@ class USAMap extends Component {
     this.setState({
       x: event.pageX,
       y: event.pageY,
-      state: state,
+      states: state,
       showToolTip: true,
     });
   }
@@ -60,8 +60,8 @@ class USAMap extends Component {
           preserveAspectRatio="xMinYMin meet"
          >
          {paths}
+         <ToolTip activeToolTip={this.state.showToolTip} name={this.state.states} x={this.state.x} y={this.state.y} xPosition={355} yPosition={275}/>
          </svg>
-         <ToolTip activeToolTip={this.state.showToolTip} name={this.state.state} x={this.state.x} y={this.state.y} xPosition={355} yPosition={275}/>
       </div>
     );
   }
