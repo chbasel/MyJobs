@@ -28,12 +28,12 @@ class ChartContainer extends Component {
       chartDisplay = <WorldMap width={1920} height={600} scale={115} chartData={chartData} pathClicked={pathClicked} />;
       break;
     case 'map:nation':
-      const country_filter = chartData.activeFilters.filter((x) => x.type === "country")[0] || {};
-      if (country_filter.value === 'USA') {
+      const countryFilter = chartData.activeFilters.filter((x) => x.type === 'country')[0] || {};
+      if (countryFilter.value === 'USA') {
         chartDisplay = <USAMap width={1920} height={600} scale={1100} chartData={chartData} pathClicked={pathClicked} />;
       } else {
         chartDisplay = <SimpleBarChart width={600} height={250} chartData={chartData} pathClicked={pathClicked} />;
-      };
+      }
       break;
     case 'map:state':
       chartDisplay = <SimpleBarChart width={600} height={250} chartData={chartData} pathClicked={pathClicked} />;

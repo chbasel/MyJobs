@@ -5,8 +5,6 @@ import Paths from '../Common/Paths';
 import ToolTip from '../Common/ToolTip';
 // import Legend from '../Common/Legend';
 import mapData from 'common/resources/maps/countries';
-import {doGetSelectedFilterData} from '../../../actions/table-filter-actions';
-
 
 class WorldMap extends Component {
   constructor() {
@@ -47,7 +45,7 @@ class WorldMap extends Component {
       return '#E6E6E6';
     };
     const countryClicked = (country) => {
-      return () => {pathClicked(country.id, "country")};
+      return () => {pathClicked(country.id, 'country');};
     };
     const paths = mapData.features.map((country, i) => {
       return (

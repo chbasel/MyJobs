@@ -44,7 +44,7 @@ class USAMap extends Component {
       return '#E6E6E6';
     };
     const stateClicked = (state) => {
-      return () => {pathClicked(state.properties.STUSPS, "state")};
+      return () => {pathClicked(state.properties.STUSPS, 'state');};
     };
     const paths = mapData.features.map((state, i) => {
       return (
@@ -93,7 +93,7 @@ USAMap.propTypes = {
   /**
    * pathClicked is a function to be called when a path on the chart is clicked
    */
-  pathClicked: React.PropTypes.func
+  pathClicked: React.PropTypes.func,
 };
 
 USAMap.defaultProps = {
