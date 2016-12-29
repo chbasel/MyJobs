@@ -4,20 +4,20 @@ import d3 from 'd3';
 
 class Legend extends Component {
   render() {
-    const {mapProps, format} = this.props;
+    const {format, colorRanges} = this.props;
     const formats = d3.format(format);
-    const colors = d3.scale.quantize().range(['rgb(254,229,217)', 'rgb(222,45,38)', 'rgb(165,15,21)']);
-    const legendSquares = colors.range().map((color, i) => {
-      const r = colors.invertExtent(color);
-      const legendText = formats(r[0]);
+    const legendSquares = colorRanges.range().map((colors, i) => {
+      const r = colorRanges.invertExtent(colors);
+      const legendText = formats(r[0]) + ' - ' + formats(r[1]);
       return (
-        <li key={i} style={{borderTopColor: color}} className="legend-square">
+        <li key={i} style={{borderTopColor: colors}} className="legend-square">
           <span className="legend-range">{legendText}</span>
         </li>
       );
     });
     return (
       <div className="legend">
+        <p>Job Views</p>
         <ul className="legend-list">
           {legendSquares}
         </ul>
@@ -35,6 +35,10 @@ Legend.propTypes = {
    * String format for the labels of the legend
    */
   format: React.PropTypes.string.isRequired,
+  /**
+   * Function passed to the legend in order to populate the colors and values
+   */
+  colorRanges: React.PropTypes.func.isRequired,
 };
 
 export default Legend;

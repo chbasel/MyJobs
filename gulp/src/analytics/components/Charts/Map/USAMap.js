@@ -30,13 +30,12 @@ class USAMap extends Component {
     });
   }
   render() {
-    const {chartData, width, height, scale} = this.props;
+    const {chartData, width, height, scale, colorRange} = this.props;
     const projection = d3.geo.albersUsa().scale(scale).translate([width / 2, height / 2]);
     const path = d3.geo.path().projection(projection);
+    const rowData = chartData.PageLoadData.rows;
+    const colors = d3.scale.quantize().range(colorRange).domain([1, d3.max(rowData, (d) => d.job_views)]);
     const fill = (stateData) => {
-      const rowData = chartData.PageLoadData.rows;
-      // const color = d3.scale.linear().domain([0, d3.max(rowData, (d) => d.job_views)]).range(['rgb(254,229,217)', 'rgb(222,45,38)', 'rgb(165,15,21)']);
-      const colors = d3.scale.quantize().range(['rgb(254,229,217)', 'rgb(222,45,38)', 'rgb(165,15,21)']).domain(d3.extent(d3.values(rowData), (d) => d.job_views));
       for (let i = 0; i < rowData.length; i++) {
         if (rowData[i].state === stateData.properties.STUSPS) {
           return colors(rowData[i].job_views);
@@ -51,7 +50,7 @@ class USAMap extends Component {
     });
     return (
       <div className="chart-container" style={{width: '100%'}}>
-        <Legend mapProps={this.props} format="%"/>
+        <Legend mapProps={this.props} format=".0f" colorRanges={colors}/>
         <svg
           className="chart"
           version="1.1"
@@ -89,6 +88,10 @@ USAMap.propTypes = {
    * Scale is a type of number for the scale of the map in terms of how zoomed in or out the display is
    */
   scale: React.PropTypes.number.isRequired,
+  /**
+   * Range of colors supplied to the map in the form of an array of rgba values
+   */
+  colorRange: React.PropTypes.array.isRequired,
 };
 
 USAMap.defaultProps = {

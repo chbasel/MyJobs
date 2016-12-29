@@ -490,6 +490,20 @@ a {
   top: -10px !important;
 }
 
+.legend {
+  margin: 10px 0 20px 0;
+  text-align: center;
+}
+
+.legend-square {
+  display: inline-block;
+  border-top-width: 15px;
+  border-top-style: solid;
+  font-size: 12px;
+  width: 10%;
+  padding-left: 0;
+  padding-right: 0;
+}
 /*CSS FOR THE DATA TABLE*/
 
 .table-data {
@@ -1077,22 +1091,3 @@ color: $primary-blue;
 
 
 /*****************************ENDING OF NEW ANALYTICS PAGE CSS*****************/
-
-
-
-
-
-.legend {
-  margin: 10px 0 20px 0;
-  text-align: center;
-}
-
-.legend-square {
-  display: inline-block;
-  border-top-width: 15px;
-  border-top-style: solid;
-  font-size: 12px;
-  width: 10%;
-  padding-left: 0;
-  padding-right: 0;
-}

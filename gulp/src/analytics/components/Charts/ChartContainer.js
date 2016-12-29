@@ -16,17 +16,18 @@ class ChartContainer extends Component {
     const chartType = chartData.PageLoadData.chart_type;
     // Grab the row data to check and make sure the data coming back isn't empty
     const dataPresent = chartData.PageLoadData.rows;
+    const ranges = ['rgb(254,229,217)', 'rgb(252,187,161)', 'rgb(252,146,114)', 'rgb(251,106,74)', 'rgb(239,59,44)', 'rgb(203,24,29)', 'rgb(153,0,13)'];
     const helpError = 'We couldn\'t find any charts using the filters applied.';
     let chartDisplay;
     switch (chartType) {
     case 'map:world':
-      chartDisplay = <WorldMap width={1920} height={500} scale={105} chartData={chartData} />;
+      chartDisplay = <WorldMap width={1920} height={500} scale={105} chartData={chartData} colorRange={ranges}/>;
       break;
     case 'map:nation':
-      chartDisplay = <USAMap width={1920} height={500} scale={1100} chartData={chartData} />;
+      chartDisplay = <USAMap width={1920} height={500} scale={1100} chartData={chartData} colorRange={ranges}/>;
       break;
     case 'map:state':
-      chartDisplay = <USAMap width={1920} height={500} scale={1100} chartData={chartData} />;
+      chartDisplay = <USAMap width={1920} height={500} scale={1100} chartData={chartData} colorRange={ranges}/>;
       break;
     case 'string':
       chartDisplay = <SimpleBarChart width={600} height={400} chartData={chartData} />;
