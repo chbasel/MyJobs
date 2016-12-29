@@ -6,10 +6,12 @@ import RotatedXAxisTick from './RotatedXAxisTick';
 
 class SimpleBarChart extends Component {
   render() {
-    const {chartData, width, height} = this.props;
+    const {chartData, width, height, pathClicked} = this.props;
     const barData = chartData.PageLoadData.rows;
     const xAxis = chartData.PageLoadData.column_names[0].key;
-
+    const barClicked = (xAxis) => {
+      return (bar) => {pathClicked(bar.activeLabel, xAxis)};
+    };
     return (
       <div style={{width: '100%', height: '500'}}>
         <ResponsiveContainer>
@@ -17,7 +19,8 @@ class SimpleBarChart extends Component {
             width={width}
             height={height}
             data={barData}
-            margin={{top: 5, right: 30, left: 20, bottom: 100}}>
+            margin={{top: 5, right: 30, left: 20, bottom: 100}}
+            onClick={barClicked(xAxis)}>
            <XAxis dataKey={xAxis} interval={0} tick={<RotatedXAxisTick />} />
            <YAxis/>
            <CartesianGrid strokeDasharray="3 3" />
@@ -44,6 +47,10 @@ SimpleBarChart.propTypes = {
    * Type is a number value for the width of the chart
    */
   width: React.PropTypes.number.isRequired,
+  /**
+   * pathClicked is a function to be called when a path on the chart is clicked
+   */
+  pathClicked: React.PropTypes.func
 };
 
 export default SimpleBarChart;

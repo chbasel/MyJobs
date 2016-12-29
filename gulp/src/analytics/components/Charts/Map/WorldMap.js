@@ -5,6 +5,8 @@ import Paths from '../Common/Paths';
 import ToolTip from '../Common/ToolTip';
 // import Legend from '../Common/Legend';
 import mapData from 'common/resources/maps/countries';
+import {doGetSelectedFilterData} from '../../../actions/table-filter-actions';
+
 
 class WorldMap extends Component {
   constructor() {
@@ -30,7 +32,7 @@ class WorldMap extends Component {
     });
   }
   render() {
-    const {chartData, width, height, margin, scale} = this.props;
+    const {chartData, width, height, margin, scale, pathClicked} = this.props;
     const transform = 'translate(' + margin.left + ',' + margin.top + ')';
     const projection = d3.geo.mercator().translate([width / 2, height / 2]).scale(scale);
     const path = d3.geo.path().projection(projection);
@@ -44,9 +46,12 @@ class WorldMap extends Component {
       }
       return '#E6E6E6';
     };
+    const countryClicked = (country) => {
+      return () => {pathClicked(country.id, "country")};
+    };
     const paths = mapData.features.map((country, i) => {
       return (
-        <Paths showToolTip={this.showToolTip.bind(this, country)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(country)} class="country" stroke="#5A6D81" fill={fill(country)}/>
+        <Paths onClick={countryClicked(country)} showToolTip={this.showToolTip.bind(this, country)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(country)} class="country" stroke="#5A6D81" fill={fill(country)}/>
       );
     });
     return (
@@ -90,6 +95,10 @@ WorldMap.propTypes = {
    * Scale is a type of number for the scale of the map in terms of how zoomed in or out the display is
    */
   scale: React.PropTypes.number.isRequired,
+  /**
+   * pathClicked is a function to be called when a path on the chart is clicked
+   */
+  pathClicked: React.PropTypes.func,
 };
 
 WorldMap.defaultProps = {
@@ -97,6 +106,7 @@ WorldMap.defaultProps = {
   width: 1920,
   scale: 100,
   margin: {top: 50, left: 25, right: 25, bottom: 25},
+  pathClicked: () => {},
 };
 
 export default WorldMap;
