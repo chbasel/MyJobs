@@ -464,6 +464,9 @@ a {
     shape-rendering: crispEdges;
   }
 }
+path:hover {
+  cursor: pointer;
+}
 .chart-tooltip {
   position: absolute;
   display: none;

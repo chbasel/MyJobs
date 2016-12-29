@@ -12,7 +12,14 @@ class USAMap extends Component {
     this.state = {
       x: 0,
       y: 0,
-      states: {},
+      states: {
+        geometry: {},
+        properties: {
+          STUSPS: '',
+          name: '',
+        },
+        type: '',
+      },
       showToolTip: false,
     };
   }
@@ -43,6 +50,13 @@ class USAMap extends Component {
       }
       return '#E6E6E6';
     };
+    const toolTipData = [];
+    for (let i = 0; i < rowData.length; i++) {
+      const getValues = Object.values(rowData[i]);
+      if (getValues[1] === this.state.states.properties.STUSPS) {
+        toolTipData.push({...rowData[i]});
+      }
+    }
     const paths = mapData.features.map((state, i) => {
       return (
         <Paths showToolTip={this.showToolTip.bind(this, state)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(state)} class="state" stroke="#5A6D81" fill={fill(state)}/>
@@ -60,7 +74,7 @@ class USAMap extends Component {
           preserveAspectRatio="xMinYMin meet"
          >
          {paths}
-         <ToolTip activeToolTip={this.state.showToolTip} name={this.state.states} x={this.state.x} y={this.state.y} xPosition={355} yPosition={275}/>
+         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.states} x={this.state.x} y={this.state.y} xPosition={355} yPosition={275}/>
          </svg>
       </div>
     );

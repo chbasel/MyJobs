@@ -4,10 +4,13 @@ import {isEmpty} from 'lodash-compat/lang';
 
 class ToolTip extends Component {
   render() {
-    const {name, x, y, xPosition, yPosition, activeToolTip} = this.props;
+    const {data, name, x, y, xPosition, yPosition, activeToolTip} = this.props;
+    const dataInfo = data.length > 0 ? data[0].job_views : 0;
+    const info = `Job Views: ${dataInfo}`;
     return (
       <div className={activeToolTip ? 'chart-tooltip active-tooltip' : 'chart-tooltip'} style={{left: x - xPosition + 'px', top: y - yPosition + 'px'}}>
         <p className="tool-tip-text tooltip-title">{isEmpty(name) ? '' : name.properties.name}</p>
+        <p className="tool-tip-text tooltip-info">{info}</p>
       </div>
     );
   }

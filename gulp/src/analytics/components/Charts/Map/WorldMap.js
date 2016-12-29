@@ -12,7 +12,12 @@ class WorldMap extends Component {
     this.state = {
       x: 0,
       y: 0,
-      country: {},
+      country: {
+        geometry: {},
+        id: '',
+        properties: {},
+        type: '',
+      },
       showToolTip: false,
     };
   }
@@ -44,7 +49,13 @@ class WorldMap extends Component {
       }
       return '#E6E6E6';
     };
-
+    const toolTipData = [];
+    for (let i = 0; i < rowData.length; i++) {
+      const getValues = Object.values(rowData[i]);
+      if (getValues[0] === this.state.country.id) {
+        toolTipData.push({...rowData[i]});
+      }
+    }
     const paths = mapData.features.map((country, i) => {
       return (
         <Paths showToolTip={this.showToolTip.bind(this, country)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(country)} class="country" stroke="#5A6D81" fill={fill(country)}/>
@@ -65,7 +76,7 @@ class WorldMap extends Component {
            {paths}
          </g>
          </svg>
-         <ToolTip activeToolTip={this.state.showToolTip} name={this.state.country} x={this.state.x} y={this.state.y} xPosition={355} yPosition={275}/>
+         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.country} x={this.state.x} y={this.state.y} xPosition={355} yPosition={275}/>
       </div>
     );
   }
