@@ -16,6 +16,9 @@ class ChartContainer extends Component {
     const chartType = chartData.PageLoadData.chart_type;
     // Grab the row data to check and make sure the data coming back isn't empty
     const dataPresent = chartData.PageLoadData.rows;
+    const chartTitleByDisplay = chartData.PageLoadData.column_names[0].label;
+    const chartTitleDisplay = chartData.PageLoadData.column_names[1].label;
+    const title = `${chartTitleDisplay} by ${chartTitleByDisplay}`;
     const ranges = ['rgb(254,229,217)', 'rgb(252,187,161)', 'rgb(252,146,114)', 'rgb(251,106,74)', 'rgb(239,59,44)', 'rgb(203,24,29)', 'rgb(153,0,13)'];
     const helpError = 'We couldn\'t find any charts using the filters applied.';
     let chartDisplay;
@@ -40,7 +43,7 @@ class ChartContainer extends Component {
           <Row>
             <Col md={12}>
               <div className="chart-title">
-                <h2>Job Locations</h2>
+                <h2>{title}</h2>
               </div>
             </Col>
           </Row>

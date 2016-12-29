@@ -64,7 +64,7 @@ class WorldMap extends Component {
            {paths}
          </g>
          </svg>
-         <ToolTip activeToolTip={this.state.showToolTip} data={this.state.country} x={this.state.x} y={this.state.y} xPosition={355} yPosition={275}/>
+         <ToolTip activeToolTip={this.state.showToolTip} name={this.state.country} x={this.state.x} y={this.state.y} xPosition={355} yPosition={275}/>
       </div>
     );
   }
