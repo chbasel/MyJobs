@@ -893,7 +893,6 @@ color: $primary-blue;
            color: $white;
            font-size: 18px;
            padding-left: 5px;
-           text-align: center;
            position: relative;
            bottom: 5px;
          }
@@ -1042,11 +1041,22 @@ color: $primary-blue;
 
    /* Medium Devices, Desktops */
    @media only screen and (min-width : 992px) {
+     footer {
+       display: block;
+     }
      .analytics-loader {
         left: 45%;
      }
      #page_wrapper {
        margin-top: 0;
+       margin-bottom: 0;
+
+       #menu {
+         display: block;
+       }
+     }
+     #mobile_menu {
+       display: none;
      }
    }
 
