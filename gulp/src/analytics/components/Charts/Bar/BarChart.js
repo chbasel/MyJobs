@@ -11,7 +11,7 @@ class SimpleBarChart extends Component {
     const xAxis = chartData.PageLoadData.column_names[0].key;
 
     return (
-      <div style={{width: '100%', height: '500'}}>
+      <div style={{width: '100%', height: height}}>
         <ResponsiveContainer>
           <BarChart
             width={width}

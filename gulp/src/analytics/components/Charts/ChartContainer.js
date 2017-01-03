@@ -20,16 +20,16 @@ class ChartContainer extends Component {
     let chartDisplay;
     switch (chartType) {
     case 'map:world':
-      chartDisplay = <WorldMap width={1920} height={600} scale={115} chartData={chartData} />;
+      chartDisplay = <WorldMap width={1920} height={500} scale={105} chartData={chartData} />;
       break;
     case 'map:nation':
-      chartDisplay = <USAMap width={1920} height={600} scale={1100} chartData={chartData} />;
+      chartDisplay = <USAMap width={1920} height={500} scale={1100} chartData={chartData} />;
       break;
     case 'map:state':
-      chartDisplay = <USAMap width={1920} height={600} scale={1100} chartData={chartData} />;
+      chartDisplay = <USAMap width={1920} height={500} scale={1100} chartData={chartData} />;
       break;
     case 'string':
-      chartDisplay = <SimpleBarChart width={600} height={250} chartData={chartData} />;
+      chartDisplay = <SimpleBarChart width={600} height={400} chartData={chartData} />;
       break;
     default:
       chartDisplay = <NoResults type="div" errorMessage="No charts found" helpErrorMessage={helpError}/>;
