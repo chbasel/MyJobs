@@ -464,6 +464,9 @@ a {
     shape-rendering: crispEdges;
   }
 }
+path:hover {
+  cursor: pointer;
+}
 .chart-tooltip {
   position: absolute;
   display: none;
@@ -475,8 +478,7 @@ a {
   color: $primary-blue;
   padding: 10px 5px;
   background: $white;
-  border: 2px solid $primary-blue;
-  border-radius: 5px;
+  border: 1px solid $primary-blue;
   z-index: 9;
   pointer-events: none;
 }
@@ -485,11 +487,30 @@ a {
 }
 .tool-tip-text {
   margin: 0;
+  color: $primary-blue;
+}
+.tool-tip-text.tooltip-title {
+  font-size: 16px;
+  font-weight: bold;
 }
 .recharts-legend-wrapper {
   top: -10px !important;
 }
 
+.legend {
+  margin: 10px 0 20px 0;
+  text-align: center;
+}
+
+.legend-square {
+  display: inline-block;
+  border-top-width: 15px;
+  border-top-style: solid;
+  font-size: 11px;
+  width: 6%;
+  padding-left: 0;
+  padding-right: 0;
+}
 /*CSS FOR THE DATA TABLE*/
 
 .table-data {
