@@ -107,9 +107,14 @@ class Calendar extends Component {
     const {dispatch, analytics, hideCalendarRangePicker} = this.props;
     const startDate = `${analytics.startMonth + 1}/${analytics.startDay}/${analytics.startYear}`;
     const endDate = `${analytics.endMonth + 1}/${analytics.endDay}/${analytics.endYear}`;
+    let activeFilters;
+    analytics.navigation.map((nav) => {
+      if (nav.active) {
+        activeFilters = nav.activeFilters;
+      }
+    });
     if (Date.parse(startDate) < Date.parse(endDate)) {
       const activeMainDimension = analytics.activePrimaryDimension;
-      const activeFilters = analytics.activeFilters;
       dispatch(doSetCustomRange(startDate, endDate, activeMainDimension, activeFilters));
       this.setState({
         showCalendar: false,

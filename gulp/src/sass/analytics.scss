@@ -1070,14 +1070,6 @@ color: $primary-blue;
      #page_wrapper {
        padding-left: 200px;
 
-       #menu {
-         left: 0;
-         z-index: 99;
-         width: 200px;
-       }
-       #menu.active-mobile{
-         left: 0;
-       }
        #page_content {
          padding-left: 50px;
          padding-right: 50px;
