@@ -3,6 +3,7 @@ $primary-blue: #5A6D81;
 $white: #FFFFFF;
 $black: #000000;
 $dark-gray: #E6E6E6;
+$darkest-gray: #A8A8A8;
 $light-gray: #F7F8F9;
 $primary-red: #A95051;
 
@@ -1099,14 +1100,18 @@ color: $primary-blue;
          .tab {
            display: inline-block;
            position: relative;
-           padding: 15px 10px 10px 10px;
-           color: #666;
+           padding: 8px 0px 8px 0px;
+           color: $white;
            font-size: 14px;
            text-decoration: none;
-           border-top: 1px solid #ddd;
-           border-radius: 5px;
-           background-color: #eee;
+           border-top: 1px solid #DDDDDD;
+           border-radius: 15px;
+           background: $darkest-gray;
            border-bottom: none;
+           margin-right: 10px;
+         }
+         .tab:first-child {
+           margin-left: 25px;
          }
          .tab.active-tab {
            background: $light-gray;
@@ -1115,12 +1120,12 @@ color: $primary-blue;
             content: '';
             display: block;
             position: absolute;
-            top: -1px;
+            top: 0px;
             z-index: 0;
             height: 100%;
-            width: 15px;
-            background-color: $light-gray;
-            border: 1px solid $light-gray;
+            width: 30px;
+            background-color: $darkest-gray;
+            border: 1px solid $darkest-gray;
             border-bottom: none;
           }
           .tab:before {
@@ -1131,7 +1136,6 @@ color: $primary-blue;
             -webkit-transform: skew(27deg, 0deg);
             transform: skew(27deg, 0deg);
             border-radius: 0 5px 0 0;
-            box-shadow: 1px 0 0 rgba(0, 0, 0, 0.1), inset -1px 0 0 white;
           }
           .tab:after {
             left: -7px;
@@ -1141,13 +1145,16 @@ color: $primary-blue;
             -webkit-transform: skew(-27deg, 0deg);
             transform: skew(-27deg, 0deg);
             border-radius: 5px 0 0 0;
-            box-shadow: -1px 0 0 rgba(0, 0, 0, 0.1), inset 1px 0 white;
+          }
+          .tab.active-tab:before, .tab.active-tab:after {
+            background-color: $light-gray;
+            border: 1px solid $light-gray;
           }
          .tab-navigation {
            position: relative;
            left: 0;
            height: auto;
-           top: 10px;
+           top: 18px;
            background: transparent;
            z-index: 9;
          }
