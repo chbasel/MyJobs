@@ -199,8 +199,21 @@ class Role extends React.Component {
 
   handleRemove(removed) {
     const assignedUsers = this.state.assignedUsers.slice();
-    removed.forEach(user =>
-      assignedUsers.splice(assignedUsers.indexOf(user), 1));
+    for (let i = 0; i <= removed.length; i++) {
+      const removedUser = removed[i];
+      if (typeof(removedUser) === 'undefined') continue;
+
+      for (let j = 0; j <= assignedUsers.length; j++) {
+        const assignedUser = assignedUsers[j];
+        if (typeof(assignedUser) === 'undefined') continue;
+
+        if ((removedUser.value.toString() === assignedUser.id.toString()) &&
+            (removedUser.display === assignedUser.name)) {
+          assignedUsers.splice(j, 1);
+        }
+      }
+    }
+
     this.setState({assignedUsers});
   }
 

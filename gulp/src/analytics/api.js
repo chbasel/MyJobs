@@ -1,3 +1,10 @@
+// Abstract the details of building urls and serializing requests for the
+// analytics api.
+//
+// This uses the fetch api. Fetch works somewhat differently from jQuery.ajax.
+// This module encapsulates all of that. Errors are translated to JS exceptions.
+
+
 export default class Api {
   constructor(api) {
     this.api = api;
@@ -7,7 +14,7 @@ export default class Api {
     const loadStartingPointReport = await this.api.get('/analytics/api/available-reports');
     const initialPageRequest = {
       'date_start': start + ' 00:00:00',
-      'date_end': end + ' 00:00:00',
+      'date_end': end,
       'active_filters': [],
       'report': loadStartingPointReport.reports[0].value,
     };
@@ -23,23 +30,43 @@ export default class Api {
     return setStartingPointReport.reports[0].value;
   }
   // Get the data requested from filtering on the table
-  async getSelectedFilterData(tableValue, typeValue, storedFilters, currentReport) {
+  async getSelectedFilterData(tableValue, typeValue, storedFilters, currentReport, date) {
     const selectedFilterRequest = {
-      'date_start': '12/01/2016 00:00:00',
-      'date_end': '12/12/2016 00:00:00',
+      'date_start': date.startDate,
+      'date_end': date.endDate,
       'active_filters': storedFilters,
       'report': currentReport,
     };
     return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(selectedFilterRequest)});
   }
   // Get the data from the main dimensions selected from sidebar
-  async getMainDimensionData(mainDimension) {
+  async getMainDimensionData(mainDimension, start, end) {
     const mainDimensionDataRequest = {
-      'date_start': '12/01/2016 00:00:00',
-      'date_end': '12/12/2016 00:00:00',
+      'date_start': start,
+      'date_end': end,
       'active_filters': [],
       'report': mainDimension,
     };
     return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(mainDimensionDataRequest)});
+  }
+  // Get the date range data selected from the Quick Range Selections
+  async getDateRangeData(start, end, mainDimension, activeFilters) {
+    const setDateRangeDataRequest = {
+      'date_start': start,
+      'date_end': end,
+      'active_filters': activeFilters,
+      'report': mainDimension,
+    };
+    return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(setDateRangeDataRequest)});
+  }
+  // Get the custom date range selected from the Range Calendars
+  async customDateRangeData(start, end, mainDimension, activeFilters) {
+    const setCustomDateRangeDataRequest = {
+      'date_start': start + ' 00:00:00',
+      'date_end': end + ' 23:59:59',
+      'active_filters': activeFilters,
+      'report': mainDimension,
+    };
+    return await this.api.post('/analytics/api/dynamic', {'request': JSON.stringify(setCustomDateRangeDataRequest)});
   }
 }

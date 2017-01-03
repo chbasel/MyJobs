@@ -28,6 +28,7 @@ class Menu extends React.Component {
           <Link to="/records" className="btn">
             Outreach Records
           </Link>
+          <a className="btn" href="http://www.directemployers.org/beta-feedback" target="_blank">Leave Us Feedback</a>
           {pageTips}
         </div>
     );

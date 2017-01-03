@@ -5,6 +5,23 @@ $black: #000000;
 $dark-gray: #E6E6E6;
 $light-gray: #F7F8F9;
 
+/* NEED TO DELETE WHEN FEEDBACK IS GONE*/
+.feedback {
+  padding: 25px 30px 25px 30px;
+  color: #FFFFFF;
+}
+.feedback:hover {
+  color: $primary-blue;
+}
+.side-dimension-feedback {
+  color: #FFFFFF;
+  border-bottom: 1px solid #FFFFFF;
+  padding: 25px 0px;
+}
+.side-dimension-feedback:hover {
+  color: $primary-blue;
+  background: $light-gray;
+}
 * {
   margin: 0;
   padding: 0;
@@ -61,6 +78,24 @@ a {
     100% { transform: rotate(360deg); }
 }
 
+.table-no-results {
+  background: #FCF8E3;
+  border-bottom-width: 2px;
+  vertical-align: top;
+}
+.table-no-results td {
+  padding-left: 20px;
+}
+.no-results {
+  margin-bottom: 25px;
+  text-align: center;
+  padding: 40px;
+  color: $primary-blue;
+  background: #FCF8E3;
+}
+.no-results p {
+  font-size: 18px;
+}
 
 /*CSS FOR THE SIDE MENU*/
 #page_wrapper {
@@ -115,6 +150,10 @@ a {
           color: $primary-blue;
         }
       }
+      .side-dimension.active-main {
+        background: $light-gray;
+        color: $primary-blue;
+      }
       .side-dimension.active{
         border-left: 5px solid $white;
         padding: 25px 50px;
@@ -151,10 +190,10 @@ a {
   opacity: 1;
   transition: all 300ms;
 }
-.side-dimension:hover .side-circle-btn {
+.side-dimension:hover .side-circle-btn, .side-dimension.active-main .side-circle-btn {
   background: $primary-blue;
 }
-.side-dimension:hover .side-circle-btn:before {
+.side-dimension:hover .side-circle-btn:before, .side-dimension.active-main .side-circle-btn:before {
   border: 5px solid $primary-blue;
   -webkit-box-shadow: inset 0px 0px 0px 4px rgba(90, 109, 129, 1);
   -moz-box-shadow: inset 0px 0px 0px 4px rgba(90, 109, 129, 1);
@@ -259,13 +298,18 @@ a {
     .tab-label {
       padding: 10px;
     }
-    .close-tab{
-      position: absolute;
-      right: 5px;
-      top: 0px;
-      height: 25px;
-      font-size: 10px;
-    }
+  }
+  .close-tab {
+    top: 7px;
+    z-index: 99;
+    font-size: 10px;
+    float: left;
+    position: relative;
+    left: 15px;
+    padding: 0px 5px;
+  }
+  .close-tab:hover {
+    cursor: pointer;
   }
   .tab:hover {
     background-color: #f7f7f7;
@@ -285,7 +329,7 @@ a {
     z-index: 2;
     background: #f7f8f9;
   }
-  .tab + div {
+  .close-tab + .tab-content {
     position: relative;
     z-index: 1;
     float: right;
@@ -298,16 +342,125 @@ a {
     position: relative;
     z-index: 2;
   }
-  .tab + .tab-content {
+  .tab + .close-tab + .tab-content {
     display: none;
   }
-  .tab.active-tab + .tab-content {
+  .tab.active-tab + .close-tab + .tab-content {
     display: block;
   }
 }
 
-#tabbed div:first-of-type a.tab .close-tab {
+#tabbed div:first-of-type .close-tab {
+  visibility: hidden;
+}
+
+/*CSS FOR THE CALENDAR*/
+
+.calendar-container.active-picker {
+  display: block;
+}
+.calendar-container.non-active-picker {
   display: none;
+}
+.hide-calendar {
+  display: none;
+}
+.show-calendar {
+  float: left;
+}
+.end-calendar, .start-calendar {
+  float: left;
+}
+.date-label {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 100;
+  margin-top: 10px;
+}
+.calendar-container {
+  display: block;
+  position: absolute;
+  right: 0;
+  top: 60px;
+  z-index: 99;
+}
+
+.calendar-pick {
+  border: 1px solid $primary-blue;
+  background: $white;
+}
+
+.calendar-panel {
+  background: $white;
+  padding: 17px;
+  float: left;
+}
+
+.range-container {
+  background: $white;
+  border: 1px solid $black;
+  z-index: 99;
+  float: left;
+}
+.range-selections {
+  margin: 0;
+  padding: 0;
+}
+.range {
+  background: $primary-blue;
+  text-align: center;
+  border-bottom: 1px solid $white;
+  padding: 10px 20px;
+  color: $white;
+  font-size: 14px;
+}
+.range-selections li.range:nth-child(7) {
+  border-bottom: 1px solid $primary-blue;
+}
+.range:hover {
+  cursor: pointer;
+  background: $white;
+  color: $primary-blue;
+}
+.apply-cancel {
+  text-align: center;
+  padding: 10px 20px;
+}
+.range-btn {
+  padding: 5px 5px;
+  border: none;
+  color: white;
+  border-radius: 5px;
+}
+.apply-range {
+  background: $primary-blue;
+  color: $white;
+  border: 1px solid $primary-blue;
+  margin-right: 10px;
+}
+.apply-range:hover {
+  background: #63AB62;
+  color: $white;
+  border: 1px solid #63AB62;
+}
+.cancel-range {
+  background: $white;
+  border: 1px solid $primary-blue;
+  color: $primary-blue
+}
+.cancel-range:hover {
+  background: red;
+  color: $white;
+  border: 1px solid red;
+}
+
+.calendar-pick {
+  display: inline-block;
+}
+.input-error {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 16px;
 }
 
 /*CSS FOR THE CHARTS SECTION*/
@@ -447,6 +600,12 @@ a {
   }
   .rwd-table th:last-child, .rwd-table td:last-child {
     padding-right: 0;
+  }
+  .rwd-table .table-no-results td {
+    padding-left: 15px;
+  }
+  .rwd-table tr td.last-filter{
+    padding-left: 15px;
   }
 }
 
@@ -798,7 +957,7 @@ color: $primary-blue;
      }
      #tabbed {
        .tab {
-         margin: 6px -15px 0px 30px;
+         margin: 6px -30px 0px 30px;
        }
      }
    }

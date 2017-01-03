@@ -184,7 +184,6 @@ legend{
     }
   }
   .company-box {
-    margin: 0px 15px;
     border: 1px solid $extra-light-gray;
     background-color: $medium-gray;
     border-top: none;
@@ -976,22 +975,13 @@ margin-bottom: 50px;
     }
   }
   .apply {
-    background-color: $primary-navy-blue;
-    color: #ffffff;
-    font-size: 12px;
     border: none;
     border-radius: 3px;
     display: inline-block;
     margin: 0 15px 10px 0;
     padding: 10px 75px;
-    font-size: 18px;
+    font-size: 1.9rem;
     border-radius: 3px;
-    font-weight: 100;
-    font-weight: 100;
-
-		&:hover {
-			background-color: $red-maroon;
-		}
   }
 }
 
@@ -1269,7 +1259,6 @@ margin-bottom: 50px;
 		padding: 0 20px;
 
 		.apply {
-			margin: 0 auto;
 			width: 100%;
 			text-align: center;
 		}

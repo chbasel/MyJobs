@@ -3,6 +3,7 @@ import {Component} from 'react';
 import d3 from 'd3';
 import Paths from '../Common/Paths';
 import ToolTip from '../Common/ToolTip';
+// import Legend from '../Common/Legend';
 import mapData from 'common/resources/maps/us';
 
 class USAMap extends Component {
@@ -29,14 +30,15 @@ class USAMap extends Component {
     });
   }
   render() {
-    const {chartData, width, height} = this.props;
-    const projection = d3.geo.albersUsa().scale(1450).translate([width / 2, height / 2]);
+    const {chartData, width, height, scale} = this.props;
+    const projection = d3.geo.albersUsa().scale(scale).translate([width / 2, height / 2]);
     const path = d3.geo.path().projection(projection);
     const fill = (stateData) => {
       const rowData = chartData.PageLoadData.rows;
+      const color = d3.scale.linear().domain([0, d3.max(rowData, (d) => d.job_views)]).range(['rgb(222,235,247)', 'rgb(90,109,129)', 'rgb(49,130,189)']);
       for (let i = 0; i < rowData.length; i++) {
         if (rowData[i].state === stateData.properties.STUSPS) {
-          return '#5A6D81';
+          return color(rowData[i].job_views);
         }
       }
       return '#E6E6E6';
@@ -65,14 +67,32 @@ class USAMap extends Component {
 }
 
 USAMap.propTypes = {
+  /**
+   * Type of object representing the data going into the object
+   */
   chartData: React.PropTypes.object.isRequired,
+  /**
+   * Type is a number for the height of the chart
+   */
   height: React.PropTypes.number.isRequired,
+  /**
+   * Type is a number value for the width of the map
+   */
   width: React.PropTypes.number.isRequired,
+  /**
+   * Margin is an object with keys of left, right, top, bottom and values equaling numbers for the margins of the map
+   */
+  margin: React.PropTypes.object,
+  /**
+   * Scale is a type of number for the scale of the map in terms of how zoomed in or out the display is
+   */
+  scale: React.PropTypes.number.isRequired,
 };
 
 USAMap.defaultProps = {
-  height: 800,
+  height: 500,
   width: 1920,
+  scale: 1000,
   margin: {top: 50, left: 25, right: 25, bottom: 25},
 };
 

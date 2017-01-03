@@ -247,13 +247,13 @@ def build_active_filter_query(query_data):
     return [filter_match] if filter_match['$match'] else []
 
 
-def determine_data_group_by_column(query_data, reporttype_datatype):
+def determine_data_group_by_and_remaining(query_data, reporttype_datatype):
     """
     determine what to group the data by. this can be retrieved from the db
     or provided in the request if a group_overwrite is present
 
     :param query_data: data from the request
-    :return: the column to group data by
+    :return: the current group by and which remain
 
 
     """
@@ -261,13 +261,15 @@ def determine_data_group_by_column(query_data, reporttype_datatype):
 
     configuration = reporttype_datatype.configuration
     config_columns = configuration.configurationcolumn_set.all().order_by('order')
+    active_filters = [f['type'] for f in query_data.get('active_filters', [])]
+    remaining = config_columns.exclude(column_name__in=active_filters)
     group_overwrite = query_data.get('group_overwrite')
     if group_overwrite:
-        return config_columns.get(column_name=group_overwrite)
+        overwrite = config_columns.get(column_name=group_overwrite)
+        return overwrite, remaining.exclude(id=overwrite.id)
     else:
-        # import ipdb; ipdb.set_trace()
-        active_filters = [f['type'] for f in query_data.get('active_filters', [])]
-        return config_columns.exclude(column_name__in=active_filters).first()
+        return (remaining.first(),
+                remaining.all().exclude(id=remaining.first().id))
 
 
 def retrieve_sampling_query_and_count(collection, top_query, sample_size):
@@ -456,7 +458,9 @@ def dynamic_chart(request):
 
     active_filter_query = build_active_filter_query(query_data)
 
-    group_by = determine_data_group_by_column(query_data, report_data)
+    group_by, remaining_dimensions = determine_data_group_by_and_remaining(
+        query_data, report_data
+    )
 
     group_query = build_group_by_query(group_by.column_name)
 
@@ -471,7 +475,7 @@ def dynamic_chart(request):
             return calculate_error_and_count(total_count, sample_size, count)
 
         records = adjust_records_for_sampling(records, curried_query)
-
+        
     response = {
         "column_names":
             [
@@ -482,6 +486,11 @@ def dynamic_chart(request):
              ],
         "rows":
             [format_return_dict(r, group_by.column_name) for r in records],
+        "chart_type": group_by.filter_interface_type,
+        "group_by": group_by.column_name,
+        "remaining_dimensions": [{"key": d.column_name,
+                                  "label": d.filter_interface_display}
+                                 for d in remaining_dimensions]
     }
 
     return HttpResponse(json.dumps(response))
