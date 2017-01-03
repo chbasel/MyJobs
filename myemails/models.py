@@ -3,7 +3,6 @@ from datetime import datetime
 from django.contrib.auth.models import ContentType
 from django.contrib.contenttypes.generic import GenericForeignKey
 from django.core.mail import send_mail
-from django.conf import settings
 from django.db import models, OperationalError, ProgrammingError
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
@@ -197,7 +196,10 @@ class EmailTask(models.Model):
 
 def event_receiver(signal, content_type, type_):
     def event_receiver_decorator(fn):
-        sender = ContentType.objects.get(model=content_type).model_class()
+        try:
+            sender = ContentType.objects.get(model=content_type).model_class()
+        except ContentType.DoesNotExist:
+            sender = None
         dispatch_uid = '%s_%s_%s' % (fn.__name__, content_type, type_)
         wrapper = receiver(signal, sender=sender, dispatch_uid=dispatch_uid)
         return wrapper(fn)
