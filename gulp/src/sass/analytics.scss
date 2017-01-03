@@ -514,7 +514,7 @@ path:hover {
   border-top-width: 15px;
   border-top-style: solid;
   font-size: 11px;
-  width: 6%;
+  width: 8%;
   padding-left: 0;
   padding-right: 0;
 }
@@ -987,7 +987,7 @@ color: $primary-blue;
         left: -144px;
         height: 100%;
         top: 60px;
-        background: $primary-blue;
+        background: $white;
         z-index: 99;
      }
      .tab {
@@ -1047,6 +1047,9 @@ color: $primary-blue;
       font-size: 24px;
       padding: 5px 10px;
       color: $white;
+    }
+    .legend-square {
+      width: 10%;
     }
    }
 
