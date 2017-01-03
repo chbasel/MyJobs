@@ -2,6 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {doGetPageData} from '../actions/page-loading-actions';
 import SideBar from './SideBar/SideBar';
+import MobileDimensions from './SideBar/MobileDimensions';
 import Header from './Header/Header';
 import TabsContainer from './Tabs/TabsContainer';
 import LoadingSpinner from './Loading';
@@ -29,14 +30,9 @@ class AnalyticsApp extends React.Component {
     const {dispatch} = this.props;
     dispatch(doGetPageData(startDate, endDate, currentEndMonth, currentEndDay, currentEndYear, currentStartMonth, currentStartDay, currentStartYear));
   }
-  openMobileMenu() {
+  toggleMobileMenu() {
     this.setState({
-      mobileActive: true,
-    });
-  }
-  closeMobileMenu() {
-    this.setState({
-      mobileActive: false,
+      mobileActive: !this.state.mobileActive,
     });
   }
   render() {
@@ -47,14 +43,17 @@ class AnalyticsApp extends React.Component {
       );
     }
     return (
-      <div id="page_wrapper">
-          {analytics.navFetching ? <LoadingSpinner/> : ''}
-          <SideBar closeMenu={this.closeMobileMenu.bind(this)} activeMobile={this.state.mobileActive}/>
-          <Header openMenu={this.openMobileMenu.bind(this)}/>
-        <div id="page_content">
-          <TabsContainer/>
+      <div>
+        <div id="page_wrapper">
+            {analytics.navFetching ? <LoadingSpinner/> : ''}
+            <SideBar />
+            <Header />
+          <div id="page_content">
+            <TabsContainer/>
+          </div>
+          <div className="clearfix"></div>
         </div>
-        <div className="clearfix"></div>
+        <MobileDimensions toggleMenu={this.toggleMobileMenu.bind(this)} activeMobile={this.state.mobileActive}/>
       </div>
     );
   }

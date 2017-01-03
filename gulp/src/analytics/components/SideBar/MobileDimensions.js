@@ -3,11 +3,11 @@ import {Component} from 'react';
 import {connect} from 'react-redux';
 import {doSwitchMainDimension} from '../../actions/sidebar-actions';
 import moment from 'moment';
-import SideBarDimension from './SideBarDimensionList';
+import MobileDimensionList from './MobileDimensionList';
 
-class SideBar extends Component {
-  constructor(props) {
-    super(props);
+class MobileDimensions extends Component {
+  constructor() {
+    super();
   }
   activeDimension(mainDimension) {
     let startDate = moment();
@@ -18,21 +18,21 @@ class SideBar extends Component {
     dispatch(doSwitchMainDimension(mainDimension, startDate, endDate));
   }
   render() {
-    const {analytics} = this.props;
+    const {analytics, activeMobile, toggleMenu} = this.props;
     const activeDimension = analytics.activePrimaryDimension;
-    const primaryDimensions = analytics.primaryDimensions.dimensionList.reports.map((report, i) => {
+    const primaryMobileDimensions = analytics.primaryDimensions.dimensionList.reports.map((report, i) => {
       return (
-        <SideBarDimension selected={activeDimension} active={this.activeDimension.bind(this, report.value)} key={i} dimension={report} />
+        <MobileDimensionList selected={activeDimension} active={this.activeDimension.bind(this, report.value)} key={i} dimension={report} />
       );
     });
     return (
-      <div id="menu">
+      <div id="mobile_menu" className={activeMobile ? 'active-mobile' : ''}>
         <ul className="sidebar-container">
-          <li className="side-dimension-header">
-            <p className="filter-header">Primary Dimensions</p>
+          <li onClick={toggleMenu} className="side-dimension-header">
+            <p className="filter-header">Primary Dimensions{activeMobile ? <i className="fa fa-minus mobile-close" aria-hidden="true"></i> : <i className="fa fa-plus mobile-open" aria-hidden="true"></i>}</p>
             <div className="clearfix"></div>
            </li>
-          {primaryDimensions}
+          {primaryMobileDimensions}
           <li className="side-dimension-feedback">
             <a className="side-dimension-title feedback" href="http://www.directemployers.org/beta-feedback" target="_blank">Leave Us Feedback</a>
           </li>
@@ -42,11 +42,13 @@ class SideBar extends Component {
   }
 }
 
-SideBar.propTypes = {
+MobileDimensions.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
+  activeMobile: React.PropTypes.bool.isRequired,
+  toggleMenu: React.PropTypes.func.isRequired,
 };
 
 export default connect(state => ({
   analytics: state.pageLoadData,
-}))(SideBar);
+}))(MobileDimensions);
