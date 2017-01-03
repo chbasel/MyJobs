@@ -249,13 +249,6 @@ footer {
 .tab-content-container {
   padding: 125px;
 }
-.tab {
-  display: inline-block;
-  padding: 15px 0px;
-  background: $primary-blue;
-  border-top: 5px solid $white;
-  margin-left: 10px;
-}
 .tab a {
   padding: 15px 25px;
   color: $white;
@@ -1102,6 +1095,65 @@ color: $primary-blue;
        #page_content {
          padding-left: 50px;
          padding-right: 50px;
+
+         .tab {
+           display: inline-block;
+           position: relative;
+           padding: 15px 10px 10px 10px;
+           color: #666;
+           font-size: 14px;
+           text-decoration: none;
+           border-top: 1px solid #ddd;
+           border-radius: 5px;
+           background-color: #eee;
+           border-bottom: none;
+         }
+         .tab.active-tab {
+           background: $light-gray;
+         }
+         .tab:before, .tab:after {
+            content: '';
+            display: block;
+            position: absolute;
+            top: -1px;
+            z-index: 0;
+            height: 100%;
+            width: 15px;
+            background-color: $light-gray;
+            border: 1px solid $light-gray;
+            border-bottom: none;
+          }
+          .tab:before {
+            right: -7px;
+            border-left: none;
+            -moz-transform: skew(27deg, 0deg);
+            -ms-transform: skew(27deg, 0deg);
+            -webkit-transform: skew(27deg, 0deg);
+            transform: skew(27deg, 0deg);
+            border-radius: 0 5px 0 0;
+            box-shadow: 1px 0 0 rgba(0, 0, 0, 0.1), inset -1px 0 0 white;
+          }
+          .tab:after {
+            left: -7px;
+            border-right: none;
+            -moz-transform: skew(-27deg, 0deg);
+            -ms-transform: skew(-27deg, 0deg);
+            -webkit-transform: skew(-27deg, 0deg);
+            transform: skew(-27deg, 0deg);
+            border-radius: 5px 0 0 0;
+            box-shadow: -1px 0 0 rgba(0, 0, 0, 0.1), inset 1px 0 white;
+          }
+         .tab-navigation {
+           position: relative;
+           left: 0;
+           height: auto;
+           top: 10px;
+           background: transparent;
+           z-index: 9;
+         }
+         .close-tab {
+           display: inherit;
+         }
        }
        .tab-content-container {
          margin-bottom: 50px;
@@ -1149,34 +1201,7 @@ color: $primary-blue;
      .tab-content-container {
        padding: 125px;
      }
-     .tab {
-       display: inline-block;
-       padding: 15px 0px;
-       background: $primary-blue;
-       border-top: 5px solid $white;
-       margin-left: 10px;
-     }
-     .tab a {
-       padding: 15px 25px;
-       color: $white;
-       margin-left: 15px;
-     }
-     .tab.active-tab {
-       border-top: 5px solid $primary-blue;
-       background: $light-gray;
-       color: $primary-blue;
-     }
-     .tab.active-tab a {
-       color: $primary-blue;
-     }
-     .tab:hover {
-       border-top: 5px solid $primary-blue;
-       background: $light-gray;
-       color: $primary-blue;
-     }
-     .tab:hover a {
-       color: $primary-blue;
-     }
+
      .close-tab {
        top: -15px;
        z-index: 25;
