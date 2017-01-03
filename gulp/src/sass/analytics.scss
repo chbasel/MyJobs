@@ -975,12 +975,9 @@ color: $primary-blue;
           float: right;
        }
      }
-     .tabs-section {
-       position: relative;
-     }
      .tab-content-container {
        padding: 0;
-       margin-top: 100px;
+       margin-top: 75px;
      }
      .tab-navigation.open {
        left: 0;
@@ -988,7 +985,8 @@ color: $primary-blue;
      .tab-navigation {
         position: absolute;
         left: -144px;
-        top: -50px;
+        height: 100%;
+        top: 60px;
         background: $primary-blue;
         z-index: 99;
      }
@@ -1024,26 +1022,23 @@ color: $primary-blue;
     }
     .mobile-tab {
       position: absolute;
-      right: -60px;
+      right: -65px;
       color: $white;
       padding: 10px 10px;
-      background: $primary-blue;
       border-left: 1px solid $white;
       z-index: 99;
+      opacity: 1;
     }
     .mobile-tab.open {
       right: -60px;
-    }
-    .mobile-tab.close {
-      right: -56px;
     }
     .open-close-tabs {
       position: absolute;
       right: -50px;
     }
     .mobile-tab-label {
-      color: $white;
-      font-size: 17px;
+      color: $primary-blue;
+      font-size: 34px;
     }
     .mobile-tab-label.tabs-closed, .close-mobile-tabs.tabs-closed {
       display: none;

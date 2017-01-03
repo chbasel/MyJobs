@@ -10,11 +10,12 @@ class MobileDimensions extends Component {
     super();
   }
   activeDimension(mainDimension) {
+    const {toggleMenu, dispatch} = this.props;
     let startDate = moment();
     const endDate = moment().format('MM/DD/YYYY H:mm:ss');
     startDate = startDate.subtract(30, 'days');
     startDate = startDate.format('MM/DD/YYYY');
-    const {dispatch} = this.props;
+    toggleMenu();
     dispatch(doSwitchMainDimension(mainDimension, startDate, endDate));
   }
   render() {

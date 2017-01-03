@@ -44,7 +44,7 @@ class Tab extends Component {
     }
     return (
       <nav className={this.state.mobileTabs ? 'tab-navigation open' : 'tab-navigation'}>
-        <div onClick={this.toggleTabs} className={this.state.mobileTabs ? 'mobile-tab open' : 'mobile-tab close'}><span className={this.state.mobileTabs ? 'tabs-closed mobile-tab-label' : 'mobile-tab-label'}>Tabs</span><i className={this.state.mobileTabs ? 'fa fa-times close-mobile-tabs' : 'fa fa-times close-mobile-tabs tabs-closed'} aria-hidden="true"></i></div>
+        <div onClick={this.toggleTabs} className={this.state.mobileTabs ? 'mobile-tab open' : 'mobile-tab close'}><i className={this.state.mobileTabs ? 'fa fa-toggle-off tabs-closed mobile-tab-label' : 'fa fa-toggle-off mobile-tab-label'} aria-hidden="true"></i><i className={this.state.mobileTabs ? 'fa fa-toggle-on close-mobile-tabs' : 'fa fa-toggle-on close-mobile-tabs tabs-closed'} aria-hidden="true"></i></div>
         <ul className="tab-labels">
           {this.props.children.map(labels.bind(this))}
         </ul>
