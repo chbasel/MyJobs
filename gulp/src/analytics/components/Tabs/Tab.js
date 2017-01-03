@@ -8,9 +8,16 @@ class Tab extends Component {
   constructor(props) {
     super(props);
 
+    this.toggleTabs = this.toggleTabs.bind(this);
+
     this.state = {
       mobileTabs: false,
     };
+  }
+  toggleTabs() {
+    this.setState({
+      mobileTabs: !this.state.mobileTabs,
+    });
   }
   activeTab(id, event) {
     event.preventDefault();
@@ -36,7 +43,8 @@ class Tab extends Component {
       );
     }
     return (
-      <nav className="tab-navigation">
+      <nav className={this.state.mobileTabs ? 'tab-navigation open' : 'tab-navigation'}>
+        <div onClick={this.toggleTabs} className={this.state.mobileTabs ? 'mobile-tab open' : 'mobile-tab close'}><span className={this.state.mobileTabs ? 'tabs-closed mobile-tab-label' : 'mobile-tab-label'}>Tabs</span><i className={this.state.mobileTabs ? 'fa fa-times close-mobile-tabs' : 'fa fa-times close-mobile-tabs tabs-closed'} aria-hidden="true"></i></div>
         <ul className="tab-labels">
           {this.props.children.map(labels.bind(this))}
         </ul>

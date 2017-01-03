@@ -329,6 +329,10 @@ footer {
 .end-calendar, .start-calendar {
   float: left;
 }
+.end-calendar {
+  border-right: 1px solid $black;
+  border-left: 1px solid $black;
+}
 .date-label {
   text-align: center;
   font-size: 20px;
@@ -872,13 +876,8 @@ color: $primary-blue;
        width: 100%;
        position: fixed;
        bottom: 0;
+       z-index: 100;
        height: 60px;
-
-       .side-dimension-header {
-         &:hover {
-           cursor: pointer;
-         }
-       }
 
        .sidebar-container {
          margin: 0;
@@ -910,11 +909,6 @@ color: $primary-blue;
              right: 10px;
            }
 
-           &:hover {
-             cursor: pointer;
-             background: $light-gray;
-             color: $primary-blue;
-           }
          }
          .side-dimension.active-main {
            background: $light-gray;
@@ -981,44 +975,83 @@ color: $primary-blue;
           float: right;
        }
      }
+     .tabs-section {
+       position: relative;
+     }
      .tab-content-container {
        padding: 0;
+       margin-top: 100px;
+     }
+     .tab-navigation.open {
+       left: 0;
      }
      .tab-navigation {
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        white-space: nowrap;
-        background: $white;
-        height: 80px;
-        width: 85%;
-        margin: 25px auto;
+        position: absolute;
+        left: -144px;
+        top: -50px;
+        background: $primary-blue;
+        z-index: 99;
      }
      .tab {
+       border-bottom: 1px solid $white;
+       display: list-item;
+       margin-left: 0;
+       text-align: center;
+       padding: 30px 0px;
+       border-top: none;
+
+       .filter-switch {
+         margin-left: 0;
+       }
+     }
+     .tab a {
+       color: $white;
+       padding: 30px 40px;
+     }
+     .tab.active-tab {
        background: $light-gray;
        border-top: none;
      }
-     .tab a {
-       color: $primary-blue;
-     }
-     .tab .close-tab {
-       background: $primary-blue;
-       color: $white;
-     }
-     .tab.active-tab {
-       background: $primary-blue;
-       border-top: none;
-
-     }
      .tab.active-tab a {
-       color: $white;
-     }
-     .tab.active-tab .close-tab {
-       background: $white;
        color: $primary-blue;
+     }
+     .close-tab {
+       display: none;
      }
     .tab-labels {
-      margin: 15px 0px;
+      margin: 0;
+      position: relative;
+    }
+    .mobile-tab {
+      position: absolute;
+      right: -60px;
+      color: $white;
+      padding: 10px 10px;
+      background: $primary-blue;
+      border-left: 1px solid $white;
+      z-index: 99;
+    }
+    .mobile-tab.open {
+      right: -60px;
+    }
+    .mobile-tab.close {
+      right: -56px;
+    }
+    .open-close-tabs {
+      position: absolute;
+      right: -50px;
+    }
+    .mobile-tab-label {
+      color: $white;
+      font-size: 17px;
+    }
+    .mobile-tab-label.tabs-closed, .close-mobile-tabs.tabs-closed {
+      display: none;
+    }
+    .close-mobile-tabs {
+      font-size: 24px;
+      padding: 5px 10px;
+      color: $white;
     }
    }
 
@@ -1056,6 +1089,9 @@ color: $primary-blue;
        }
      }
      #mobile_menu {
+       display: none;
+     }
+     .open-close-tabs {
        display: none;
      }
    }
