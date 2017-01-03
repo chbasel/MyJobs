@@ -19,7 +19,7 @@ class MobileDimensions extends Component {
     dispatch(doSwitchMainDimension(mainDimension, startDate, endDate));
   }
   render() {
-    const {analytics, activeMobile, toggleMenu} = this.props;
+    const {analytics, activeMobileMenu, toggleMenu} = this.props;
     const activeDimension = analytics.activePrimaryDimension;
     const primaryMobileDimensions = analytics.primaryDimensions.dimensionList.reports.map((report, i) => {
       return (
@@ -27,10 +27,10 @@ class MobileDimensions extends Component {
       );
     });
     return (
-      <div id="mobile_menu" className={activeMobile ? 'active-mobile' : ''}>
+      <div id="mobile_menu" className={activeMobileMenu ? 'active-mobile' : ''}>
         <ul className="sidebar-container">
           <li onClick={toggleMenu} className="side-dimension-header">
-            <p className="filter-header">Primary Dimensions{activeMobile ? <i className="fa fa-minus mobile-close" aria-hidden="true"></i> : <i className="fa fa-plus mobile-open" aria-hidden="true"></i>}</p>
+            <p className="filter-header">Primary Dimensions{activeMobileMenu ? <i className="fa fa-minus mobile-close" aria-hidden="true"></i> : <i className="fa fa-plus mobile-open" aria-hidden="true"></i>}</p>
             <div className="clearfix"></div>
            </li>
           {primaryMobileDimensions}
@@ -46,7 +46,7 @@ class MobileDimensions extends Component {
 MobileDimensions.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
-  activeMobile: React.PropTypes.bool.isRequired,
+  activeMobileMenu: React.PropTypes.bool.isRequired,
   toggleMenu: React.PropTypes.func.isRequired,
 };
 

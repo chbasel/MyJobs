@@ -8,7 +8,7 @@ import ChartContainer from '../Charts/ChartContainer';
 
 class TabsContainer extends Component {
   render() {
-    const {analytics} = this.props;
+    const {analytics, tabsMenuActive} = this.props;
     const tabsPanel = analytics.navigation.map((tab, index) => {
       return (
         <TabsPanel key={index} id={tab.navId} active={tab.active} label={tab.PageLoadData.column_names[0].label}>
@@ -19,7 +19,7 @@ class TabsContainer extends Component {
     });
     return (
       <div>
-        <Tab>
+        <Tab active={tabsMenuActive}>
           {tabsPanel}
         </Tab>
       </div>
@@ -29,6 +29,7 @@ class TabsContainer extends Component {
 
 TabsContainer.propTypes = {
   analytics: React.PropTypes.object.isRequired,
+  tabsMenuActive: React.PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({

@@ -24,7 +24,7 @@ class ChartContainer extends Component {
     let chartDisplay;
     switch (chartType) {
     case 'map:world':
-      chartDisplay = <WorldMap width={1920} height={500} scale={105} chartData={chartData} colorRange={ranges} />;
+      chartDisplay = <WorldMap width={1920} height={600} scale={125} chartData={chartData} colorRange={ranges} />;
       break;
     case 'map:nation':
       chartDisplay = <USAMap width={1920} height={500} scale={1100} chartData={chartData} colorRange={ranges} />;

@@ -8,16 +8,9 @@ class Tab extends Component {
   constructor(props) {
     super(props);
 
-    this.toggleTabs = this.toggleTabs.bind(this);
-
     this.state = {
       mobileTabs: false,
     };
-  }
-  toggleTabs() {
-    this.setState({
-      mobileTabs: !this.state.mobileTabs,
-    });
   }
   activeTab(id, event) {
     event.preventDefault();
@@ -29,6 +22,7 @@ class Tab extends Component {
     dispatch(doRemoveSelectedTab(tabId));
   }
   _renderTitles() {
+    const {active} = this.props;
     function labels(child, index) {
       const activeTab = (child.props.active ? 'tab active-tab' : 'tab');
       return (
@@ -43,8 +37,7 @@ class Tab extends Component {
       );
     }
     return (
-      <nav className={this.state.mobileTabs ? 'tab-navigation open' : 'tab-navigation'}>
-        <div onClick={this.toggleTabs} className={this.state.mobileTabs ? 'mobile-tab open' : 'mobile-tab close'}><i className={this.state.mobileTabs ? 'fa fa-toggle-off tabs-closed mobile-tab-label' : 'fa fa-toggle-off mobile-tab-label'} aria-hidden="true"></i><i className={this.state.mobileTabs ? 'fa fa-toggle-on close-mobile-tabs' : 'fa fa-toggle-on close-mobile-tabs tabs-closed'} aria-hidden="true"></i></div>
+      <nav className={active ? 'tab-navigation open' : 'tab-navigation'}>
         <ul className="tab-labels">
           {this.props.children.map(labels.bind(this))}
         </ul>
@@ -73,8 +66,8 @@ Tab.propTypes = {
   children: React.PropTypes.arrayOf(
     React.PropTypes.element.isRequired,
   ),
-  // tabData: React.PropTypes.object.isRequired,
   dispatch: React.PropTypes.func.isRequired,
+  active: React.PropTypes.bool,
 };
 
 export default connect()(Tab);

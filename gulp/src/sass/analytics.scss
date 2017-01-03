@@ -4,6 +4,7 @@ $white: #FFFFFF;
 $black: #000000;
 $dark-gray: #E6E6E6;
 $light-gray: #F7F8F9;
+$primary-red: #A95051;
 
 /* NEED TO DELETE WHEN FEEDBACK IS GONE*/
 .feedback {
@@ -871,6 +872,9 @@ color: $primary-blue;
      .analytics-loader {
         left: 30%;
      }
+     #analytics_content {
+       border: none;
+     }
      #mobile_menu {
        background: $primary-blue;
        width: 100%;
@@ -948,15 +952,14 @@ color: $primary-blue;
        .calendar-container.active-picker {
          position: absolute;
          top: 100%;
-         right: 3%;
+         right: 0;
+       }
+       .end-calendar {
+         border: none;
        }
        #tab_header_navigation {
          position: relative;
-       }
-       .right-options {
-         position: absolute;
-         top: -10%;
-         left: 18%;
+         text-align: right;
        }
        .open-mobile, .close-mobile {
           font-size: 40px;
@@ -987,7 +990,7 @@ color: $primary-blue;
         left: -144px;
         height: 100%;
         top: 60px;
-        background: $white;
+        background: $primary-red;
         z-index: 99;
      }
      .tab {
@@ -997,6 +1000,7 @@ color: $primary-blue;
        text-align: center;
        padding: 30px 0px;
        border-top: none;
+       background: $primary-blue;
 
        .filter-switch {
          margin-left: 0;
@@ -1007,7 +1011,7 @@ color: $primary-blue;
        padding: 30px 40px;
      }
      .tab.active-tab {
-       background: $light-gray;
+       background: $dark-gray;
        border-top: none;
      }
      .tab.active-tab a {
@@ -1043,13 +1047,19 @@ color: $primary-blue;
     .mobile-tab-label.tabs-closed, .close-mobile-tabs.tabs-closed {
       display: none;
     }
-    .close-mobile-tabs {
-      font-size: 24px;
-      padding: 5px 10px;
-      color: $white;
+    .close-mobile-tabs, .open-mobile-tabs {
+      font-size: 40px;
+      position: absolute;
+      left: 15px;
+      color: $primary-blue;
+      top: 10px;
+      z-index: 9;
     }
     .legend-square {
       width: 10%;
+    }
+    .arrow-active {
+      display: none;
     }
    }
 
@@ -1078,18 +1088,29 @@ color: $primary-blue;
      .analytics-loader {
         left: 45%;
      }
+     #analytics_content {
+       border: 1px solid #333333;
+     }
      #page_wrapper {
        margin-top: 0;
        margin-bottom: 0;
+       padding-left: 200px;
 
        #menu {
          display: block;
+       }
+       #page_content {
+         padding-left: 50px;
+         padding-right: 50px;
+       }
+       .tab-content-container {
+         margin-bottom: 50px;
        }
      }
      #mobile_menu {
        display: none;
      }
-     .open-close-tabs {
+     .open-mobile-tabs, .close-mobile-tabs {
        display: none;
      }
    }

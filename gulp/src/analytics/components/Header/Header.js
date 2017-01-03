@@ -43,10 +43,12 @@ class Header extends Component {
     });
   }
   render() {
-    const {analytics} = this.props;
+    const {analytics, toggleTabs, tabsActive} = this.props;
     return (
       <div className="tabs-header">
         <nav id="tab_header_navigation">
+          <i onClick={toggleTabs} className={tabsActive ? 'arrow-active fa fa-arrow-circle-right open-mobile-tabs' : 'fa fa-arrow-circle-right open-mobile-tabs'} aria-hidden="true"></i>
+          <i onClick={toggleTabs} className={tabsActive ? 'fa fa-arrow-circle-left close-mobile-tabs' : 'arrow-active fa fa-arrow-circle-left close-mobile-tabs'} aria-hidden="true"></i>
           <ul className="nav navbar-nav navbar-right right-options">
             <li>
               <Button onClick={this.showCalendarRangePicker.bind(this)} className="selected-date-range-btn">
@@ -65,6 +67,8 @@ class Header extends Component {
 Header.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
+  toggleTabs: React.PropTypes.func.isRequired,
+  tabsActive: React.PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({

@@ -12,8 +12,12 @@ class AnalyticsApp extends React.Component {
   constructor() {
     super();
 
+    this.toggleMobileMenu = this.toggleMobileMenu.bind(this);
+    this.toggleTabsMenu = this.toggleTabsMenu.bind(this);
+
     this.state = {
-      mobileActive: false,
+      mobileMenuActive: false,
+      tabsMenuActive: false,
     };
   }
   componentDidMount() {
@@ -32,7 +36,12 @@ class AnalyticsApp extends React.Component {
   }
   toggleMobileMenu() {
     this.setState({
-      mobileActive: !this.state.mobileActive,
+      mobileMenuActive: !this.state.mobileMenuActive,
+    });
+  }
+  toggleTabsMenu() {
+    this.setState({
+      tabsMenuActive: !this.state.tabsMenuActive,
     });
   }
   render() {
@@ -47,13 +56,13 @@ class AnalyticsApp extends React.Component {
         <div id="page_wrapper">
             {analytics.navFetching ? <LoadingSpinner/> : ''}
             <SideBar />
-            <Header />
+            <Header tabsActive={this.state.tabsMenuActive} toggleTabs={this.toggleTabsMenu} />
           <div id="page_content">
-            <TabsContainer/>
+            <TabsContainer tabsMenuActive={this.state.tabsMenuActive} />
           </div>
           <div className="clearfix"></div>
         </div>
-        <MobileDimensions toggleMenu={this.toggleMobileMenu.bind(this)} activeMobile={this.state.mobileActive}/>
+        <MobileDimensions toggleMenu={this.toggleMobileMenu} activeMobileMenu={this.state.mobileMenuActive}/>
       </div>
     );
   }
