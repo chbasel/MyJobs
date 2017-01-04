@@ -359,6 +359,28 @@ class jobListing (models.Model):
 
         super(jobListing, self).save()
 
+from django.db.models import Q
+class SeoSiteManager(models.Manager):
+    def related_sites(self, parent, by=None, depth=1):
+        base_queryset = self.get_queryset()
+
+        queryset = base_queryset.filter(parents__parent=parent)
+
+        for _ in range(1, depth):
+            nested_kwargs = {'parents__parent__in': queryset}
+            unnested_kwargs = {'parents__parent': parent}
+
+            if by:
+                nested_kwargs['parents__by'] = by
+                unnested_kwargs['parents__by'] = by
+
+            queryset = SeoSite.objects.filter(
+                Q(**nested_kwargs) |
+                Q(**unnested_kwargs)
+            )
+
+        return queryset
+
 
 class SeoSite(Site):
     class Meta:
@@ -410,6 +432,9 @@ class SeoSite(Site):
         'sites associated with the company that owns this site': company_sites,
         'all sites': all_sites,
     }
+
+    objects = SeoSiteManager()
+
     postajob_filter_options = tuple([(k, k) for k in
                                      postajob_filter_options_dict.keys()])
 
@@ -460,6 +485,10 @@ class SeoSite(Site):
                                        related_name='child_sites')
 
     email_domain = models.CharField(max_length=255, default='my.jobs')
+
+    related_children = models.ManyToManyField('self',
+                                              through='SiteRelationship',
+                                              symmetrical=False)
 
     def clean_domain(self):
         """
@@ -1598,3 +1627,34 @@ def seosite_change_monitor(sender, instance, **kwargs):
         return None
     if old_instance.domain != instance.domain:
         microsite_moved.send(sender=instance, old_domain=old_instance.domain)
+
+
+from django.db.utils import OperationalError
+
+
+class RelationshipChoice(models.Model):
+    name = models.CharField(max_length=255)
+    created_on = models.DateTimeField(auto_created=True)
+
+
+class SiteRelationship(models.Model):
+    try:
+        relationship_choices = RelationshipChoice.objects.all()
+        relationship_choices = [(c.name, c.name) for c in relationship_choices]
+    except OperationalError:
+        relationship_choices = []
+
+    weight = models.FloatField(default=0)
+    by = models.CharField(choices=relationship_choices, blank=False, null=False,
+                          max_length=255)
+    parent = models.ForeignKey('SeoSite', blank=False, null=False,
+                               related_name='children')
+    child = models.ForeignKey('SeoSite', blank=False, null=False,
+                              related_name='parents')
+
+
+    class Meta:
+        unique_together = (('parent', 'child', 'by'), )
+
+    def __str__(self):
+        return "%s ==%s==> %s" % (self.parent.name, self.by, self.child.name)
