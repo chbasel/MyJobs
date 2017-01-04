@@ -36,8 +36,7 @@ class WorldMap extends Component {
   }
   render() {
     const {chartData, width, height, transformScale, transformTranslate, projectionScale, colorRange} = this.props;
-    const transform = 'translate(' + transformTranslate.x + ',' + transformTranslate.y + ')';
-    const scale = 'scale(' + transformScale.x + ',' + transformScale.y + ')';
+    const transform = `translate(${transformTranslate.x}, ${transformTranslate.y }) scale(${transformScale.x}, ${transformScale.y})`;
     const projection = d3.geo.mercator().translate([width / 2, height / 2]).scale(projectionScale);
     const path = d3.geo.path().projection(projection);
     const rowData = chartData.PageLoadData.rows;
@@ -70,10 +69,10 @@ class WorldMap extends Component {
           version="1.1"
           height={height}
           width={width}
-          viewBox={'0 0 ' + width + ' ' + height + ''}
+          viewBox={`0 0 ${width} ${height}`}
           preserveAspectRatio="xMinYMin meet"
          >
-         <g transform={transform + ' ' + scale}>
+         <g transform={transform}>
            {paths}
          </g>
          </svg>
