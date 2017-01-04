@@ -3,38 +3,69 @@ import {Component} from 'react';
 import {connect} from 'react-redux';
 import {doSwitchActiveTab} from '../../actions/tab-actions';
 import {doRemoveSelectedTab} from '../../actions/tab-actions';
-// import {switchActiveTab} from '../../actions/tab-actions';
-// import {removeSelectedTab} from '../../actions/tab-actions';
-import {Link} from 'react-router';
 
 class Tab extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      mobileTabs: false,
+    };
   }
-  activeTab(tabId) {
-    const {dispatch} = this.props;
-    dispatch(doSwitchActiveTab(tabId));
-  }
-  removeSelectedTab(tabId, event) {
+  activeTab(id, event) {
     event.preventDefault();
+    const {dispatch} = this.props;
+    dispatch(doSwitchActiveTab(id));
+  }
+  removeSelectedTab(tabId) {
     const {dispatch} = this.props;
     dispatch(doRemoveSelectedTab(tabId));
   }
-  render() {
-    const {tabData} = this.props;
+  _renderTitles() {
+    function labels(child, index) {
+      const activeTab = (child.props.active ? 'tab active-tab' : 'tab');
+      return (
+        <li
+          key={index}
+          className={activeTab}>
+          <a className="filter-switch" href="#" onClick={this.activeTab.bind(this, child.props.id)}>
+            <span className="filter-label">{child.props.label}</span>
+          </a>
+          <span onClick={this.removeSelectedTab.bind(this, child.props.id)} className="close-tab">X</span>
+        </li>
+      );
+    }
     return (
-      <div>
-          <Link onClick={this.activeTab.bind(this, tabData.navId)} className={tabData.active ? 'tab active-tab' : 'tab'} to={'/'}>{tabData.PageLoadData.column_names[0].label}</Link>
-          <span onClick={this.removeSelectedTab.bind(this, tabData.navId)} className="close-tab">X</span>
+      <nav className="tab-navigation">
+        <ul className="tab-labels">
+          {this.props.children.map(labels.bind(this))}
+        </ul>
+      </nav>
+    );
+  }
+  _renderContent() {
+    return (
+      <div className="tab-content-container">
         {this.props.children}
       </div>
-      );
+    );
+  }
+  render() {
+    return (
+      <div className="tabs-section">
+        {this._renderTitles()}
+        {this._renderContent()}
+      </div>
+    );
   }
 }
 
+
 Tab.propTypes = {
-  children: React.PropTypes.element.isRequired,
-  tabData: React.PropTypes.object.isRequired,
+  children: React.PropTypes.arrayOf(
+    React.PropTypes.element.isRequired,
+  ),
+  // tabData: React.PropTypes.object.isRequired,
   dispatch: React.PropTypes.func.isRequired,
 };
 

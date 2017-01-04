@@ -43,11 +43,11 @@ class Header extends Component {
     });
   }
   render() {
-    const {analytics} = this.props;
+    const {analytics, openMenu} = this.props;
     return (
       <div className="tabs-header">
-        <nav>
-          <i className="open-mobile fa fa-arrow-circle-right" aria-hidden="true"></i>
+        <nav id="tab_header_navigation">
+          <i onClick={openMenu} className="open-mobile fa fa-arrow-circle-right" aria-hidden="true"></i>
           <ul className="nav navbar-nav navbar-right right-options">
             <li>
               <Button onClick={this.showCalendarRangePicker.bind(this)} className="selected-date-range-btn">
@@ -66,6 +66,7 @@ class Header extends Component {
 Header.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
+  openMenu: React.PropTypes.func.isRequired,
 };
 
 export default connect(state => ({

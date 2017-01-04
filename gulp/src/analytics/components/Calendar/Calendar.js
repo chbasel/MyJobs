@@ -22,6 +22,9 @@ class Calendar extends Component {
       errorMessage: false,
     };
   }
+  componentDidMount() {
+    window.addEventListener('mousedown', this.pageClick.bind(this), false);
+  }
   setRangeSelection(range) {
     const {dispatch, analytics, hideCalendarRangePicker} = this.props;
     const startRange = range[0];
@@ -39,6 +42,20 @@ class Calendar extends Component {
       showCalendar: false,
     });
     hideCalendarRangePicker();
+  }
+  pageClick() {
+    if (this.mouseIsDownOnCalendar) {
+      return;
+    }
+    this.setState({
+      showCalendar: false,
+    });
+  }
+  mouseDownHandler() {
+    this.mouseIsDownOnCalendar = true;
+  }
+  mouseUpHandler() {
+    this.mouseIsDownOnCalendar = false;
   }
   showCalendar() {
     this.setState({
@@ -138,7 +155,7 @@ class Calendar extends Component {
       <div onMouseDown={onMouseDown} onMouseUp={onMouseUp} className={showCalendarRangePicker ? 'calendar-container active-picker' : 'calendar-container non-active-picker'}>
         <ul>
           <li className="calendar-pick full-calendar">
-            <div className={this.state.showCalendar ? 'show-calendar' : 'hide-calendar'}>
+            <div onMouseDown={this.mouseDownHandler.bind(this)} onMouseUp={this.mouseUpHandler.bind(this)} className={this.state.showCalendar ? 'show-calendar' : 'hide-calendar'}>
               {this.state.errorMessage ? <HelpText message={errorMessage}/> : ''}
               <div className="start-calendar">
                 <p className="date-label">Start Date</p>

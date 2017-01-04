@@ -18,6 +18,10 @@ class ChartContainer extends Component {
     const chartType = chartData.PageLoadData.chart_type;
     // Grab the row data to check and make sure the data coming back isn't empty
     const dataPresent = chartData.PageLoadData.rows;
+    const chartTitleByDisplay = chartData.PageLoadData.column_names[0].label;
+    const chartTitleDisplay = chartData.PageLoadData.column_names[1].label;
+    const title = `${chartTitleDisplay} by ${chartTitleByDisplay}`;
+    const ranges = ['rgb(254,229,217)', 'rgb(252,187,161)', 'rgb(252,146,114)', 'rgb(251,106,74)', 'rgb(239,59,44)', 'rgb(203,24,29)', 'rgb(153,0,13)'];
     const helpError = 'We couldn\'t find any charts using the filters applied.';
     const pathClicked = (tableValue, typeValue) => {
       dispatch(doGetSelectedFilterData(tableValue, typeValue));
@@ -25,21 +29,21 @@ class ChartContainer extends Component {
     let chartDisplay;
     switch (chartType) {
     case 'map:world':
-      chartDisplay = <WorldMap width={1920} height={600} scale={115} chartData={chartData} pathClicked={pathClicked} />;
+      chartDisplay = <WorldMap width={1920} height={500} scale={105} chartData={chartData} colorRange={ranges} pathClicked={pathClicked}/>;
       break;
     case 'map:nation':
       const countryFilter = chartData.activeFilters.filter((x) => x.type === 'country')[0] || {};
       if (countryFilter.value === 'USA') {
-        chartDisplay = <USAMap width={1920} height={600} scale={1100} chartData={chartData} pathClicked={pathClicked} />;
+              chartDisplay = <USAMap width={1920} height={500} scale={1100} chartData={chartData} colorRange={ranges} pathClicked={pathClicked}/>;
       } else {
-        chartDisplay = <SimpleBarChart width={600} height={250} chartData={chartData} pathClicked={pathClicked} />;
+        chartDisplay = <SimpleBarChart width={600} height={400} chartData={chartData} pathClicked={pathClicked} />;
       }
       break;
     case 'map:state':
-      chartDisplay = <SimpleBarChart width={600} height={250} chartData={chartData} pathClicked={pathClicked} />;
+      chartDisplay = <SimpleBarChart width={600} height={400} chartData={chartData} pathClicked={pathClicked} />;
       break;
     case 'string':
-      chartDisplay = <SimpleBarChart width={600} height={250} chartData={chartData} pathClicked={pathClicked} />;
+      chartDisplay = <SimpleBarChart width={600} height={400} chartData={chartData} pathClicked={pathClicked} />;
       break;
     default:
       chartDisplay = <NoResults type="div" errorMessage="No charts found" helpErrorMessage={helpError} />;
@@ -49,7 +53,7 @@ class ChartContainer extends Component {
           <Row>
             <Col md={12}>
               <div className="chart-title">
-                <h2>Job Locations</h2>
+                <h2>{title}</h2>
               </div>
             </Col>
           </Row>

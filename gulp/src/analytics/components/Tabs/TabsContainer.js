@@ -9,20 +9,19 @@ import ChartContainer from '../Charts/ChartContainer';
 class TabsContainer extends Component {
   render() {
     const {analytics} = this.props;
-    const tabs = analytics.navigation.map((tab, i) => {
+    const tabsPanel = analytics.navigation.map((tab, index) => {
       return (
-        <Tab key={i} tabData={tab}>
-          <TabsPanel panelData={tab}>
-            <ChartContainer chartData={tab} />
-            <TableContainer tableData={tab} />
-          </TabsPanel>
-        </Tab>
+        <TabsPanel key={index} id={tab.navId} active={tab.active} label={tab.PageLoadData.column_names[0].label}>
+          <ChartContainer chartData={tab}/>
+          <TableContainer tableData={tab}/>
+        </TabsPanel>
       );
     });
     return (
-      <div id="tabbed">
-        {tabs}
-        <TabsPanel/>
+      <div>
+        <Tab>
+          {tabsPanel}
+        </Tab>
       </div>
     );
   }

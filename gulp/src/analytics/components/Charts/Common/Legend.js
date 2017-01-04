@@ -4,33 +4,41 @@ import d3 from 'd3';
 
 class Legend extends Component {
   render() {
-    const {mapProps} = this.props;
-    const legendData = mapProps.chartData.PageLoadData.rows;
-    const legendRectSize = 20;
-    const legendSpacing = 40;
-    const transform = 'translate(' + (mapProps.width - 400) + ',' + (mapProps.height - 500) + ')';
-    const stroke = '#000000';
-    const color = d3.scale.linear().domain([0, d3.max(legendData, (d) => d.job_views)]).range(['rgb(222,235,247)', 'rgb(90,109,129)', 'rgb(49,130,189)']);
-    const rectData = legendData.map((rect, i) => {
+    const {format, colorRanges} = this.props;
+    const formats = d3.format(format);
+    const legendSquares = colorRanges.range().map((colors, i) => {
+      const r = colorRanges.invertExtent(colors);
+      const legendText = formats(r[0]) + ' - ' + formats(r[1]);
       return (
-        <g key={i} transform={`translate(${legendRectSize}, ${(legendSpacing * i) + 50})`}>
-          <rect width={legendRectSize + 20} height={legendRectSize + 20} fill={color} stroke={stroke}></rect>
-          <text x="50" y="30">{rect.country}</text>
-        </g>
+        <li key={i} style={{borderTopColor: colors}} className="legend-square">
+          <span className="legend-range">{legendText}</span>
+        </li>
       );
     });
     return (
-      <g>
-        <g className="map-legend" transform={transform}>
-          {rectData}
-        </g>
-      </g>
+      <div className="legend">
+        <p>Job Views</p>
+        <ul className="legend-list">
+          {legendSquares}
+        </ul>
+      </div>
     );
   }
 }
 
 Legend.propTypes = {
+  /**
+   * Object of the data from the map that gets sent to the legend
+   */
   mapProps: React.PropTypes.object.isRequired,
+  /**
+   * String format for the labels of the legend
+   */
+  format: React.PropTypes.string.isRequired,
+  /**
+   * Function passed to the legend in order to populate the colors and values
+   */
+  colorRanges: React.PropTypes.func.isRequired,
 };
 
 export default Legend;
