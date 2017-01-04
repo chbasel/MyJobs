@@ -35,9 +35,10 @@ class WorldMap extends Component {
     });
   }
   render() {
-    const {chartData, width, height, margin, scale, colorRange} = this.props;
-    const transform = 'translate(' + margin.left + ',' + margin.top + ')';
-    const projection = d3.geo.mercator().translate([width / 2, height / 2]).scale(scale);
+    const {chartData, width, height, transformScale, transformTranslate, projectionScale, colorRange} = this.props;
+    const transform = 'translate(' + transformTranslate.x + ',' + transformTranslate.y + ')';
+    const scale = 'scale(' + transformScale.x + ',' + transformScale.y + ')';
+    const projection = d3.geo.mercator().translate([width / 2, height / 2]).scale(projectionScale);
     const path = d3.geo.path().projection(projection);
     const rowData = chartData.PageLoadData.rows;
     const colors = d3.scale.quantize().range(colorRange).domain([1, d3.max(rowData, (d) => d.job_views)]);
@@ -72,7 +73,7 @@ class WorldMap extends Component {
           viewBox={'0 0 ' + width + ' ' + height + ''}
           preserveAspectRatio="xMinYMin meet"
          >
-         <g transform={transform}>
+         <g transform={transform + ' ' + scale}>
            {paths}
          </g>
          </svg>
@@ -96,13 +97,17 @@ WorldMap.propTypes = {
    */
   width: React.PropTypes.number.isRequired,
   /**
-   * Margin is an object with keys of left, right, top, bottom and values equaling numbers for the margins of the map
+   * Scale for the projection of the SVG
    */
-  margin: React.PropTypes.object.isRequired,
+  projectionScale: React.PropTypes.number,
   /**
-   * Scale is a type of number for the scale of the map in terms of how zoomed in or out the display is
+   * Scale for the G element transform using X and Y coordinates in form of an object with key value pairs
    */
-  scale: React.PropTypes.number.isRequired,
+  transformScale: React.PropTypes.object,
+  /**
+   * Translate for the G element transform using x and y coordinates in the form of an object with key value pairs
+   */
+  transformTranslate: React.PropTypes.object,
   /**
    * Range of colors supplied to the map in the form of an array of rgba values
    */
@@ -112,8 +117,9 @@ WorldMap.propTypes = {
 WorldMap.defaultProps = {
   height: 500,
   width: 1920,
-  scale: 100,
-  margin: {top: 50, left: 25, right: 25, bottom: 25},
+  projectionScale: 100,
+  transformScale: {x: 1.6, y: 1},
+  transformTranslate: {x: -450, y: 35},
 };
 
 export default WorldMap;
