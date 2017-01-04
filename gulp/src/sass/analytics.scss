@@ -931,7 +931,7 @@ color: $primary-blue;
      }
      .tab-content-container {
        padding: 0;
-       margin-top: 75px;
+       margin-top: 20px;
      }
      .tab-navigation.open {
        left: 0;
@@ -1134,20 +1134,18 @@ color: $primary-blue;
           right: 2px;
           top: 3px;
           padding: 2px 5px;
-          background: $white;
-          color: $primary-blue;
+          color: $white;
           border-radius: 50%;
         }
          .tab.active-tab .close-tab {
-           color: $white;
-           background: $primary-blue;
+           color: $primary-blue;
          }
          .tab:hover .close-tab {
-           color: $white;
-           background: $primary-blue;
+           color: $primary-blue;
          }
          .tab .close-tab:hover {
            cursor: pointer;
+           color: $white;
            background: $primary-red;
          }
        }
