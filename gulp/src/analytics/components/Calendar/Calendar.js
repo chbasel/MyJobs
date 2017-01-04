@@ -183,9 +183,21 @@ class Calendar extends Component {
 Calendar.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
+  /**
+   * Boolean true or false determining whether the calendar is shown or not
+   */
   showCalendarRangePicker: React.PropTypes.bool,
+  /**
+   * Function for hiding teh calendar
+   */
   hideCalendarRangePicker: React.PropTypes.func,
+  /**
+   * Mousedown on the calendar to keep the calendar displayed when clicking on it
+   */
   onMouseDown: React.PropTypes.func,
+  /**
+   * Mouseup on the calendar to keep it displayed when click inside of it
+   */
   onMouseUp: React.PropTypes.func,
 };
 

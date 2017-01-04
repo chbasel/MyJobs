@@ -19,11 +19,11 @@ class MobileDimensions extends Component {
     dispatch(doSwitchMainDimension(mainDimension, startDate, endDate));
   }
   render() {
-    const {analytics, activeMobileMenu, toggleMenu} = this.props;
+    const {analytics, activeMobileMenu, toggleMenu, closeMenus} = this.props;
     const activeDimension = analytics.activePrimaryDimension;
     const primaryMobileDimensions = analytics.primaryDimensions.dimensionList.reports.map((report, i) => {
       return (
-        <MobileDimensionList selected={activeDimension} active={this.activeDimension.bind(this, report.value)} key={i} dimension={report} />
+        <MobileDimensionList selected={activeDimension} active={this.activeDimension.bind(this, report.value)} key={i} dimension={report} close={closeMenus}/>
       );
     });
     return (
@@ -46,8 +46,18 @@ class MobileDimensions extends Component {
 MobileDimensions.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
+  /**
+   * Boolean stating whether or not the menu is actively shown on screen
+   */
   activeMobileMenu: React.PropTypes.bool.isRequired,
+  /**
+   * Function to toggle the menu for show or hide on the screen
+   */
   toggleMenu: React.PropTypes.func.isRequired,
+  /**
+   * Function to close all menus on screen once a dimension is selected
+   */
+  closeMenus: React.PropTypes.func,
 };
 
 export default connect(state => ({

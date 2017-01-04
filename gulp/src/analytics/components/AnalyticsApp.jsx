@@ -14,6 +14,7 @@ class AnalyticsApp extends React.Component {
 
     this.toggleMobileMenu = this.toggleMobileMenu.bind(this);
     this.toggleTabsMenu = this.toggleTabsMenu.bind(this);
+    this.closeAllMobileMenus = this.closeAllMobileMenus.bind(this);
 
     this.state = {
       mobileMenuActive: false,
@@ -44,6 +45,12 @@ class AnalyticsApp extends React.Component {
       tabsMenuActive: !this.state.tabsMenuActive,
     });
   }
+  closeAllMobileMenus() {
+    this.setState({
+      mobileMenuActive: false,
+      tabsMenuActive: false,
+    });
+  }
   render() {
     const {analytics} = this.props;
     if (analytics.pageFetching) {
@@ -58,11 +65,11 @@ class AnalyticsApp extends React.Component {
             <SideBar />
             <Header tabsActive={this.state.tabsMenuActive} toggleTabs={this.toggleTabsMenu} />
           <div id="page_content">
-            <TabsContainer tabsMenuActive={this.state.tabsMenuActive} />
+            <TabsContainer tabsMenuActive={this.state.tabsMenuActive} closeMenus={this.closeAllMobileMenus}/>
           </div>
           <div className="clearfix"></div>
         </div>
-        <MobileDimensions toggleMenu={this.toggleMobileMenu} activeMobileMenu={this.state.mobileMenuActive}/>
+        <MobileDimensions toggleMenu={this.toggleMobileMenu} activeMobileMenu={this.state.mobileMenuActive} closeMenus={this.closeAllMobileMenus}/>
       </div>
     );
   }

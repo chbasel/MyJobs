@@ -67,7 +67,13 @@ class Header extends Component {
 Header.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
+  /**
+   * Toggling the tabs being active or non active for the arrows in mobile view
+   */
   toggleTabs: React.PropTypes.func.isRequired,
+  /**
+   * Boolean stating whether or not the tabs are actively displayed in mobile view
+   */
   tabsActive: React.PropTypes.bool.isRequired,
 };
 

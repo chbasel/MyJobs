@@ -14,8 +14,9 @@ class Tab extends Component {
   }
   activeTab(id, event) {
     event.preventDefault();
-    const {dispatch} = this.props;
+    const {dispatch, close} = this.props;
     dispatch(doSwitchActiveTab(id));
+    close();
   }
   removeSelectedTab(tabId) {
     const {dispatch} = this.props;
@@ -67,7 +68,14 @@ Tab.propTypes = {
     React.PropTypes.element.isRequired,
   ),
   dispatch: React.PropTypes.func.isRequired,
+  /**
+   * Active boolean to display which tab information is active on the screen
+   */
   active: React.PropTypes.bool,
+  /**
+   * Function to close a tab using the X button in the top right corner of the tab
+   */
+  close: React.PropTypes.func,
 };
 
 export default connect()(Tab);
