@@ -14,9 +14,11 @@ class ChartContainer extends Component {
   render() {
     const {chartData, width} = this.props;
     const chartType = chartData.PageLoadData.chart_type;
-    const height = (width * 0.341);
-    const usaWidth = (width / 1.5);
-    const worldScale = (width * 0.07);
+    const worldHeight = (width * 0.4);
+    const usaHeight = (width * 0.341);
+    const usaWidth = (width / 1.45);
+    const worldWidth = (width / 1.3);
+    const worldScale = (width * 0.083);
     // Grab the row data to check and make sure the data coming back isn't empty
     const dataPresent = chartData.PageLoadData.rows;
     const chartTitleByDisplay = chartData.PageLoadData.column_names[0].label;
@@ -27,10 +29,10 @@ class ChartContainer extends Component {
     let chartDisplay;
     switch (chartType) {
     case 'map:world':
-      chartDisplay = <WorldMap width={width} height={height} projectionScale={worldScale} chartData={chartData} colorRange={ranges} />;
+      chartDisplay = <WorldMap width={worldWidth} height={worldHeight} projectionScale={worldScale} chartData={chartData} colorRange={ranges} />;
       break;
     case 'map:nation':
-      chartDisplay = <USAMap width={usaWidth} height={height} chartData={chartData} colorRange={ranges} />;
+      chartDisplay = <USAMap width={usaWidth} height={usaHeight} chartData={chartData} colorRange={ranges} />;
       break;
     case 'map:state':
       chartDisplay = <SimpleBarChart width={600} height={400} chartData={chartData} />;

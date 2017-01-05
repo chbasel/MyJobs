@@ -64,14 +64,14 @@ class USAMap extends Component {
     });
     return (
       <div className="chart-container" style={{width: '100%'}}>
-        <Legend mapProps={this.props} format=".0f" colorRanges={colors}/>
         <svg
           className="chart"
           height={height}
           width={width}
          >
          {paths}
-         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.states} x={this.state.x} y={this.state.y} xPosition={495} yPosition={235}/>
+         <Legend mapProps={this.props} format=".0f" legendTranslateX={(width - 50)} colorRanges={colors}/>
+         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.states} x={this.state.x} y={this.state.y} xPosition={240} yPosition={245}/>
          </svg>
       </div>
     );

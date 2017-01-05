@@ -381,7 +381,6 @@ footer {
 .charts {
   background: $white;
   margin-bottom: 25px;
-  position: relative;
   padding: 10px 10px 0 10px;
 
   .chart-title h2 {
@@ -395,13 +394,14 @@ footer {
   }
   .chart-container {
     width: 100%;
+    position: relative;
   }
   .chart {
     width: 100%;
     min-width: 250px;
   }
   .svg-container {
-    width: 75%;
+    width: 100%;
     margin: 0 auto;
   }
   .tick text {
