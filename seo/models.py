@@ -374,7 +374,6 @@ class SeoSiteManager(models.Manager):
 
         # Follow available paths as deep as we need to...
         for n in range(1, depth):
-
             # Match anything that has a parent in the result
             # of the query up to this point (these will be the children
             # of parent at depth n)
@@ -1670,3 +1669,42 @@ class SiteRelationship(models.Model):
 
     def __str__(self):
         return "%s ==%s==> %s" % (self.parent.name, self.by, self.child.name)
+
+
+def build_graph():
+    graph = getattr(settings, 'GRAPH', {})
+    if graph:
+        return graph
+    for site in SeoSite.objects.all().prefetch_related('children', 'children__child'):
+        node = graph.get(site.domain, {})
+        for child in site.children.all():
+            related_children = node.get(child.by, [])
+            if child.child.domain not in related_children:
+                related_children.append(child.child.domain)
+            node[child.by] = list(related_children)
+        graph[site.domain] = node
+    setattr(settings, 'GRAPH', graph)
+    return graph
+
+
+def get_all_children(graph, domain, by=None, depth=1):
+    children = []
+    current_domains = [domain]
+    for _ in range(0, depth):
+        immediate_children = []
+        for domain in set(current_domains):
+            immediate_children += get_immediate_children(graph, domain, by=by)
+        children += immediate_children
+        current_domains = immediate_children
+    return children
+
+
+def get_immediate_children(graph, domain, by=None):
+    start_node = graph.get(domain, {})
+    if by:
+        return start_node.get(by, [])
+    children = []
+    for by, related_children in start_node.iteritems():
+        children += related_children
+    return children
+

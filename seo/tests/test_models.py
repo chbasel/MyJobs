@@ -13,6 +13,8 @@ from myjobs.tests.factories import RoleFactory
 from seo.tests.setup import DirectSEOBase
 
 
+from seo.models import build_graph, get_all_children
+
 class SeoSiteRelatedSites(TestCase):
     def setUp(self):
         """
@@ -26,8 +28,8 @@ class SeoSiteRelatedSites(TestCase):
 
         """
         super(SeoSiteRelatedSites, self).setUp()
-
-        self.parent, _ = SeoSite.objects.get_or_create(domain='parent.jobs')
+        SeoSite.objects.all().delete()
+        self.parent = SeoSite.objects.create(domain='parent.jobs')
 
         family = {
             'parent.jobs': {
@@ -97,45 +99,80 @@ class SeoSiteRelatedSites(TestCase):
                 SiteRelationship.objects.create(parent=site, child=child,
                                                 by='region')
 
+    # def test_related_sites(self):
+    #     related_sites = SeoSite.objects.related_sites(self.parent)
+    #     related_sites = set(related_sites.values_list('domain', flat=True))
+    #     expected = self.children_depth_1
+    #     self.assertItemsEqual(related_sites, expected)
+    #
+    # def test_related_sites_depth_2(self):
+    #     related_sites = SeoSite.objects.related_sites(self.parent, depth=2)
+    #     related_sites = set(related_sites.values_list('domain', flat=True))
+    #     expected = self.children_depth_1 | self.children_depth_2
+    #     self.assertItemsEqual(related_sites, expected)
+    #
+    # def test_related_sites_depth_3(self):
+    #     related_sites = SeoSite.objects.related_sites(self.parent, depth=3)
+    #     related_sites = set(related_sites.values_list('domain', flat=True))
+    #     expected = self.children_depth_1 | self.children_depth_2 | self.children_depth_3
+    #
+    #     self.assertItemsEqual(related_sites, expected)
+    #
+    # def test_related_sites_by(self):
+    #     related_sites = SeoSite.objects.related_sites(self.parent, by='term')
+    #     related_sites = set(related_sites.values_list('domain', flat=True))
+    #     expected = self.term_depth_1
+    #     self.assertItemsEqual(related_sites, expected)
+    #
+    # def test_related_sites_depth_2_by(self):
+    #     related_sites = SeoSite.objects.related_sites(self.parent, depth=2,
+    #                                                   by='term')
+    #     related_sites = set(related_sites.values_list('domain', flat=True))
+    #     expected = self.term_depth_1 | self.term_depth_2
+    #     self.assertItemsEqual(related_sites, expected)
+    #
+    # def test_related_sites_depth_3_by(self):
+    #     related_sites = SeoSite.objects.related_sites(self.parent, depth=3,
+    #                                                   by='term')
+    #     related_sites = set(related_sites.values_list('domain', flat=True))
+    #     expected = self.term_depth_1 | self.term_depth_2 | self.term_depth_3
+    #     self.assertItemsEqual(related_sites, expected)
+
     def test_related_sites(self):
-        related_sites = SeoSite.objects.related_sites(self.parent)
-        related_sites = set(related_sites.values_list('domain', flat=True))
+        graph = build_graph()
+        related_sites = get_all_children(graph, self.parent.domain)
         expected = self.children_depth_1
-        self.assertItemsEqual(related_sites, expected)
+        self.assertItemsEqual(set(related_sites), expected)
 
     def test_related_sites_depth_2(self):
-        related_sites = SeoSite.objects.related_sites(self.parent, depth=2)
-        related_sites = set(related_sites.values_list('domain', flat=True))
+        graph = build_graph()
+        related_sites = get_all_children(graph, self.parent.domain, depth=2)
         expected = self.children_depth_1 | self.children_depth_2
-        self.assertItemsEqual(related_sites, expected)
+        self.assertItemsEqual(set(related_sites), expected)
 
     def test_related_sites_depth_3(self):
-        related_sites = SeoSite.objects.related_sites(self.parent, depth=3)
-        related_sites = set(related_sites.values_list('domain', flat=True))
+        graph = build_graph()
+        related_sites = get_all_children(graph, self.parent.domain, depth=3)
         expected = self.children_depth_1 | self.children_depth_2 | self.children_depth_3
-
-        self.assertItemsEqual(related_sites, expected)
+        self.assertItemsEqual(set(related_sites), expected)
 
     def test_related_sites_by(self):
-        related_sites = SeoSite.objects.related_sites(self.parent, by='term')
-        related_sites = set(related_sites.values_list('domain', flat=True))
+        graph = build_graph()
+        related_sites = get_all_children(graph, self.parent.domain, by='term')
         expected = self.term_depth_1
-        self.assertItemsEqual(related_sites, expected)
+        self.assertItemsEqual(set(related_sites), expected)
 
     def test_related_sites_depth_2_by(self):
-        related_sites = SeoSite.objects.related_sites(self.parent, depth=2,
-                                                      by='term')
-        related_sites = set(related_sites.values_list('domain', flat=True))
+        graph = build_graph()
+        related_sites = get_all_children(graph, self.parent.domain, depth=2, by='term')
         expected = self.term_depth_1 | self.term_depth_2
-        self.assertItemsEqual(related_sites, expected)
+        self.assertItemsEqual(set(related_sites), expected)
 
     def test_related_sites_depth_3_by(self):
-        related_sites = SeoSite.objects.related_sites(self.parent, depth=3,
-                                                      by='term')
-        related_sites = set(related_sites.values_list('domain', flat=True))
+        graph = build_graph()
+        related_sites = get_all_children(graph, self.parent.domain, depth=3, by='term')
         expected = self.term_depth_1 | self.term_depth_2 | self.term_depth_3
-
-        self.assertItemsEqual(related_sites, expected)
+        self.assertItemsEqual(set(related_sites), expected)
 
 
 class ModelsTestCase(DirectSEOBase):

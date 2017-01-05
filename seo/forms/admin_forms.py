@@ -20,7 +20,7 @@ from taggit.forms import TagField, TagWidget
 from postajob.models import SitePackage
 from seo.models import (ATSSourceCode, BillboardImage,
                         BusinessUnit, Company, Configuration, CustomFacet,
-                        CustomPage, GoogleAnalytics,
+                        CustomPage, GoogleAnalytics, SiteRelationship,
                         GoogleAnalyticsCampaign, SeoSite, SeoSiteFacet,
                         SiteTag, SpecialCommitment, ViewSource)
 
@@ -780,3 +780,8 @@ class ViewSourceForm(SeoSiteReverseForm):
 
 class UploadJobFileForm(forms.Form):
     job_file = forms.FileField(label='Job File')
+
+
+class SiteRelationshipForm(forms.ModelForm):
+    class Meta:
+        model = SiteRelationship

@@ -31,7 +31,7 @@ from seo.forms.admin_forms import (ConfigurationForm, CustomFacetForm,
                                    CustomPageForm, RowPermissionsForm,
                                    BillboardImageForm, MyModelChoiceField,
                                    MyModelMultipleChoiceField, SeoSiteForm,
-                                   BusinessUnitForm,
+                                   BusinessUnitForm, SiteRelationshipForm,
                                    GoogleAnalyticsCampaignForm,
                                    SpecialCommitmentForm, CompanyForm,
                                    ATSSourceCodeForm, ViewSourceForm,
@@ -42,7 +42,7 @@ from seo.models import (ATSSourceCode, BillboardHotspot, BillboardImage,
                         GoogleAnalyticsCampaign, SeoSite, SeoSiteFacet,
                         SeoSiteRedirect, SiteTag, SpecialCommitment, ViewSource,
                         QueryRedirect, QParameter, LocationParameter,
-                        MocParameter)
+                        MocParameter, SiteRelationship)
 from seo.queryset_copier import copy_following_relationships
 from seo.models import check_message_queue
 
@@ -1278,6 +1278,13 @@ class QueryRedirectAdmin(ForeignKeyAutocompleteAdmin):
         js = ('django_extensions/js/jquery-1.7.2.min.js',)
 
 
+class SiteRelationshipAdmin(admin.ModelAdmin):
+    fields = ('parent', 'child', 'by', 'weight')
+    list_display = ('parent', 'child', 'by')
+    form = SiteRelationshipForm
+
+
+admin.site.register(SiteRelationship, SiteRelationshipAdmin)
 admin.site.register(CustomFacet, CustomFacetAdmin)
 admin.site.register(Configuration, ConfigurationAdmin)
 admin.site.register(BusinessUnit, BusinessUnitAdmin)
