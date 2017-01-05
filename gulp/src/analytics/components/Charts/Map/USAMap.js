@@ -71,7 +71,7 @@ class USAMap extends Component {
           width={width}
          >
          {paths}
-         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.states} x={this.state.x} y={this.state.y} xPosition={355} yPosition={275}/>
+         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.states} x={this.state.x} y={this.state.y} xPosition={495} yPosition={235}/>
          </svg>
       </div>
     );

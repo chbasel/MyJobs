@@ -44,10 +44,10 @@ class ChartContainer extends Component {
     let chartDisplay;
     switch (chartType) {
     case 'map:world':
-      chartDisplay = <WorldMap width={this.state.width} height={550} projectionScale={100} chartData={chartData} colorRange={ranges} />;
+      chartDisplay = <WorldMap width={this.state.width} height={550} projectionScale={85} chartData={chartData} colorRange={ranges} />;
       break;
     case 'map:nation':
-      chartDisplay = <USAMap width={this.state.width} height={450} chartData={chartData} colorRange={ranges} />;
+      chartDisplay = <USAMap width={this.state.width} height={500} chartData={chartData} colorRange={ranges} />;
       break;
     case 'map:state':
       chartDisplay = <SimpleBarChart width={600} height={400} chartData={chartData} />;

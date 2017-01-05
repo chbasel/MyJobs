@@ -69,9 +69,11 @@ class WorldMap extends Component {
           height={height}
           width={width}
          >
-         {paths}
+         <g transform={transform}>
+           {paths}
+         </g>
          </svg>
-         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.country} x={this.state.x} y={this.state.y} xPosition={355} yPosition={275}/>
+         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.country} x={this.state.x} y={this.state.y} xPosition={495} yPosition={235}/>
       </div>
     );
   }
@@ -112,8 +114,8 @@ WorldMap.defaultProps = {
   height: 500,
   width: 1920,
   projectionScale: 100,
-  transformScale: {x: 1.6, y: 1},
-  transformTranslate: {x: -450, y: 35},
+  transformScale: {x: 1.5, y: 1.3},
+  transformTranslate: {x: -365, y: -25},
 };
 
 export default WorldMap;
