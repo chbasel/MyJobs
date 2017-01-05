@@ -69,8 +69,7 @@ class WorldMap extends Component {
           version="1.1"
           height={height}
           width={width}
-          viewBox={`0 0 ${width} ${height}`}
-          preserveAspectRatio="xMinYMin meet"
+
          >
          <g transform={transform}>
            {paths}

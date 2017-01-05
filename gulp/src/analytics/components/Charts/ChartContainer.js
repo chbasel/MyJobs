@@ -10,6 +10,18 @@ import {isEmpty} from 'lodash-compat/lang';
 class ChartContainer extends Component {
   constructor(props, context) {
     super(props, context);
+
+    this.state = {
+      width: 0,
+    };
+  }
+  componentDidMount() {
+    this.handleChartWidth();
+  }
+  handleChartWidth() {
+    this.setState({
+      width: this.refs.chartContainer.clientWidth,
+    });
   }
   render() {
     const {chartData} = this.props;
@@ -24,10 +36,10 @@ class ChartContainer extends Component {
     let chartDisplay;
     switch (chartType) {
     case 'map:world':
-      chartDisplay = <WorldMap width={1600} height={500} projectionScale={95} chartData={chartData} colorRange={ranges} />;
+      chartDisplay = <WorldMap width={this.state.width} height={500} projectionScale={95} chartData={chartData} colorRange={ranges} />;
       break;
     case 'map:nation':
-      chartDisplay = <USAMap width={1400} height={500} scale={950} chartData={chartData} colorRange={ranges} />;
+      chartDisplay = <USAMap width={this.state.width} height={500} scale={950} chartData={chartData} colorRange={ranges} />;
       break;
     case 'map:state':
       chartDisplay = <SimpleBarChart width={600} height={400} chartData={chartData} />;
@@ -39,7 +51,7 @@ class ChartContainer extends Component {
       chartDisplay = <NoResults type="div" errorMessage="No charts found" helpErrorMessage={helpError}/>;
     }
     return (
-        <div id={'chart_tab_' + chartData.navId} className="charts">
+        <div id={'chart_tab_' + chartData.navId} className="charts" ref="chartContainer">
           <Row>
             <Col md={12}>
               <div className="chart-title">
