@@ -415,4 +415,8 @@ def get_menus(context):
 
 @register.assignment_tag
 def can(user, company, activity):
-    return user.can(company, activity)
+    try:
+        has_activity = user.can(company, activity)
+    except MissingAppLevelAccess:
+        has_activity = False
+    return has_activity
