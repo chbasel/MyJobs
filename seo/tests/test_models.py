@@ -4,12 +4,138 @@ from mock import patch
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.template.loader import TemplateDoesNotExist
+from django.test import TestCase
 
 from seo.tests import factories
-from seo.models import Company, CustomFacet, SeoSite, SiteTag
+from seo.models import Company, CustomFacet, SeoSite, SiteTag, SiteRelationship
 from myjobs.tests.factories import AppAccessFactory
 from myjobs.tests.factories import RoleFactory
 from seo.tests.setup import DirectSEOBase
+
+
+class SeoSiteRelatedSites(TestCase):
+    def setUp(self):
+        """
+        Creates a site family of sites, with a circular relationship.
+
+
+        parent.jobs == term ==> term.jobs  == term ==> expression.jobs == term ==> word.jobs           ==region==> somewhere.jobs
+                                           ==region==> placeterm.jobs  ==region==> smallplaceterm.jobs ==region==> smallplace.jobs
+                    ==region==> place.jobs == term ==> placeterm.jobs
+                                           ==region==> smallplace.jobs
+
+        """
+        super(SeoSiteRelatedSites, self).setUp()
+
+        self.parent, _ = SeoSite.objects.get_or_create(domain='parent.jobs')
+
+        family = {
+            'parent.jobs': {
+                'term': ['term.jobs'],
+                'region': ['place.jobs']
+            },
+            'term.jobs': {
+                'term': ['expression.jobs'],
+                'region': ['placeterm.jobs']
+            },
+            'place.jobs': {
+                'term': ['placeterm.jobs'],
+                'region': ['smallplace.jobs']
+            },
+            'placeterm.jobs': {
+                'term': [],
+                'region': ['smallplaceterm.jobs']
+            },
+            'smallplace.jobs': {
+                'term': [],
+                'region': []
+            },
+            'smallplaceterm.jobs': {
+                'term': [],
+                'region': ['smallplace.jobs']
+            },
+            'word.jobs': {
+                'term': [],
+                'region': ['somewhere.jobs']
+            },
+            'somewhere.jobs': {
+                'term': [],
+                'region': []
+            },
+            'expression.jobs': {
+                'term': [],
+                'region': []
+            }
+          }
+
+        self.children_depth_1 = set(family[self.parent.domain]['term'] + family[self.parent.domain]['region'])
+        self.children_depth_2 = set()
+        for child in self.children_depth_1:
+            [self.children_depth_2.add(c) for c in family[child]['term'] + family[child]['region']]
+        self.children_depth_3 = set()
+        for child in self.children_depth_2:
+            [self.children_depth_3.add(c) for c in family[child]['term'] + family[child]['region']]
+
+        self.term_depth_1 = set(family[self.parent.domain]['term'])
+        self.term_depth_2 = set()
+        for child in self.term_depth_1:
+            [self.term_depth_2.add(c) for c in family[child]['term']]
+        self.term_depth_3 = set()
+        for child in self.term_depth_2:
+            [self.term_depth_3.add(c) for c in family[child]['term']]
+
+        for site in family.keys():
+            site, _ = SeoSite.objects.get_or_create(domain=site)
+
+            for child in family[site.domain]['term']:
+                child, _ = SeoSite.objects.get_or_create(domain=child)
+                SiteRelationship.objects.create(parent=site, child=child,
+                                                by='term')
+
+            for child in family[site.domain]['region']:
+                child, _ = SeoSite.objects.get_or_create(domain=child)
+                SiteRelationship.objects.create(parent=site, child=child,
+                                                by='region')
+
+    def test_related_sites(self):
+        related_sites = SeoSite.objects.related_sites(self.parent)
+        related_sites = set(related_sites.values_list('domain', flat=True))
+        expected = self.children_depth_1
+        self.assertItemsEqual(related_sites, expected)
+
+    def test_related_sites_depth_2(self):
+        related_sites = SeoSite.objects.related_sites(self.parent, depth=2)
+        related_sites = set(related_sites.values_list('domain', flat=True))
+        expected = self.children_depth_1 | self.children_depth_2
+        self.assertItemsEqual(related_sites, expected)
+
+    def test_related_sites_depth_3(self):
+        related_sites = SeoSite.objects.related_sites(self.parent, depth=3)
+        related_sites = set(related_sites.values_list('domain', flat=True))
+        expected = self.children_depth_1 | self.children_depth_2 | self.children_depth_3
+
+        self.assertItemsEqual(related_sites, expected)
+
+    def test_related_sites_by(self):
+        related_sites = SeoSite.objects.related_sites(self.parent, by='term')
+        related_sites = set(related_sites.values_list('domain', flat=True))
+        expected = self.term_depth_1
+        self.assertItemsEqual(related_sites, expected)
+
+    def test_related_sites_depth_2_by(self):
+        related_sites = SeoSite.objects.related_sites(self.parent, depth=2,
+                                                      by='term')
+        related_sites = set(related_sites.values_list('domain', flat=True))
+        expected = self.term_depth_1 | self.term_depth_2
+        self.assertItemsEqual(related_sites, expected)
+
+    def test_related_sites_depth_3_by(self):
+        related_sites = SeoSite.objects.related_sites(self.parent, depth=3,
+                                                      by='term')
+        related_sites = set(related_sites.values_list('domain', flat=True))
+        expected = self.term_depth_1 | self.term_depth_2 | self.term_depth_3
+
+        self.assertItemsEqual(related_sites, expected)
 
 
 class ModelsTestCase(DirectSEOBase):

@@ -359,27 +359,38 @@ class jobListing (models.Model):
 
         super(jobListing, self).save()
 
-from django.db.models import Q
+
 class SeoSiteManager(models.Manager):
     def related_sites(self, parent, by=None, depth=1):
         base_queryset = self.get_queryset()
+        by = by if not isinstance(by, RelationshipChoice) else by.name
 
-        queryset = base_queryset.filter(parents__parent=parent)
+        # Base of the query - any site where the parent=parent.
+        kwargs = {'parents__parent': parent}
+        if by:
+            kwargs['parents__by'] = by
 
-        for _ in range(1, depth):
-            nested_kwargs = {'parents__parent__in': queryset}
-            unnested_kwargs = {'parents__parent': parent}
+        query = [models.Q(**kwargs)]
 
+        # Follow available paths as deep as we need to...
+        for n in range(1, depth):
+
+            # Match anything that has a parent in the result
+            # of the query up to this point (these will be the children
+            # of parent at depth n)
+            nested_kwargs = {
+                'parents__parent__in': base_queryset.filter(
+                    reduce(operator.or_, query)
+                )
+            }
             if by:
                 nested_kwargs['parents__by'] = by
-                unnested_kwargs['parents__by'] = by
 
-            queryset = SeoSite.objects.filter(
-                Q(**nested_kwargs) |
-                Q(**unnested_kwargs)
-            )
+            # Or match any other query we've already assembled
+            # (these will be the children of the parent a depths 1-n)
+            query.append(models.Q(**nested_kwargs))
 
-        return queryset
+        return base_queryset.filter(reduce(operator.or_, query))
 
 
 class SeoSite(Site):
@@ -1646,15 +1657,16 @@ class SiteRelationship(models.Model):
 
     weight = models.FloatField(default=0)
     by = models.CharField(choices=relationship_choices, blank=False, null=False,
-                          max_length=255)
+                          max_length=255, db_index=True)
     parent = models.ForeignKey('SeoSite', blank=False, null=False,
-                               related_name='children')
+                               related_name='children', db_index=True)
     child = models.ForeignKey('SeoSite', blank=False, null=False,
-                              related_name='parents')
+                              related_name='parents', db_index=True)
 
 
     class Meta:
         unique_together = (('parent', 'child', 'by'), )
+        index_together = (('parent', 'by'), ('child', 'by'), )
 
     def __str__(self):
         return "%s ==%s==> %s" % (self.parent.name, self.by, self.child.name)
