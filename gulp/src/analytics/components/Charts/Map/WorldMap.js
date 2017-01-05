@@ -35,7 +35,7 @@ class WorldMap extends Component {
     });
   }
   render() {
-    const {chartData, width, height, transformScale, transformTranslate, projectionScale, colorRange} = this.props;
+    const {chartData, width, height, transformTranslate, projectionScale, colorRange} = this.props;
     const transform = `translate(${transformTranslate.x}, ${transformTranslate.y })`;
     const projection = d3.geo.mercator().translate([width / 2, height / 2]).scale(projectionScale);
     const path = d3.geo.path().projection(projection);
@@ -115,7 +115,7 @@ WorldMap.defaultProps = {
   width: 1920,
   projectionScale: 100,
   transformScale: {x: 1.5, y: 1.3},
-  transformTranslate: {x: -350, y: 55},
+  transformTranslate: {x: -250, y: 55},
 };
 
 export default WorldMap;

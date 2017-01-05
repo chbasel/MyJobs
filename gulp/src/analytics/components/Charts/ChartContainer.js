@@ -14,10 +14,9 @@ class ChartContainer extends Component {
   render() {
     const {chartData, width} = this.props;
     const chartType = chartData.PageLoadData.chart_type;
-    const height = (width * .341);
+    const height = (width * 0.341);
     const usaWidth = (width / 1.5);
-    const worldScale = (width * .07);
-    console.log(width);
+    const worldScale = (width * 0.07);
     // Grab the row data to check and make sure the data coming back isn't empty
     const dataPresent = chartData.PageLoadData.rows;
     const chartTitleByDisplay = chartData.PageLoadData.column_names[0].label;
@@ -66,6 +65,7 @@ class ChartContainer extends Component {
 
 ChartContainer.propTypes = {
   chartData: React.PropTypes.object.isRequired,
+  width: React.PropTypes.number.isRequired,
 };
 
 export default ChartContainer;
