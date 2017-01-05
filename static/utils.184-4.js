@@ -41,10 +41,9 @@ utils.logoutTimer = function readCookie(url) {
         // If the loggedout cookie is set, a log out was initiated by the
         // user via.
         // If the exp cookie is missing, the user's session has expired.
-        if (utils.readCookie('loggedout') && window.location.pathname !== url) {
+        if ((utils.readCookie('loggedout') && window.location.pathname !== url) ||
+            ((!utils.readCookie('exp')) && (window.location.pathname !== url))) {
           window.location.assign(url);
-        } else if ((!utils.readCookie('exp')) && (window.location.pathname !== url)) {
-          window.location.reload(true);
         }
 
       }, 500);
