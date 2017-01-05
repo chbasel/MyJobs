@@ -33,6 +33,7 @@ init() {
     initsolrdata
     initmysqldata
     initrevproxycerts
+    initmongodata
     initnet
 }
 
@@ -44,6 +45,11 @@ initsolrdata() {
 initmysqldata() {
     docker build -t darrint/mysqldata mysqldata
     docker create --name mysqldata darrint/mysqldata true
+}
+
+initmongodata() {
+    docker build -t darrint/mongodata mongodata
+    docker create --name mongodata darrint/mongodata true
 }
 
 initrevproxycerts() {
@@ -106,6 +112,7 @@ background() {
         --name mongo \
         --net=myjobs \
         -d \
+        --volumes-from mongodata \
         -p 27017:27017 \
         mongo:3.2
 }
