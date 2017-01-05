@@ -64,8 +64,8 @@ class AnalyticsApp extends React.Component {
             {analytics.navFetching ? <LoadingSpinner/> : ''}
             <SideBar />
             <Header tabsActive={this.state.tabsMenuActive} toggleTabs={this.toggleTabsMenu} />
-          <div id="page_content">
-            <TabsContainer tabsMenuActive={this.state.tabsMenuActive} closeMenus={this.closeAllMobileMenus}/>
+          <div id="page_content" ref="contentContainer">
+            <TabsContainer tabsMenuActive={this.state.tabsMenuActive} closeMenus={this.closeAllMobileMenus} />
           </div>
           <div className="clearfix"></div>
         </div>

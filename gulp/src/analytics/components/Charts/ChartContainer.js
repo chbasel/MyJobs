@@ -10,30 +10,14 @@ import {isEmpty} from 'lodash-compat/lang';
 class ChartContainer extends Component {
   constructor(props, context) {
     super(props, context);
-
-    this.state = {
-      width: 0,
-    };
-  }
-  componentDidMount() {
-    this.handleChartWidth();
-    this.handleChartResize();
-  }
-  handleChartWidth() {
-    this.setState({
-      width: this.refs.svgContainer.clientWidth,
-    });
-  }
-  handleChartResize() {
-    window.addEventListener('resize', () => {
-      this.setState({
-        width: this.refs.svgContainer.clientWidth,
-      });
-    });
   }
   render() {
-    const {chartData} = this.props;
+    const {chartData, width} = this.props;
     const chartType = chartData.PageLoadData.chart_type;
+    const height = (width * .341);
+    const usaWidth = (width / 1.5);
+    const worldScale = (width * .07);
+    console.log(width);
     // Grab the row data to check and make sure the data coming back isn't empty
     const dataPresent = chartData.PageLoadData.rows;
     const chartTitleByDisplay = chartData.PageLoadData.column_names[0].label;
@@ -44,10 +28,10 @@ class ChartContainer extends Component {
     let chartDisplay;
     switch (chartType) {
     case 'map:world':
-      chartDisplay = <WorldMap width={this.state.width} height={550} projectionScale={85} chartData={chartData} colorRange={ranges} />;
+      chartDisplay = <WorldMap width={width} height={height} projectionScale={worldScale} chartData={chartData} colorRange={ranges} />;
       break;
     case 'map:nation':
-      chartDisplay = <USAMap width={this.state.width} height={500} chartData={chartData} colorRange={ranges} />;
+      chartDisplay = <USAMap width={usaWidth} height={height} chartData={chartData} colorRange={ranges} />;
       break;
     case 'map:state':
       chartDisplay = <SimpleBarChart width={600} height={400} chartData={chartData} />;
@@ -70,7 +54,7 @@ class ChartContainer extends Component {
           <hr/>
             <Row>
               <Col md={12}>
-                <div className="svg-container" ref="svgContainer">
+                <div className="svg-container">
                   {isEmpty(dataPresent) ? <NoResults type="div" errorMessage="No charts found" helpErrorMessage={helpError}/> : chartDisplay}
                 </div>
               </Col>
