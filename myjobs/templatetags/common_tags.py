@@ -301,19 +301,6 @@ def get_menus(context):
         })
 
         try:
-            can_read_outreach_email_address = user.can(
-                company, "read outreach email address")
-        except MissingAppLevelAccess:
-            can_read_outreach_email_address = False
-
-        if can_read_outreach_email_address:
-            beta_menu["submenus"].append({
-                        "id": "nonuseroutreach",
-                        "href": url("prm/view/nonuseroutreach"),
-                        "label": "Non-User Outreach",
-                    })
-
-        try:
             can_view_analytics_info = user.can(
                 company, "view analytics")
         except MissingAppLevelAccess:
@@ -424,3 +411,8 @@ def get_menus(context):
     # only return menus we've populated
     return [menu for menu in
             beta_menu, message_menu, employer_menu, profile_menu if menu]
+
+
+@register.assignment_tag
+def can(user, company, activity):
+    return user.can(company, activity)

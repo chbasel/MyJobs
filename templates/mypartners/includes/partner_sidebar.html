@@ -1,3 +1,4 @@
+{% load common_tags %}
 <div class="sidebar">
     {% if filters %}
     <div class="partner-filters">
@@ -44,6 +45,10 @@
         <a class="btn" href="{% url 'create_partner' %}?ct={{ partner_ct }}">Create New Partner</a>
         <a class="btn" href="{% url 'partner_library' %}">Search OFCCP Partner Library</a>
         <a class="btn" href="{% url 'partner_tagging' %}">Tag Management</a>
+        {% can user company 'read outreach email address' as has_nuo %}
+        {% if has_nuo %}
+        <a class="btn" href="{% url 'nuo_main' %}">Non-User Outreach</a>
+        {% endif %}
     </div>
     {% endif %}
 </div>
