@@ -69,7 +69,7 @@ class WorldMap extends Component {
           width={width}
          >
            {paths}
-           <Legend mapProps={this.props} legendTranslateX={(width - 100)} format=".0f" colorRanges={colors}/>
+           <Legend mapProps={this.props} legendTranslateX={(width - 100)} height={(height * .017)} width={(width * .035)} format=".0f" colorRanges={colors}/>
          </svg>
          <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.country} x={this.state.x} y={this.state.y} xPosition={240} yPosition={245}/>
       </div>
