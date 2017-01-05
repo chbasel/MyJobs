@@ -155,6 +155,7 @@
         <![endif]-->
         <script type="text/javascript">
             // check for logout cookie every second
+            var loggedin = {%if user.pk%}true{%else%}false{%endif%};
             utils.logoutTimer("{% url 'home' %}");
         </script>
 

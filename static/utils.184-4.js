@@ -34,7 +34,8 @@ utils.readCookie = function readCookie(cookie) {
  **/
 utils.logoutTimer = function readCookie(url) {
   if (!timer) {
-    if (utils.readCookie('sessionid')) {
+    if (loggedin) {
+      // We were logged in when this was called. Set up our logout timer.
       timer = window.setInterval(function redirect() {
         // if we are logged out and not already on the home page
         // If the loggedout cookie is set, a log out was initiated by the
