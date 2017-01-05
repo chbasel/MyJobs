@@ -456,8 +456,8 @@ class SeoSite(Site):
                                           related_name='canonical_company_for')
 
     parent_site = NonChainedForeignKey('self', blank=True, null=True,
-                                     on_delete=models.SET_NULL,
-                                     related_name='child_sites')
+                                       on_delete=models.SET_NULL,
+                                       related_name='child_sites')
 
     email_domain = models.CharField(max_length=255, default='my.jobs')
 
@@ -965,20 +965,28 @@ class Configuration(models.Model):
         (9, 9),
     )
 
-    STATUS_CHOICES = (
-        (1, 'Staging'),
-        (2, 'Production'),
-    )
+    STATUS_STAGING = 1
+    STATUS_PRODUCTION = 2
+    STATUSES = {
+        STATUS_STAGING: 'Staging',
+        STATUS_PRODUCTION: 'Production',
+    }
+    STATUS_CHOICES = STATUSES.items()
 
+    HOME_ICON_NONE = 1
+    HOME_ICON_BOTTOM = 2
+    HOME_ICON_TOP = 3
     HOME_ICON_CHOICES = (
-        (1, 'None'),
-        (2, 'Bottom'),
-        (3, 'Top')
+        (HOME_ICON_NONE, 'None'),
+        (HOME_ICON_BOTTOM, 'Bottom'),
+        (HOME_ICON_TOP, 'Top')
     )
 
+    TEMPLATE_V1 = 'v1'
+    TEMPLATE_V2 = 'v2'
     TEMPLATE_VERSION_CHOICES = (
-        ('v1', 'Version 1'),
-        ('v2', 'Version 2'),
+        (TEMPLATE_V1, 'Version 1'),
+        (TEMPLATE_V2, 'Version 2'),
     )
 
     def __init__(self, *args, **kwargs):
@@ -1014,13 +1022,7 @@ class Configuration(models.Model):
         self.clear_caches([self])
 
     def status_title(self):
-        if self.status == 1:
-            status_title = 'Staging'
-        elif self.status == 2:
-            status_title = 'Production'
-        else:
-            status_title = 'Pending'
-        return status_title
+        return self.STATUSES.get(self.status, 'Pending')
 
     def __unicode__(self):
         if self.title:
@@ -1043,9 +1045,9 @@ class Configuration(models.Model):
         :return: Original path or v2 path if exists and enabled
 
         """
-        template_version = 'v1'
+        template_version = self.TEMPLATE_V1
 
-        if self.template_version not in ('v1', None):
+        if self.template_version not in (self.TEMPLATE_V1, None):
             try:
                 version_string = '%s/%s' % (self.template_version, template_string)
                 loader.get_template(version_string)
@@ -1179,8 +1181,10 @@ class Configuration(models.Model):
     revision = models.IntegerField('Revision', default=1)
 
     # home page template settings
-    home_page_template = models.CharField('Home Page Template', max_length=200,
-                                          default='home_page/home_page_listing.html')
+    home_page_template = models.CharField(
+        'Home Page Template', max_length=200,
+        default='home_page/home_page_listing.html'
+    )
     show_home_microsite_carousel = models.BooleanField('Show Microsite Carousel'
                                                        ' on Home Page',
                                                        default=False)
@@ -1195,7 +1199,8 @@ class Configuration(models.Model):
     objects = models.Manager()
     this_site = ConfigBySiteManager()
 
-    # Value from 0 to 1 showing what percent of featured jobs to display per page
+    # Value from 0 to 1 showing what percent of featured jobs to display
+    # per page
     percent_featured = models.DecimalField(
         max_digits=3, decimal_places=2,
         default=decimal.Decimal('.5'),

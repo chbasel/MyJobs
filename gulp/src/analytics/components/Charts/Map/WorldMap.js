@@ -3,7 +3,7 @@ import {Component} from 'react';
 import d3 from 'd3';
 import Paths from '../Common/Paths';
 import ToolTip from '../Common/ToolTip';
-// import Legend from '../Common/Legend';
+import Legend from '../Common/Legend';
 import mapData from 'common/resources/maps/countries';
 
 class WorldMap extends Component {
@@ -12,7 +12,12 @@ class WorldMap extends Component {
     this.state = {
       x: 0,
       y: 0,
-      country: {},
+      country: {
+        geometry: {},
+        id: '',
+        properties: {},
+        type: '',
+      },
       showToolTip: false,
     };
   }
@@ -30,20 +35,27 @@ class WorldMap extends Component {
     });
   }
   render() {
-    const {chartData, width, height, margin, scale} = this.props;
+    const {chartData, width, height, margin, scale, colorRange} = this.props;
     const transform = 'translate(' + margin.left + ',' + margin.top + ')';
     const projection = d3.geo.mercator().translate([width / 2, height / 2]).scale(scale);
     const path = d3.geo.path().projection(projection);
+    const rowData = chartData.PageLoadData.rows;
+    const colors = d3.scale.quantize().range(colorRange).domain([1, d3.max(rowData, (d) => d.job_views)]);
     const fill = (countryData) => {
-      const rowData = chartData.PageLoadData.rows;
-      const color = d3.scale.linear().domain([0, d3.max(rowData, (d) => d.job_views)]).range(['rgb(222,235,247)', 'rgb(90,109,129)', 'rgb(49,130,189)']);
       for (let i = 0; i < rowData.length; i++) {
         if (rowData[i].country === countryData.id) {
-          return color(rowData[i].job_views);
+          return colors(rowData[i].job_views);
         }
       }
       return '#E6E6E6';
     };
+    const toolTipData = [];
+    for (let i = 0; i < rowData.length; i++) {
+      const getValues = Object.values(rowData[i]);
+      if (getValues[0] === this.state.country.id) {
+        toolTipData.push({...rowData[i]});
+      }
+    }
     const paths = mapData.features.map((country, i) => {
       return (
         <Paths showToolTip={this.showToolTip.bind(this, country)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(country)} class="country" stroke="#5A6D81" fill={fill(country)}/>
@@ -51,6 +63,7 @@ class WorldMap extends Component {
     });
     return (
       <div className="chart-container" style={{width: '100%'}}>
+        <Legend mapProps={this.props} format=".0f" colorRanges={colors}/>
         <svg
           className="chart"
           version="1.1"
@@ -63,7 +76,7 @@ class WorldMap extends Component {
            {paths}
          </g>
          </svg>
-         <ToolTip activeToolTip={this.state.showToolTip} data={this.state.country} x={this.state.x} y={this.state.y}/>
+         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.country} x={this.state.x} y={this.state.y} xPosition={355} yPosition={275}/>
       </div>
     );
   }
@@ -90,6 +103,10 @@ WorldMap.propTypes = {
    * Scale is a type of number for the scale of the map in terms of how zoomed in or out the display is
    */
   scale: React.PropTypes.number.isRequired,
+  /**
+   * Range of colors supplied to the map in the form of an array of rgba values
+   */
+  colorRange: React.PropTypes.array.isRequired,
 };
 
 WorldMap.defaultProps = {
