@@ -248,7 +248,7 @@ footer {
 
 /*CSS FOR THE TABS*/
 .tab-content-container {
-  padding: 125px;
+
 }
 .tab-labels li:first-of-type .close-tab {
   visibility: hidden;
@@ -398,7 +398,11 @@ footer {
   .chart {
     width: 100%;
     min-width: 250px;
-    height: auto;
+  }
+  .svg-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
   }
   .tick text {
     font-size: 18px;
@@ -459,15 +463,24 @@ path:hover {
 .legend {
   margin: 10px 0 20px 0;
   text-align: center;
+  position: absolute;
+  width: 10%;
+  top: 100px;
+  border: 1px solid $primary-blue;
+  right: 0;
+}
+
+.legend-list {
+  margin: 0;
 }
 
 .legend-square {
-  display: inline-block;
   border-top-width: 15px;
   border-top-style: solid;
   font-size: 11px;
-  width: 8%;
   padding-left: 0;
+  margin: 0 auto;
+  width: 75%;
   padding-right: 0;
 }
 /*CSS FOR THE DATA TABLE*/
@@ -1008,9 +1021,6 @@ color: $primary-blue;
       top: 10px;
       z-index: 9;
     }
-    .legend-square {
-      width: 10%;
-    }
     .arrow-active {
       display: none;
     }
@@ -1169,7 +1179,7 @@ color: $primary-blue;
          }
        }
        .tab-content-container {
-         margin-bottom: 50px;
+         margin: 100px 0 50px 0;
        }
      }
      #mobile_menu {
@@ -1215,7 +1225,7 @@ color: $primary-blue;
 
      /*CSS FOR THE TABS*/
      .tab-content-container {
-       padding: 125px 125px 0 125px;
+
      }
 
      .tab-labels li:first-of-type .close-tab {

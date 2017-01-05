@@ -66,14 +66,10 @@ class WorldMap extends Component {
         <Legend mapProps={this.props} format=".0f" colorRanges={colors}/>
         <svg
           className="chart"
-          version="1.1"
           height={height}
           width={width}
-
          >
-         <g transform={transform}>
-           {paths}
-         </g>
+         {paths}
          </svg>
          <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.country} x={this.state.x} y={this.state.y} xPosition={355} yPosition={275}/>
       </div>
