@@ -593,3 +593,10 @@ def get_report_info(request):
 
     return HttpResponse(json.dumps(result), content_type="application/json")
 
+
+def get_mongo_db():
+    """
+    Retrieve the current mongo database (defined in settings.MONGO_DBNAME).
+    :return: a mongo database
+    """
+    return connect_db().db
