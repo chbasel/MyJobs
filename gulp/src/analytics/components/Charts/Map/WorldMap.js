@@ -35,8 +35,7 @@ class WorldMap extends Component {
     });
   }
   render() {
-    const {chartData, width, height, transformTranslate, projectionScale, colorRange} = this.props;
-    const transform = `translate(${transformTranslate.x}, ${transformTranslate.y })`;
+    const {chartData, width, height, projectionScale, colorRange} = this.props;
     const projection = d3.geo.mercator().translate([width / 2, height / 1.65]).scale(projectionScale);
     const path = d3.geo.path().projection(projection);
     const rowData = chartData.PageLoadData.rows;
@@ -69,10 +68,10 @@ class WorldMap extends Component {
           width={width}
          >
            {paths}
-           <Legend mapProps={this.props} legendTranslateX={(width - 100)} height={(height * .017)} width={(width * .035)} format=".0f" colorRanges={colors}/>
+           <Legend mapProps={this.props} legendTranslateX={(width - 100)} height={(height * 0.04)} width={(width * 0.035)} format=".0f" colorRanges={colors}/>
          </svg>
          <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.country} x={this.state.x} y={this.state.y} xPosition={240} yPosition={245}/>
-      </div>
+       </div>
     );
   }
 }

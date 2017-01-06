@@ -483,6 +483,15 @@ path:hover {
   width: 40%;
   padding-right: 0;
 }
+.legend-range {
+  font-size: 12px;
+  color: $primary-blue;
+}
+.legend-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: $primary-blue;
+}
 /*CSS FOR THE DATA TABLE*/
 
 .table-data {

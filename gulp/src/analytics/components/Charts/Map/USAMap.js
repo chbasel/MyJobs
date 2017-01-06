@@ -70,9 +70,9 @@ class USAMap extends Component {
           width={width}
          >
          {paths}
-         <Legend mapProps={this.props} format=".0f" legendTranslateX={(width - 50)} colorRanges={colors}/>
-         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.states} x={this.state.x} y={this.state.y} xPosition={240} yPosition={245}/>
+         <Legend mapProps={this.props} format=".0f" legendTranslateX={(width - 50)} height={(height * 0.017)} width={(width * 0.035)}colorRanges={colors}/>
          </svg>
+         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.states} x={this.state.x} y={this.state.y} xPosition={240} yPosition={245}/>
       </div>
     );
   }

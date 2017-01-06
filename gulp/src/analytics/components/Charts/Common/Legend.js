@@ -4,22 +4,22 @@ import d3 from 'd3';
 
 class Legend extends Component {
   render() {
-    const {format, colorRanges, legendTranslateX, legendTranslateY, height, width} = this.props;
+    const {format, colorRanges, legendTranslateX, height, width} = this.props;
     const formats = d3.format(format);
     const legendSquares = colorRanges.range().map((colors, i) => {
       const r = colorRanges.invertExtent(colors);
       const legendText = formats(r[0]) + ' - ' + formats(r[1]);
       return (
         <g key={i}>
-          <rect x="20" y={20 * i + (10 * i)} className="legend-squares" width={width} height={height} fill={colors} strokeWidth="1" stroke="#000000" />
-          <text x="70" y={20 * i + (10 * i) + (10)} className="legend-range">{legendText}</text>
+          <rect x={width * 0.86} y={(height * 0.02) * i + ((height * 2) * i)} className="legend-squares" width={width} height={height} fill={colors} strokeWidth="1" stroke="#000000" />
+          <text x={width * 2.2} y={(height * 0.012) * i + ((height * 2) * i) + (12)} className="legend-range">{legendText}</text>
         </g>
       );
     });
     return (
-      <g transform={'translate(' + legendTranslateX + ',' + 200 + ')'}>
-        <text y="-25" x="40">Job Views</text>
-        <rect transform={'translate(0, -15)'} fill="#FFFFFF" class="legend-box" strokeWidth="1" stroke="#5A6D81" width={(width * 4)} height={(height * 25)}></rect>
+      <g transform={`translate(${legendTranslateX * 1.1}, ${width * 3})`}>
+        <text y={height * (-1.5)} x={width * 1.3}>Job Views</text>
+        <rect transform={'translate(0, -15)'} fill="#FFFFFF" className="legend-box" strokeWidth="1" stroke="#5A6D81" width={(width * 5)} height={(height * 15)}></rect>
         {legendSquares}
       </g>
     );
@@ -39,6 +39,18 @@ Legend.propTypes = {
    * Function passed to the legend in order to populate the colors and values
    */
   colorRanges: React.PropTypes.func.isRequired,
+  /**
+   * Number passed for translating the X value
+   */
+  legendTranslateX: React.PropTypes.number.isRequired,
+  /**
+   * Number representing the height of the parent container for responsiveness
+   */
+  height: React.PropTypes.number.isRequired,
+  /**
+   * Number representing the width of the parent container for responsiveness
+   */
+  width: React.PropTypes.number.isRequired,
 };
 
 export default Legend;
