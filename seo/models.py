@@ -1662,7 +1662,6 @@ class SiteRelationship(models.Model):
     child = models.ForeignKey('SeoSite', blank=False, null=False,
                               related_name='parents', db_index=True)
 
-
     class Meta:
         unique_together = (('parent', 'child', 'by'), )
         index_together = (('parent', 'by'), ('child', 'by'), )
@@ -1671,40 +1670,68 @@ class SiteRelationship(models.Model):
         return "%s ==%s==> %s" % (self.parent.name, self.by, self.child.name)
 
 
+from collections import defaultdict
+
+
 def build_graph():
-    graph = getattr(settings, 'GRAPH', {})
+    graph = {}
+
     if graph:
         return graph
     for site in SeoSite.objects.all().prefetch_related('children', 'children__child'):
-        node = graph.get(site.domain, {})
-        for child in site.children.all():
-            related_children = node.get(child.by, [])
-            if child.child.domain not in related_children:
-                related_children.append(child.child.domain)
-            node[child.by] = list(related_children)
+
+        node = graph.get(site.domain, defaultdict(list))
+
+        for relationship in site.children.all():
+            child_tuple = (relationship.child.domain, relationship.weight)
+            node[relationship.by].append(child_tuple)
+
         graph[site.domain] = node
-    setattr(settings, 'GRAPH', graph)
     return graph
 
 
-def get_all_children(graph, domain, by=None, depth=1):
+def get_all_children(domain, by=None, depth=1):
     children = []
-    current_domains = [domain]
+    current_domains = (domain, )
+
     for _ in range(0, depth):
         immediate_children = []
+
         for domain in set(current_domains):
-            immediate_children += get_immediate_children(graph, domain, by=by)
+            immediate_children += get_immediate_children(domain, by=by)
         children += immediate_children
-        current_domains = immediate_children
+        current_domains = (child[0] for child in immediate_children)
+
     return children
 
 
 def get_immediate_children(graph, domain, by=None):
     start_node = graph.get(domain, {})
+
     if by:
         return start_node.get(by, [])
+
     children = []
-    for by, related_children in start_node.iteritems():
+    for related_children in start_node.values():
         children += related_children
+
     return children
 
+
+def sort_children_by_weight(children):
+    weighted_children = defaultdict(lambda: 0)
+    for child, weight in children:
+        weighted_children[child] += weight
+
+    return sorted(weighted_children.items(), key=lambda tup: tup[1],
+                  reverse=True)
+
+
+def weight_children_by_terms(children, terms):
+    weighted_children = []
+    for child, weight in children:
+        for term in terms:
+            if term in child:
+                weight *= 2
+        weighted_children.append((child, weight))
+    return weighted_children
