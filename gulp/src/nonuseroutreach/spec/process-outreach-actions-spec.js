@@ -1,6 +1,7 @@
 import processEmailReducer from '../reducers/process-outreach-reducer';
 import errorReducer from '../../common/reducers/error-reducer';
 import {keys, mapValues} from 'lodash-compat';
+import {colorizeTagsInForms} from '../forms';
 
 import {
   doLoadEmail,
@@ -121,27 +122,6 @@ describe('initial load', () => {
         },
       },
     };
-
-    function colorizeTagsInForms(forms) {
-      const responseWithColoredTags = mapValues(forms, form => ({
-        ...form,
-        fields: mapValues(form.fields, field => {
-          if (field.widget.input_type === 'selectmultiple') {
-            const newField = {
-              ...field,
-              choices: map(field.choices, c => ({
-                ...c,
-                hexColor:
-                  field.widget.attrs.tag_colors[c.value].hex_color,
-              })),
-            };
-            return newField;
-          }
-          return field;
-        }),
-      }));
-      return responseWithColoredTags;
-    }
 
     function expectKeys(forms) {
       return expect(colorizeTagsInForms(forms));
