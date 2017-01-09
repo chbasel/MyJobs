@@ -8,12 +8,11 @@ import TableRows from './TableRows';
 class TableContainer extends Component {
   render() {
     const {tableData} = this.props;
-    const tableData2 = tableData.PageLoadData;
     return (
       <div>
-        <Table>
-          <TableColumns data={tableData2}/>
-          <TableRows data={tableData2} />
+        <Table tableData={tableData}>
+          <TableColumns columnData={tableData}/>
+          <TableRows rowData={tableData} />
         </Table>
       </div>
     );

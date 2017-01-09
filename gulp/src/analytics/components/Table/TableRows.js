@@ -1,32 +1,40 @@
 import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
-import {doApplyTableFilter} from '../../actions/table-filter-action';
+import {doGetSelectedFilterData} from '../../actions/table-filter-actions';
+import NoResults from 'common/ui/NoResults';
+import {isEmpty} from 'lodash-compat/lang';
 
 class TableRows extends Component {
   constructor(props) {
     super(props);
   }
-  applyFilterResults() {
+  applyFilterResults(tableValue, typeValue) {
     const {dispatch} = this.props;
-    dispatch(doApplyTableFilter());
+    dispatch(doGetSelectedFilterData(tableValue, typeValue));
   }
   render() {
-    const {data} = this.props;
-    const rowData = data.rows;
-    const columnData = data.column_names;
+    const {rowData} = this.props;
+    const newRowData = rowData.PageLoadData.rows;
+    const columnData = rowData.PageLoadData.column_names;
     const originalHeader = [];
     const modHeader = [];
+    // Looping through the current data and pushing it to a new array to edit it
     columnData.map((colData) => {
       originalHeader.push(colData);
       modHeader.push(colData);
     });
     originalHeader.shift();
-    const mod = modHeader.splice(0, 1);
-    const getHeaders = rowData.map((item, i) => {
+    const mod = modHeader.slice(0, 1);
+    const getHeaders = newRowData.map((item, i) => {
       const firstCell = mod.map((colData, index) => {
+        if (isEmpty(rowData.PageLoadData.remaining_dimensions)) {
+          return (
+            <td key={index} className="last-filter">{item[colData.key]}</td>
+          );
+        }
         return (
-          <td key={index}><a onClick={this.applyFilterResults.bind(this)} href="#">{item[colData.key]}</a></td>
+          <td key={index}><a onClick={this.applyFilterResults.bind(this, item[colData.key], colData.key)} href="#">{item[colData.key]}</a></td>
         );
       });
       const cell = originalHeader.map((colData, ind) => {
@@ -39,14 +47,14 @@ class TableRows extends Component {
     });
     return (
       <tbody>
-        {getHeaders}
+        {isEmpty(newRowData) ? <NoResults type="table" errorMessage="No results found"/> : getHeaders}
       </tbody>
     );
   }
 }
 
 TableRows.propTypes = {
-  data: React.PropTypes.object.isRequired,
+  rowData: React.PropTypes.object.isRequired,
   dispatch: React.PropTypes.func.isRequired,
 };
 

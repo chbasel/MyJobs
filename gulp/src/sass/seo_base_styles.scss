@@ -184,7 +184,6 @@ legend{
     }
   }
   .company-box {
-    margin: 0px 15px;
     border: 1px solid $extra-light-gray;
     background-color: $medium-gray;
     border-top: none;
@@ -397,7 +396,6 @@ a.direct_optionsLess {
     border-radius: 3px;
     box-sizing: border-box;
     box-shadow: 2px 2px 3px #bbb;
-    margin-top: 75px;
     padding: 0px 10px;
   }
   .search-sent-text {
@@ -444,6 +442,7 @@ a.direct_optionsLess {
   padding: 10px 20px;
   border: none;
   border-radius: 2px;
+  font-weight: 900;
 }
 
 .filter-box {
@@ -595,9 +594,6 @@ margin-bottom: 50px;
     @extend .global-btn;
     text-align: center;
   }
-  .share-social.search-submit-moc {
-    min-width: 7rem;
-  }
   .search-show-all {
     font-size: 12px;
     position: relative;
@@ -615,9 +611,9 @@ margin-bottom: 50px;
 
     i {
       position: absolute;
-      left: 10px;
-			font-size: 24px;
-			top: 10px;
+      left: .45rem;
+      font-size: 24px;
+      top: 10px;
       color: $blue;
     }
     .helptext {
@@ -632,7 +628,7 @@ margin-bottom: 50px;
     #q{
       @extend .search-input-boxes;
       width: 100%;
-      padding: 0 0 0 40px;
+      padding: 0 0 0 3rem;
 
       &::-webkit-input-placeholder {
         color: $blue;
@@ -655,9 +651,9 @@ margin-bottom: 50px;
 
     i {
       position: absolute;
-      left: 10px;
-			font-size: 24px;
-			top: 10px;
+      left: .45rem;
+      font-size: 24px;
+      top: 10px;
       color: $blue;
     }
     .helptext {
@@ -672,7 +668,7 @@ margin-bottom: 50px;
     #location {
       @extend .search-input-boxes;
       width: 100%;
-      padding: 0 0 0 40px;
+      padding: 0 0 0 3rem;
 
       &::-webkit-input-placeholder {
         color: $blue;
@@ -695,9 +691,9 @@ margin-bottom: 50px;
 
     i {
       position: absolute;
-      left: 10px;
-			font-size: 24px;
-			top: 10px;
+      left: .45rem;
+      font-size: 24px;
+      top: 10px;
       color: $blue;
     }
     .helptext {
@@ -712,7 +708,7 @@ margin-bottom: 50px;
     #moc {
       @extend .search-input-boxes;
       width: 100%;
-      padding: 0 0 0 40px;
+      padding: 0 0 0 2.9rem;
 
       &::-webkit-input-placeholder {
         color: $blue;
@@ -775,7 +771,6 @@ margin-bottom: 50px;
     .email-box {
       @extend .gray-section-boxes;
       padding: 10px;
-      margin-top: 75px;
 
       #mobile_enter_email {
         position: relative;
@@ -980,22 +975,13 @@ margin-bottom: 50px;
     }
   }
   .apply {
-    background-color: $primary-navy-blue;
-    color: #ffffff;
-    font-size: 12px;
     border: none;
     border-radius: 3px;
     display: inline-block;
     margin: 0 15px 10px 0;
     padding: 10px 75px;
-    font-size: 18px;
+    font-size: 1.9rem;
     border-radius: 3px;
-    font-weight: 100;
-    font-weight: 100;
-
-		&:hover {
-			background-color: $red-maroon;
-		}
   }
 }
 
@@ -1021,7 +1007,7 @@ margin-bottom: 50px;
 
 /* Custom, iPhone Retina */
 @media only screen and (min-width: 320px) and (max-width: 480px) {
-    /** Be default iOS devices hides scroll bar,
+    /** Be default iOS devices hides scroll bar,                                                                              g
   this makes all devices show scrollbar for nested sub menus **/
   ::-webkit-scrollbar {
     -webkit-appearance: none;
@@ -1229,12 +1215,6 @@ margin-bottom: 50px;
     .search-submit-moc {
       width: 94%;
     }
-    .share-social.search-submit {
-      display: none;
-    }
-    .share-social.search-submit-moc {
-      display: none;
-    }
     .breadcrumb-row {
       display: none;
     }
@@ -1279,7 +1259,6 @@ margin-bottom: 50px;
 		padding: 0 20px;
 
 		.apply {
-			margin: 0 auto;
 			width: 100%;
 			text-align: center;
 		}
@@ -1317,6 +1296,9 @@ margin-bottom: 50px;
       }
     }
 
+  ::-webkit-input-placeholder {
+    font-size: 1.2rem;
+  }
 }
 
 @media only screen and (min-width: 769px) {
@@ -1557,12 +1539,6 @@ margin-bottom: 50px;
     .submit-section {
       padding: 0;
     }
-    .share-social.search-submit {
-      display: inline-block;
-    }
-    .share-social.search-submit-moc {
-      display: inline-block;
-    }
   }
   #direct_listingDiv {
     padding: 0;
@@ -1599,16 +1575,6 @@ margin-bottom: 50px;
           width: 35%;
       }
   }
-}
-
-/* The M.O.C. place holder text is long,
-    this makes it easier to read at certain screen sizes. */
-@media only screen and (min-width : 769px) and (max-width: 1290px){
-
-  #moc::-webkit-input-placeholder {
-    font-size: 1.1rem;
-  }
-
 }
 
 /* Large Devices, Wide Screens */

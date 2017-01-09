@@ -24,7 +24,7 @@ class DataTypeSelectBar extends Component {
             <div className="col-xs-3">
               <label>Report Intention</label>
               <Select
-                onChange={e => onIntentionChange(e.target.value)}
+                onChange={e => onIntentionChange(e.target.value, e.target.obj)}
                 choices = {intentionChoices}
                 value = {
                   getDisplayForValue(intentionChoices, intentionValue)}

@@ -8,6 +8,7 @@ module.exports = {
     port: process.env.DEVSERVER_PORT || "8080",
     config: "webpack.dev.config.js",
     https: process.env.DEVSERVER_HTTPS ? true : false,
+    stats: 'minimal',
   },
   entry: {
     reporting: './src/reporting/main',
@@ -19,6 +20,7 @@ module.exports = {
     customanalytics: './src/sass/analytics.scss',
     bootstrapdaterange: './src/sass/vendor/bootstrap-daterange.scss',
     seo_base_styles: './src/sass/seo_base_styles.scss',
+    seo_base_scripts: './src/v2/seo-base-scripts',
   },
   resolve: {
     root: path.resolve('src'),
@@ -48,13 +50,6 @@ module.exports = {
         loader: ExtractTextPlugin.extract('css!sass')
       }
     ],
-    // ie8 catchall. Some imported react components need this.
-    postLoaders: [
-      {
-        test: /\.js$/,
-        loaders: ['es3ify'],
-      },
-    ],
     sassLoader: {
       includePaths: [path.resolve(__dirname, "../static")]
     },
@@ -68,14 +63,6 @@ module.exports = {
     // The warning module is also silent in this mode.
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': '"production"',
-    }),
-    // Factor common code in to vendor.js.
-    // This also establishes the parent relationship between the vendor
-    // and app chunks.
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      filename: 'vendor.js',
-      minChunks: 2,
     }),
     // Dedupe slightly decreases output size.
     new webpack.optimize.DedupePlugin(),

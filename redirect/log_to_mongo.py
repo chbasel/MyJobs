@@ -10,7 +10,7 @@ from pymongoenv import connect_db
 
 sys.path.insert(0, '/home/web/MyJobs/MyJobs-urls')
 
-from secrets import MONGO_HOST, AWS_ACCESS_KEY_ID, AWS_SECRET_KEY
+from secrets import AWS_ACCESS_KEY_ID, AWS_SECRET_KEY
 
 
 def get_log_lines(file_name):

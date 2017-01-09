@@ -6,11 +6,9 @@ import newrelic.agent
 import os
 import sys
 import traceback
-from urllib2 import HTTPError, URLError
 
 from celery import group
 from celery.task import task
-from pysolr import Solr
 
 from django.conf import settings
 from secrets import options, housekeeping_auth
@@ -46,6 +44,13 @@ sys.path.insert(0, os.path.join(BASE_DIR))
 sys.path.insert(0, os.path.join(BASE_DIR, '../'))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 FEED_FILE_PREFIX = "dseo_feed_"
+
+MIN_EXPECTED_THROUGHPUT = 1000
+MAX_FAILURES = 15
+SOLR_TASKS = ['tasks.etl_to_solr', 'tasks.priority_etl_to_solr',
+              'tasks.task_update_solr']
+CELERY_FAILURE_STATES = ['FAILURE', 'STARTED', 'RETRY']
+TASK_ISSUES_RECIPIENTS = ["matt@apps.directemployers.org", ]
 
 
 @task(name='tasks.create_jira_ticket')
@@ -410,7 +415,7 @@ def process_user_events(email):
     newest_log = logs[0]
 
     filter_by_event = lambda x, num = None: [log for log in logs[:num]
-                                           if log.event in x]
+                                             if log.event in x]
 
     max_errors = 3
     # The presence (and number of events) of deactivate or stop_sending
@@ -781,24 +786,25 @@ def send_event_email(email_task):
 
 @task(name="tasks.requeue_failures", ignore_result=True)
 def requeue_failures():
-    FAILURE_COUNT = 15
-
     midnight = datetime.combine(date.today(), datetime.min.time())
     five_pm = midnight - timedelta(hours=7)
 
-    failed_tasks = TaskState.objects.filter(state__in=['FAILURE', 'STARTED', 'RETRY'],
-                                            tstamp__gt=five_pm,
-                                            name__in=['tasks.etl_to_solr',
-                                                      'tasks.priority_etl_to_solr',
-                                                      'tasks.task_update_solr'])
+    failed_tasks = TaskState.objects.filter(
+        state__in=CELERY_FAILURE_STATES,
+        tstamp__gt=five_pm,
+        name__in=SOLR_TASKS
+    )
 
-    if len(failed_tasks) > FAILURE_COUNT:
-        send_mail(recipient_list=["matt@apps.directemployers.org"],
-                  from_email="solr_count_monitoring@apps.directemployers.org",
-                  subject="More than %s tasks failed last night." % FAILURE_COUNT,
-                  message="We had %s tasks fail last night.  Check imports and requeue as needed." % len(failed_tasks),
-                  fail_silently=False)
-
+    failed_task_count = failed_tasks.count()
+    if failed_task_count > MAX_FAILURES:
+        send_mail(
+            recipient_list=TASK_ISSUES_RECIPIENTS,
+            from_email="solr_count_monitoring@apps.directemployers.org",
+            subject="More than %s tasks failed last night." % MAX_FAILURES,
+            message="We had %s tasks fail last night. "
+                    "Check imports and requeue as needed." % failed_task_count,
+            fail_silently=False
+        )
 
     for task in failed_tasks:
         if task.name in ['tasks.etl_to_solr', 'tasks.priority_etl_to_solr']:
@@ -806,6 +812,37 @@ def requeue_failures():
         elif task.name in ['tasks.task_update_solr']:
             task_update_solr.delay(*ast.literal_eval(task.args))
         print "Requeuing task with args %s" % task.args
+
+
+@task(name="tasks.check_total_throughput", ignore_result=True)
+def check_total_throughput():
+    """
+    Checks the total number of solr-related tasks successfully ran last night.
+    If the number is not greater than MIN_EXPECTED_THROUGHPUT,
+    sends an email to someone capable of looking into why the minimum number
+    of expected tasks were not processed.
+
+    """
+    midnight = datetime.combine(date.today(), datetime.min.time())
+    five_pm = midnight - timedelta(hours=7)
+
+    successful_tasks = TaskState.objects.filter(
+        tstamp__gt=five_pm,
+        name__in=SOLR_TASKS
+    ).exclude(state__in=CELERY_FAILURE_STATES)
+
+    successful_tasks_count = successful_tasks.count()
+    if successful_tasks_count <= MIN_EXPECTED_THROUGHPUT:
+        send_mail(
+            recipient_list=TASK_ISSUES_RECIPIENTS,
+            from_email="solr_count_monitoring@apps.directemployers.org",
+            subject=("Fewer than %s tasks were run last night."
+                     % MIN_EXPECTED_THROUGHPUT),
+            message=("We only ran %s tasks last night. "
+                     "Check imports and requeue as needed."
+                     % successful_tasks_count),
+            fail_silently=False
+        )
 
 
 @task(name='clean_import_records', ignore_result=True)

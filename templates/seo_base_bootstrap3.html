@@ -157,15 +157,19 @@
   </div>
 </section><!--FOOTER END-->
 
-<script defer src="{{ STATIC_URL }}jquery-2.2.4.min.js"></script>
-<script defer src="{{ STATIC_URL }}jquery-ui-1.12.1.custom.min.js"></script>
-<script defer src="{% static "seo-base-scripts-181-27.js" %}"></script>
-<script defer src="{% static "utils.181-20.js" %}"></script>
-<script defer src="{% static "secure-blocks/secure-block.181-20.js" %}"></script>
-<script defer src="{% static "pager.164-21.js" %}"></script>
+<script src="{{ STATIC_URL }}jquery-2.2.4.min.js"></script>
+<script src="{{ STATIC_URL }}jquery-ui-1.12.1.custom.min.js"></script>
+
+{% if wp_base_url %}
+  <script src="{{wp_base_url}}/seo_base_scripts.js"></script>
+{% else %}
+  {% compress js %}
+      <script src="{% static "bundle/seo_base_scripts.js" %}"></script>
+  {% endcompress %}
+{% endif %}
 
 {% if site_config.use_secure_blocks %}
-    <script defer>
+    <script>
       var pager_num_items = {{ site_config.num_subnav_items_to_show }};
       var parent_site_url = "{% if testing_host_prefix %}http://{% else %}https://{% endif %}{{ secure_blocks_domain.domain }}";
       $(document).on("ready", function() {
@@ -175,7 +179,7 @@
 {% endif %}
 
 {% if "network" in site_tags %}
-    <script defer>
+    <script>
         var site_name = "{{ site_name }}";
         var ABSOLUTE_URL = "{{ ABSOLUTE_URL }}",
             impersonating = {% if request.impersonator %}true{% else %}false{% endif %};

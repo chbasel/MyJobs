@@ -302,7 +302,6 @@ def get_opengraph_redirect(request, redirect, guid):
 
     if user_agent_vs:
         company_name = redirect.company_name
-        company_name = quote_string(company_name)
         data = {'title': redirect.job_title,
                 'company': company_name,
                 'guid': guid,

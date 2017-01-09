@@ -1,5 +1,6 @@
 import React from 'react';
 import {Component} from 'react';
+import {connect} from 'react-redux';
 import Tab from './Tab';
 import TabsPanel from './TabsPanel';
 import TableContainer from '../Table/TableContainer';
@@ -7,11 +8,11 @@ import ChartContainer from '../Charts/ChartContainer';
 
 class TabsContainer extends Component {
   render() {
-    const {tabData} = this.props;
-    const tabs = tabData.navigation.map((tab, i) => {
+    const {analytics} = this.props;
+    const tabs = analytics.navigation.map((tab, i) => {
       return (
-        <Tab key={i} tabData={tab} id={i}>
-          <TabsPanel panelData={tab} id={i}>
+        <Tab key={i} tabData={tab}>
+          <TabsPanel panelData={tab}>
             <ChartContainer chartData={tab} />
             <TableContainer tableData={tab} />
           </TabsPanel>
@@ -21,13 +22,16 @@ class TabsContainer extends Component {
     return (
       <div id="tabbed">
         {tabs}
+        <TabsPanel/>
       </div>
     );
   }
 }
 
 TabsContainer.propTypes = {
-  tabData: React.PropTypes.object.isRequired,
+  analytics: React.PropTypes.object.isRequired,
 };
 
-export default TabsContainer;
+export default connect(state => ({
+  analytics: state.pageLoadData,
+}))(TabsContainer);

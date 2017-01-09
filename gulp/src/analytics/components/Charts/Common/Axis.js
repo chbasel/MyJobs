@@ -23,9 +23,6 @@ const Axis = React.createClass({
   render() {
     const translate = 'translate(0,' + (this.props.height) + ')';
     const xLabel = 'Days';
-    const middleText = {
-      textAnchor: 'middle',
-    };
     const transformYLabel = 'translate(-50,' + this.props.height / 2 + ') rotate(-90)';
     const transformXLabel = 'translate(' + this.props.width / 2 + ',60)';
     if (this.props.axisType === 'x') {

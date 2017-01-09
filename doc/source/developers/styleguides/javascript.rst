@@ -5,14 +5,11 @@ JavaScript Coding Standard
 Goals
 =====
 
-Our deliverable is a set of app specific JS bundles, and a ``vendor.js`` bundle
-which contains code shared by all apps.
+Our deliverable is a set of app specific JS bundles.
 
 * Minimize development build time and size of our app specific JS bundles.
 * We should thoroughly discuss any changes that might increase the size of our
-  deliverable ``vendor.js`` size, especially when alternatives exist
-* Although we tolerate a longer build and larger delivered size of our
-  ``vendor.js`` bundle, it should at least not contain dead code.
+  deliverable, especially when alternatives exist.
 * As JS tools evolve and mature, we want to gain leverage from these
   improvements.
 
@@ -21,7 +18,7 @@ which contains code shared by all apps.
 Style
 =====
 
-* We follow the [AirBnB](https://github.com/airbnb/javascript) standard.
+* We follow the `AirBnB <https://github.com/airbnb/javascript>`_ standard.
 * Document any exceptions here.
 * Developers should run the lint tool and keep the report clean. Any mistakes
   should be fixed as part of the PR process.
@@ -37,7 +34,7 @@ Subfolders
 
 * ``common``: modules that might be used in multiple apps.
 * ``reporting``, ``nonuseroutreach`` etc.: app specific folders.
-* each app folder should contain a main.js file.
+* each app folder should contain a ``main.js`` file.
 
   * This is the starting point for bootstrapping the application.
   * It will generally contain some object instantiation and React ``render``
@@ -61,24 +58,26 @@ We expect exceptions to these practices.
 
     * Accept props.
     * Respond to events.
-    * Set internal state.
+    * Dispatch actions to Redux.
     * Invoke callbacks, via props.
 
-  * If interacting with business logic object instances, don't pass those down
-    to child components. Pass down callbacks only.
+  * If neccessary set internal react component state. However, if you are
+    doing this a lot, or if you are passing callbacks deep into the component
+    hierarchy, it may be time to push some logic into Redux.
+
 
 * Business logic should be written using modern idiomatic JS functions and
   classes.
 
   * Choose promises over callbacks when possible.
   * Use async/await when responding to promises.
-  * Use separate classes for processing data and interacting with external
-    services (API).
+  * Keep in mind that someday we might stop using Redux. Keep the valuable
+    parts of the code, the business logic, written in idiomatic JavaScript.
 
-    * For a smaller app, having a class dedicated to calling the API and
-      returning the result in a promise is often sufficient.
-    * Use dependency injection techniques to keep unit test coverage of
-      important classes high.
+  * Use dependency injection techniques to keep unit test coverage of
+    important classes high.
+    * Mock API calls in unit tests.
+    * Wrapping API call code in a dedicated class can make testing easier.
 
   * Don't enforce critical invariants (security, etc.) in the client code at
     all. That should be done in the backend API.
@@ -106,6 +105,7 @@ Library Policy
   * Gain as much leverage as possible from as few libraries as possible.
 
     * React
+    * Redux
     * Jasmine
     * Polyfills
 
@@ -152,15 +152,21 @@ React Conventions
     component class or function.
   * Keep propTypes up to date. Document what each prop means.
 
-* Write controlled components.
-* Keep separation between components which define a lot of user interaction and
-  components which compose other components to build a user application.
+* Write `controlled <https://facebook.github.io/react/docs/forms.html>`_
+  components.
+* Name props that are callbacks like ``onEvent``.
+* Don't overlap event names that React uses. Instead of ``onClick`` choose
+  ``onSelect`` or something more domain specific.
+* Name handlers for events like ``handleEvent``.
+
+  * There shouldn't be a reason to name a function ``onClick`` for example.
+    It probably should have been named ``handleClick``.
 
 Redux Conventions
 =================
 
 * The most important documentation is the documentation of the reducer
-  functions. Put a `/**` comment at the top of the reducer function.
+  functions. Put a ``/**`` comment at the top of the reducer function.
 
   * Make clear the concept behind each prop.
   * Don't describe what the UI does, at that is likely to change.
@@ -199,8 +205,19 @@ Redux Conventions
 * Encode as much business logic as possible into redux reducers.
 * Keep business logic out of React components. It is necessary to do the
   occasional dom tweak or auto-scroll in React, but this should not be common.
-* Write action creators to conform to "Standard Flux Actions".
+* Write action creators to conform to
+  `Standard Flux Actions <https://github.com/acdlite/flux-standard-action>`_.
+  Using the ``redux-actions`` library takes care of most of this.
 * When unit testing reducers, just invoke them as functions and check their
   result.
 * When unit testing compound actions, you can either invoke them as functions
-  or create a redux store and dispatch them.
+  or create a redux store and dispatch them. Creating a redux store with a mock
+  API is a lot of boilerplate but it does lead to unit tests which catch bugs.
+* Name simple action creator functions like ``switchReportAction``. These are
+  functions (possibly created via ``createAction``) which immediately return
+  a single action.
+* Name compound action creator functions like ``doActivateUser``. These are
+  functions which return a function which dispatches more actions and may wait
+  for API calls, etc.
+* Export action creators with the ``export`` keyword.
+* Export reducers with ``export default``.

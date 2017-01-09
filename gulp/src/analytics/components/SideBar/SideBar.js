@@ -1,37 +1,41 @@
 import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
+import {doSwitchMainDimension} from '../../actions/sidebar-actions';
+import moment from 'moment';
 import SideBarDimension from './SideBarDimensionList';
-import {doGetActiveFilterData} from '../../actions/table-filter-action';
 
 class SideBar extends Component {
   constructor(props) {
     super(props);
   }
-  activeDimension() {
+  activeDimension(mainDimension) {
+    let startDate = moment();
+    const endDate = moment().format('MM/DD/YYYY H:mm:ss');
+    startDate = startDate.subtract(30, 'days');
+    startDate = startDate.format('MM/DD/YYYY');
     const {dispatch} = this.props;
-    dispatch(doGetActiveFilterData());
+    dispatch(doSwitchMainDimension(mainDimension, startDate, endDate));
   }
   render() {
-    const dimensions = [
-      {name: 'Demographics'},
-      {name: 'Geo'},
-      {name: 'Technology'},
-      {name: 'Mobile'},
-    ];
-    const dimension = dimensions.map((dim, i) => {
+    const {analytics} = this.props;
+    const activeDimension = analytics.activePrimaryDimension;
+    const primaryDimensions = analytics.primaryDimensions.dimensionList.reports.map((report, i) => {
       return (
-        <SideBarDimension active={this.activeDimension.bind(this)} key={i} dimension={dim} />
+        <SideBarDimension selected={activeDimension} active={this.activeDimension.bind(this, report.value)} key={i} dimension={report} />
       );
     });
     return (
       <div id="menu">
         <ul className="sidebar-container">
           <li className="side-dimension-header">
-            <p className="filter-header">Dimensions</p>
+            <p className="filter-header">Primary Dimensions</p>
             <div className="clearfix"></div>
            </li>
-          {dimension}
+          {primaryDimensions}
+          <li className="side-dimension-feedback">
+            <a className="side-dimension-title feedback" href="http://www.directemployers.org/beta-feedback" target="_blank">Leave Us Feedback</a>
+          </li>
         </ul>
       </div>
     );
@@ -40,6 +44,7 @@ class SideBar extends Component {
 
 SideBar.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
+  analytics: React.PropTypes.object.isRequired,
 };
 
 export default connect(state => ({
