@@ -4,15 +4,15 @@ import d3 from 'd3';
 
 class Legend extends Component {
   render() {
-    const {format, colorRanges, legendTranslateX, height, width} = this.props;
+    const {format, colorRanges, legendRectX, legendTextX, legendTranslateX, height, width} = this.props;
     const formats = d3.format(format);
     const legendSquares = colorRanges.range().map((colors, i) => {
       const r = colorRanges.invertExtent(colors);
       const legendText = formats(r[0]) + ' - ' + formats(r[1]);
       return (
         <g key={i}>
-          <rect x={width * 0.86} y={(height * 0.02) * i + ((height * 2) * i)} className="legend-squares" width={width} height={height} fill={colors} strokeWidth="1" stroke="#000000" />
-          <text x={width * 2.2} y={(height * 0.012) * i + ((height * 2) * i) + (12)} className="legend-range">{legendText}</text>
+          <rect x={legendRectX} y={(height * 0.02) * i + ((height * 2) * i)} className="legend-squares" width={width} height={height} fill={colors} strokeWidth="1" stroke="#000000" />
+          <text x={legendTextX} y={(height * 0.012) * i + ((height * 2) * i) + (12)} className="legend-range">{legendText}</text>
         </g>
       );
     });
@@ -51,6 +51,14 @@ Legend.propTypes = {
    * Number representing the width of the parent container for responsiveness
    */
   width: React.PropTypes.number.isRequired,
+  /**
+   * Number representing the X coordinates of the rectangles making up the legend
+   */
+  legendRectX: React.PropTypes.number.isRequired,
+  /**
+   * Number representing the X coordinates of the text making up the legend
+   */
+  legendTextX: React.PropTypes.number.isRequired,
 };
 
 export default Legend;
