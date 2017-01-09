@@ -2,6 +2,11 @@ import React from 'react';
 import {Component} from 'react';
 
 class MobileDimensionList extends Component {
+  constructor() {
+    super();
+
+    this.selectTab = this.selectTab.bind(this);
+  }
   selectTab() {
     const {active, close} = this.props;
     active();
@@ -10,7 +15,7 @@ class MobileDimensionList extends Component {
   render() {
     const {dimension, selected} = this.props;
     return (
-      <li onClick={this.selectTab.bind(this)} className={selected === dimension.value ? 'side-dimension active-main' : 'side-dimension'}>
+      <li onClick={this.selectTab} className={selected === dimension.value ? 'side-dimension active-main' : 'side-dimension'}>
          <span className="side-circle-btn"></span><span className="side-dimension-title">{dimension.display}</span>
       </li>
     );
