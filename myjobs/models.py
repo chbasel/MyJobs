@@ -1360,3 +1360,100 @@ def end(sender, impersonator, impersonating, request, **kwargs):
         access_request.session_finished = datetime.datetime.now()
         access_request.save()
 session_end.connect(end)
+
+
+ACTIVITIES = {
+    'NUO': [
+        ("create outreach email address", "Create new outreach inboxes"),
+        ("read outreach email address", "View existing outreach inboxes"),
+        ("delete outreach email address", "Delete existing outreach inboxes"),
+        ("update outreach email address", "Edit existing outreach inboxes"),
+    ],
+    'Posting': [
+        ("create job", "Add new jobs."),
+        ("read job", "View existing jobs."),
+        ("update job", "Edit existing jobs."),
+    ],
+    'MarketPlace': [
+        ("create product", "Add new products"),
+        ("read product", "View existing products."),
+        ("update product", "Edit existing products."),
+
+        ("create grouping", "Add new product groupings."),
+        ("read grouping", "View existing product groupings."),
+        ("update grouping", "Edit existing product groupings."),
+        ("delete grouping", "Delete existing product groupings."),
+
+        ("create purchased product", "Create new purchased products."),
+        ("read purchased product", "View existing purchased products."),
+
+        ("create purchased job", "Create new purchased jobs."),
+        ("read purchased job", "View existing purchased jobs."),
+        ("update purchased job", "Edit existing purchased jobs."),
+
+        ("read request", "View existing requests."),
+        ("update request", "Edit existing request."),
+
+        ("create offline purchase", "Add new offline purchase"),
+        ("read offline purchase", "View existing offline purchase"),
+        ("update offline purchase", "Edit existing offline purchase"),
+        ("delete offline purchase", "Delete existing offlien purchase"),
+
+        ("read invoice", "View existing invoices"),
+    ],
+    'PRM': [
+        ("create tag", "Add new tags."),
+        ("read tag", "View existing tags."),
+        ("update tag", "Edit existing tags."),
+        ("delete tag", "Remove existing tags."),
+
+        ("create contact", "Add new contacts."),
+        ("read contact", "View existing contacts."),
+        ("update contact", "Edit existing contacts."),
+        ("delete contact", "Remove existing contacts."),
+
+        ("create partner", "Add new partners."),
+        ("read partner", "View existing partners."),
+        ("update partner", "Edit existing contacts."),
+        ("delete partner", "Remove existing contacts."),
+
+        ("create communication record", "Add new communication records."),
+        ("read communication record", "View existing communication records."),
+        ("update communication record", "Edit existing communication records."),
+        ("delete communication record",
+         "Remove existing communication records."),
+
+        ("create partner saved search", "Add new patner saved searches."),
+        ("read partner saved search", "View existing partner saved searches."),
+        ("update partner saved search",
+         "Edit existing partner saved searches."),
+        ("delete partner saved search",
+         "remove existing partner saved searches."),
+    ],
+    'User Management': [
+        ("create role", "Create new roles."),
+        ("read role", "View existing roles."),
+        ("update role", "Edit existing roles."),
+        ("delete role", "Remove existing roles."),
+        ("create user", "Create new users."),
+        ("read user", "View existing users."),
+        ("update user", "Edit existing users."),
+        ("delete user", "Remove existing users."),
+    ]
+}
+
+
+def update_activities():
+    """
+    Updates AppAccess and Activity tables using the app names and
+    activity names/descriptions in the ACTIVITIES dict.
+
+    """
+    for app_name, activities in ACTIVITIES.iteritems():
+        app_access, _ = AppAccess.objects.get_or_create(name=app_name)
+
+        for name, description in activities:
+            activity, _ = Activity.objects.get_or_create(app_access=app_access,
+                                                         name=name)
+            activity.description = description
+            activity.save()

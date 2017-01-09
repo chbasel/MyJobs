@@ -50,8 +50,25 @@ $(document).ready(function() {
 
         $tags.val(words.splice(0, words.length - 1).join(','));
       }
+      if ($('#addTags').hasClass('disabled')) {
+        $('#addTags').removeClass('disabled');
+      };
     },
-    autocomplete: {delay: 0, minLength: 1, autoFocus: true},
+    afterTagRemoved: function(event, ui) {
+      if (!( $('#addTags').hasClass('disabled') || $('#p-tags').val())) {
+        $('#addTags').addClass('disabled');
+      }
+    },
+    autocomplete: {
+      delay: 0,
+      minLength: 1,
+      autoFocus: false,
+      close: function() {
+        if (document.activeElement !== this) {
+          $("#p-tags").tagit("createTag", this.value);
+        }
+      }
+    },
     placeholderText: 'Add Tag'
   });
 });

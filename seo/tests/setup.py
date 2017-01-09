@@ -1,5 +1,6 @@
 import os.path
 from contextlib import contextmanager
+from pymongoenv.tests import MongoTestMixin
 
 from django.conf import settings
 from django.core.cache import cache
@@ -44,11 +45,13 @@ class TestSolrGrpEngine(SolrGrpEngine):
                    HAYSTACK_CONNECTIONS=settings.TEST_HAYSTACK_CONNECTIONS,
                    MIDDLEWARE_CLASSES=settings.MIDDLEWARE_CLASSES,
                    TEMPLATES=settings.TEMPLATES)
-class DirectSEOBase(TransactionTestCase):
+class DirectSEOBase(MongoTestMixin, TransactionTestCase):
 
     fixtures = ['deploy/initial_data.json']
 
     def setUp(self):
+        super(DirectSEOBase, self).setUp()
+
         db_backend = settings.DATABASES['default']['ENGINE'].split('.')[-1]
 
         # Set columns that are utf8 in production to utf8
@@ -106,7 +109,7 @@ class DirectSEOBase(TransactionTestCase):
         CompanyFactory.reset_sequence()
 
     def tearDown(self):
-        from django.template import context
+        super(DirectSEOBase, self).tearDown()
 
         settings.TEMPLATES[0]['OPTIONS']['context_processors'] = self.base_context_processors
         context._standard_context_processors = None

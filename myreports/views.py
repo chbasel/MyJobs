@@ -399,6 +399,7 @@ def select_data_type_api(request):
             selected_data_type: suggested selected data type
         }
     """
+    company = get_company_or_404(request)
     reporting_type = request.POST.get('reporting_type')
     report_type = request.POST.get('report_type')
     data_type = request.POST.get('data_type')
@@ -410,6 +411,7 @@ def select_data_type_api(request):
         {'value': rit.reporting_type, 'display': rit.description}
         for rit in choices['reporting_types']
     ]
+
     report_type_list = [
         {'value': rt.report_type, 'display': rt.description}
         for rt in choices['report_types']
@@ -418,6 +420,12 @@ def select_data_type_api(request):
         {'value': dt.data_type, 'display': dt.description}
         for dt in choices['data_types']
     ]
+
+    # Weird hard coded thing for analytics right now:
+    if ('Analytics' in company.enabled_access and
+            request.user.can(company, "view analytics")):
+        reporting_type_list.append(
+            {'value': -1, 'display': 'Web Analytics', 'link': 'analytics'})
 
     report_data = (
         ReportTypeDataTypes.objects.

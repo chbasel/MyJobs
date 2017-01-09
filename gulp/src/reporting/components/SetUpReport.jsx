@@ -36,8 +36,15 @@ import TagSelect from 'common/ui/tags/TagSelect';
 import TagAnd from 'common/ui/tags/TagAnd';
 
 class SetUpReport extends Component {
-  onIntentionChange(intention) {
+  onIntentionChange(intention, selectedObject) {
     const {history, category, dataSet} = this.props;
+    if (selectedObject && selectedObject.link) {
+      const link = selectedObject.link;
+      if (link === 'analytics') {
+        window.location = '/analytics/view/main';
+        return;
+      }
+    }
     history.pushState(null, '/', {intention, category, dataSet});
   }
 
@@ -425,7 +432,7 @@ class SetUpReport extends Component {
     return (
       <div>
         <DataTypeSelectBar
-          onIntentionChange={v => this.onIntentionChange(v)}
+          onIntentionChange={(v, o) => this.onIntentionChange(v, o)}
 
           onCategoryChange={v => this.onCategoryChange(v)}
 

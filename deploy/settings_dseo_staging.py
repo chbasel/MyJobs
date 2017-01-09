@@ -2,6 +2,7 @@ import datetime
 
 from default_settings import *
 from secrets import REDIRECT_STAGING, REDIRECT_QC, ARCHIVE_STAGING
+import secrets
 
 
 ALLOWED_HOSTS = ['*', ]
@@ -9,7 +10,7 @@ ALLOWED_HOSTS = ['*', ]
 
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE_MANIFEST = 'manifest.json'
-STATIC_URL = "//d2e48ltfsb5exy.cloudfront.net/content_ms/files/"
+STATIC_URL = "//dkv7oddwwyma8.cloudfront.net/Microsites/"
 
 DATABASES = {
     'default': dict({
@@ -105,3 +106,7 @@ CELERY_ROUTES = {
         'routing_key': 'solr.update_solr'
     },
 }
+
+setattr(secrets, 'MONGO_HOST', secrets.STAGING_MONGO_HOST)
+setattr(secrets, 'MONGO_DBNAME', secrets.STAGING_MONGO_DBNAME)
+setattr(secrets, 'MONGO_SSL', secrets.STAGING_MONGO_SSL)

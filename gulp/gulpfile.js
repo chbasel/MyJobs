@@ -13,13 +13,6 @@ process.on('SIGINT', function() {
 });
 
 // This build produces several javascript bundles.
-// * vendor.js - Contains all the libraries we use, bundled and minified.
-//     This code is shared by all other app bundles. It is expected to be
-//     larger than app bundles and shared by all pages needing this
-//     infrastructure.
-//
-//     In production this bundle also contains whatever code webpack deemed
-//     as common to all app bundles.
 //
 // * reporting.js, [other-apps].js, etc. - These contain mostly only code
 //     used in a specific application. There should be one for each "app"

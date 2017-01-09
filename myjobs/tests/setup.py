@@ -1,5 +1,6 @@
 from importlib import import_module
 from mock import patch
+from pymongoenv.tests import MongoTestMixin
 
 from django.conf import settings
 from django.contrib.auth import login
@@ -93,12 +94,11 @@ class TestClient(Client):
 
 @override_settings(ROOT_URLCONF="myjobs_urls", PROJECT="myjobs", MEMOIZE=False,
                    TEMPLATES=settings.TEMPLATES)
-class MyJobsBase(TestCase):
-
+class MyJobsBase(MongoTestMixin, TestCase):
     fixtures = ['deploy/initial_data.json']
 
     def setUp(self):
-
+        super(MyJobsBase, self).setUp()
         self.app_access = AppAccessFactory()
         self.activities = [
             ActivityFactory(name=activity, app_access=self.app_access)
@@ -114,7 +114,7 @@ class MyJobsBase(TestCase):
                 "read outreach email address", "create outreach email address",
                 "delete outreach email address",
                 "update outreach email address", "read outreach record",
-                "convert outreach record"]]
+                "convert outreach record", "view analytics"]]
 
         self.company = CompanyFactory(app_access=[self.app_access])
         # this role will be populated by activities on a test-by-test basis
@@ -135,6 +135,7 @@ class MyJobsBase(TestCase):
         self.client.login_user(self.user)
 
     def tearDown(self):
+        super(MyJobsBase, self).tearDown()
         self.ms_solr.delete(q='*:*')
         try:
             self.patcher.stop()

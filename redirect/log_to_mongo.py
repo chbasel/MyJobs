@@ -6,11 +6,11 @@ import sys
 
 from dateutil import parser
 import boto
-from pymongo import MongoClient
+from pymongoenv import connect_db
 
 sys.path.insert(0, '/home/web/MyJobs/MyJobs-urls')
 
-from secrets import MONGO_HOST, AWS_ACCESS_KEY_ID, AWS_SECRET_KEY
+from secrets import AWS_ACCESS_KEY_ID, AWS_SECRET_KEY
 
 
 def get_log_lines(file_name):
@@ -32,7 +32,7 @@ def to_mongo(file_name):
     Inserts the constituent lines of the file pointed to by "file_name" into
     a Mongo database.
     """
-    client = MongoClient(MONGO_HOST, w="majority")
+    analytics = connect_db().db
 
     base_name = os.path.basename(file_name)
 
@@ -40,7 +40,7 @@ def to_mongo(file_name):
     # notice that we're using file_name here instead of base_name. Analytics
     # log files are stored on the analytics servers themselves, while redirect
     # stores its logs in s3. This is one way to differentiate the two.
-    count = client.analytics.files.find_one({"file": file_name}) or 0
+    count = analytics.files.find_one({"file": file_name}) or 0
     if count:
         # This file was already processed.
         # TODO: Add ability to upsert based on this?
@@ -54,7 +54,7 @@ def to_mongo(file_name):
     timestamp = os.path.splitext(base_name)[0][2:]
     file_created = datetime.strptime(timestamp, "%y%m%d%H%M%S")
 
-    file_id = client.analytics.files.insert_one({
+    file_id = analytics.files.insert_one({
         "file": file_name, "line_count": len(lines),
         "file_created": file_created}).inserted_id
 
@@ -95,8 +95,8 @@ def to_mongo(file_name):
         # TODO: Auditing procedure that compares "line_count" from the "files"
         #     collection with the number of items related to that file in the
         #     "analytics" collection.
-        client.analytics.analytics.insert_many(json_lines)
-    client.analytics.files.update({'_id': file_id},
+        analytics.analytics.insert_many(json_lines)
+    analytics.files.update({'_id': file_id},
                                   {'$set': {'success': success}})
 
 

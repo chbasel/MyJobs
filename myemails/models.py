@@ -190,4 +190,3 @@ class EmailTask(models.Model):
     def send_email(self):
         self.related_event.send_email(self.act_on)
 
-

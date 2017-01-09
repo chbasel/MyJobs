@@ -30,7 +30,7 @@
     <link href="{{ STATIC_URL }}bootstrap/bootstrap-modal.css" rel="stylesheet" type="text/css">
 
     {% compress js %}
-      <script type="text/javascript" src="{% static "utils.181-20.js" %}"></script>
+      <script type="text/javascript" src="{% static "utils.184-4.js" %}"></script>
       <script type="text/javascript" src="{% static "custom.166-06.js" %}"></script>
     {% endcompress %}
 </head>
@@ -132,6 +132,7 @@
     <script type="text/javascript" src="{{ STATIC_URL }}my.jobs.160-30.js"></script>
     <script type="text/javascript">
       // check for logout cookie every second
+      var loggedin = {%if user.pk%}true{%else%}false{%endif%};
       utils.logoutTimer("{% url 'home' %}");
     </script>
 

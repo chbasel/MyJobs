@@ -1,10 +1,11 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 """
 Version.py - used to track the version number and build number for the
 Microsite platform. This file is loaded where the version number is needed.
 
 """
+from __future__ import print_function
 from datetime import datetime
 
 # Marketing version - requires manual editing every release
@@ -49,7 +50,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.build_calculated:
-        print build_calculated
+        print(build_calculated)
 
     if args.release_number:
-        print release_number
+        print(release_number)

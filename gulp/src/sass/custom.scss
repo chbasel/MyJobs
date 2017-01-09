@@ -5215,25 +5215,3 @@ div.progress-card {
 .react-bs-container-body{
   height: 558px !important;
 }
-
-
-
-/*CSS FOR THE D3 CHARTS FOR ANALYTICS*/
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-.y-grid .tick path,
-.y-grid .tick line {
-  fill: none;
-  stroke: #ccc;
-  shape-rendering: crispEdges;
-}
-.path {
-  fill: none;
-  stroke: #ccc;
-  stroke-width: 1px;
-  shape-rendering: crispEdges;
-}

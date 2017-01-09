@@ -1,7 +1,10 @@
 {% extends "seo_base_bootstrap3.html" %}
-{% load i18n %}
 {% load seo_extras %}
 {% load redirect_urls %}
+{% comment %}
+    TODO: Research consequences of removing def.ui.dotjobs.results.css and then remove it.
+    TODO: Make this view more html5 semantic instead of nested div
+{% endcomment %}
 {% block direct_extraHeaderContent %}
 <link rel="stylesheet" href="/style/def.ui.dotjobs.results.css" type="text/css">
 
@@ -61,9 +64,15 @@
           </span>
         </h3>
     </div>
-    <div class="direct-detail-horzRule"></div>
     <div id="direct_listingDiv">
         <meta itemprop="datePosted" content="{{the_job.date_updated|date:'c'}}"/>
+        <div class='direct-action-btn' id="direct_applyButtonBottom">
+            {% if the_job.link %}
+            <a class="apply btn btn-success" href="{{the_job.link|swap_http_with_https:"my.jobs"}}" onclick="goalClick('/G/apply-click', this.href); return false;">Apply Now</a>
+            {% elif the_job.apply_info %}
+            <div id="apply-block">{{ the_job.apply_info }}</div>
+            {% endif %}
+        </div>
         <div id="direct_jobDescriptionText" itemprop="description">
             {% if the_job.html_description %}
                 {{ the_job.html_description|safe|cut:"??"|cut:"~" }}
@@ -80,12 +89,11 @@
         </div>
         <div class='direct-action-btn' id="direct_applyButtonBottom">
             {% if the_job.link %}
-            <a class="apply" href="{{the_job.link|swap_http_with_https:"my.jobs"}}" onclick="goalClick('/G/apply-click', this.href); return false;">{% blocktrans %}Apply Now{% endblocktrans %}</a>
+            <a class="apply btn btn-success" href="{{the_job.link|swap_http_with_https:"my.jobs"}}" onclick="goalClick('/G/apply-click', this.href); return false;">Apply Now</a>
             {% elif the_job.apply_info %}
             <div id="apply-block">{{ the_job.apply_info }}</div>
             {% endif %}
         </div>
-
     </div>
 </div>
 {% endblock %}

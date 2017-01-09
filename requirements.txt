@@ -99,3 +99,5 @@ wrapt==1.10.8
 xlrd==0.9.3
 XlsxWriter==0.8.4
 freezegun==0.3.7
+git+git://github.com/DirectEmployers/pymongo-env.git@60ccc22cfab857ee5b7288c6fc09207ae43ffdf2
+boto3==1.4.0

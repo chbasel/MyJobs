@@ -1,4 +1,4 @@
-from pymongo import MongoClient
+from pymongoenv import connect_db
 import re
 from seo.helpers import create_businessunit
 from seo.models import BusinessUnit
@@ -6,13 +6,12 @@ from import_jobs.init import add_company, get_jobsfs_zipfile, get_jobs_from_zipf
     filter_current_jobs, DATA_DIR, download_feed_file, FeedImportError
 from transform import hr_xml_to_json
 
-from django.conf import settings
-
 import logging
 from xmlparse import DEv2JobFeed
 logger = logging.getLogger(__name__)
 
-def jobsfs_to_mongo(guid, buid, name, mongo=settings.MONGO_HOST):
+
+def jobsfs_to_mongo(guid, buid, name):
     """Composed method for resopnding to a guid update."""
 
     assert re.match(r'^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$', guid.upper()), \
@@ -32,19 +31,19 @@ def jobsfs_to_mongo(guid, buid, name, mongo=settings.MONGO_HOST):
     jobs = get_jobs_from_zipfile(zf, guid)
     jobs = filter_current_jobs(jobs, bu)
     jobs = (hr_xml_to_json(job, bu) for job in jobs)
-    for job in list(jobs):
+    jobs = list(jobs)
+    for job in jobs:
         job['guid'] = job['guid'].lower()
 
     if len(jobs) > 0:
-        client = MongoClient(mongo, w="majority")
-        collection = client.analytics.jobs
+        collection = connect_db().db.jobs
         bulk = collection.initialize_unordered_bulk_op()
         for job in jobs:
             bulk.find({'guid': job['guid']}).upsert().replace_one(job)
         bulk.execute()
 
 
-def seoxml_to_mongo(buid, data_dir=DATA_DIR, mongo=settings.MONGO_HOST):
+def seoxml_to_mongo(buid, data_dir=DATA_DIR):
     filepath = download_feed_file(buid, data_dir=data_dir)
 
     jobfeed = DEv2JobFeed(filepath, jsid=buid, markdown=False,
@@ -62,10 +61,9 @@ def seoxml_to_mongo(buid, data_dir=DATA_DIR, mongo=settings.MONGO_HOST):
     jobfeed.jobparse()
     jobs = jobfeed.solr_jobs()
 
-
-    client = MongoClient(mongo, w="majority")
-    collection = client.analytics.jobs
+    collection = connect_db().db.jobs
     bulk = collection.initialize_unordered_bulk_op()
     for job in jobs:
+        job['guid'] = job['guid'].lower()
         bulk.find({'guid': job['guid']}).upsert().replace_one(job)
     bulk.execute()
