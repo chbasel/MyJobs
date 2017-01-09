@@ -60,8 +60,6 @@ class WorldMap extends Component {
         <Paths showToolTip={this.showToolTip.bind(this, country)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(country)} class="country" stroke="#5A6D81" fill={fill(country)}/>
       );
     });
-    console.log('Full width: ', width);
-    console.log('Full height: ', height);
     return (
       <div className="chart-container" style={{width: '100%'}}>
         <svg
@@ -70,7 +68,7 @@ class WorldMap extends Component {
           width={width}
          >
            {paths}
-           <Legend mapProps={this.props} legendRectX={width * 0.035 * 0.86} legendTextX={width * 0.035 * 2.2} legendTranslateX={(width - 100)} height={(height * 0.04)} width={(width * 0.035)} format=".0f" colorRanges={colors}/>
+           <Legend mapProps={this.props} legendTitleX={width * 0.035 * 1.55} legendTitleY={height * 0.04 * (-1.2)} borderTransform={`translate(0, ${height * -0.024})`} legendTransform={`translate(${(width - 100) * 1.14}, ${width * 0.035 * 3})`} legendRectX={width * 0.035 * 0.86} legendTextX={width * 0.035 * 2.2} height={(height * 0.04)} width={(width * 0.035)} format=".0f" colorRanges={colors}/>
          </svg>
          <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.country} x={this.state.x} y={this.state.y} xPosition={240} yPosition={245}/>
        </div>
