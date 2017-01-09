@@ -17,7 +17,7 @@ class Legend extends Component {
       );
     });
     return (
-      <g transform={legendTransform}>
+      <g transform={legendTransform} className="legend-group">
         <text y={legendTitleY} x={legendTitleX}>Job Views</text>
         <rect transform={borderTransform} fill="#FFFFFF" className="legend-box" strokeWidth="1" stroke="#5A6D81" width={(width * 5)} height={(height * 11.5)}></rect>
         {legendSquares}

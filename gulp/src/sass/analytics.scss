@@ -1033,6 +1033,9 @@ color: $primary-blue;
     .arrow-active {
       display: none;
     }
+    .legend-group {
+      display: none;
+    }
    }
 
    /* Extra Small Devices, Phones */
@@ -1055,6 +1058,9 @@ color: $primary-blue;
          left: 0;
          z-index: 99;
        }
+     }
+     .legend-group {
+       display: block;
      }
    }
 
