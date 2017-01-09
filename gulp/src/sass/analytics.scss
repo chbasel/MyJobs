@@ -999,6 +999,7 @@ color: $primary-blue;
      .tab.active-tab {
        background: $dark-gray;
        border-top: none;
+       z-index: 1;
      }
      .tab.active-tab a {
        color: $primary-blue;
