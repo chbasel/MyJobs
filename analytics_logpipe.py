@@ -10,10 +10,6 @@ import secrets
 
 def process_lines(kinesis, lines):
     """Read log lines and send them to AWS Kinesis.
-
-    kinesis: AWS kinesis API client
-    lines: iterable over log lines.
-
     Runs string unescaping and parses line to get an ip for the partition key.
 
     Also converts some string values to ints.

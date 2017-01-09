@@ -37,7 +37,7 @@ class USAMap extends Component {
     });
   }
   render() {
-    const {chartData, width, height, colorRange} = this.props;
+    const {chartData, width, height, colorRange, pathClicked} = this.props;
     const projection = d3.geo.albersUsa().scale(width).translate([width / 2, height / 2]);
     const path = d3.geo.path().projection(projection);
     const rowData = chartData.PageLoadData.rows;
@@ -50,6 +50,9 @@ class USAMap extends Component {
       }
       return '#E6E6E6';
     };
+    const stateClicked = (state) => {
+      return () => {pathClicked(state.properties.STUSPS, 'state');};
+    };
     const toolTipData = [];
     for (let i = 0; i < rowData.length; i++) {
       const getValues = Object.values(rowData[i]);
@@ -59,7 +62,7 @@ class USAMap extends Component {
     }
     const paths = mapData.features.map((state, i) => {
       return (
-        <Paths showToolTip={this.showToolTip.bind(this, state)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(state)} class="state" stroke="#5A6D81" fill={fill(state)}/>
+        <Paths onClick={stateClicked(state)} showToolTip={this.showToolTip.bind(this, state)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(state)} class="state" stroke="#5A6D81" fill={fill(state)}/>
       );
     });
     return (
@@ -96,6 +99,14 @@ USAMap.propTypes = {
    */
   margin: React.PropTypes.object,
   /**
+   * Scale is a type of number for the scale of the map in terms of how zoomed in or out the display is
+   */
+  scale: React.PropTypes.number.isRequired,
+  /**
+   * pathClicked is a function to be called when a path on the chart is clicked
+   */
+  pathClicked: React.PropTypes.func,
+  /**
    * Range of colors supplied to the map in the form of an array of rgba values
    */
   colorRange: React.PropTypes.array.isRequired,
@@ -105,6 +116,7 @@ USAMap.defaultProps = {
   height: 500,
   width: 1920,
   margin: {top: 50, left: 25, right: 25, bottom: 25},
+  pathClicked: () => {},
 };
 
 export default USAMap;

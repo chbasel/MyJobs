@@ -1,6 +1,7 @@
 import processEmailReducer from '../reducers/process-outreach-reducer';
 import errorReducer from '../../common/reducers/error-reducer';
-import {keys} from 'lodash-compat';
+import {keys, mapValues} from 'lodash-compat';
+import {colorizeTagsInForms} from '../forms';
 
 import {
   doLoadEmail,
@@ -66,7 +67,10 @@ describe('initial load', () => {
       from_email: "bob@example.com",
       email_body: "some text",
     };
-    const blankForms = {6: 7};
+    const blankForms = {
+      6: {fields: {widget: { }}},
+    };
+
     beforeEach(promiseTest(async () => {
       spyOn(api, 'getOutreach').and.returnValue(Promise.resolve(outreach));
       spyOn(api, 'getForms').and.returnValue(Promise.resolve({6: 7}));
@@ -83,7 +87,7 @@ describe('initial load', () => {
     });
 
     it('should have the blank forms', () => {
-      expect(store.getState().process.blankForms).toEqual({6:7});
+      expect(store.getState().process.blankForms).toEqual({6: {fields: {}}});
     });
 
     it('should be in the right state', () => {
@@ -101,4 +105,48 @@ describe('initial load', () => {
       expect(store.getState().error.lastMessage).toEqual('some error');
     });
   });
+
+  describe('colorizeTagsInForms: ', () => {
+    const communicationRecord = {
+      fields: {
+        tags: {
+          widget: {
+            attrs: {
+              tag_colors: {
+                930: {hex_color: "5EB94E"},
+              },
+              choices: [{display: "Veteran", value: 930},]
+            },
+            input_type: "selectmultiple",
+          },
+        },
+      },
+    };
+
+    function expectKeys(forms) {
+      return expect(colorizeTagsInForms(forms));
+    }
+
+    it('should match api response with "tag_color" object', () => {
+      const expected = {
+          fields: {
+            tags: {
+              widget: {
+                attrs: {
+                  tag_colors: {
+                    930: {hex_color: "5EB94E"},
+                  },
+                  choices: [{display: "Veteran", value: 930},]
+                },
+                input_type: "selectmultiple",
+              },
+            },
+          fields: {},
+          },
+        };
+      expectKeys(communicationRecord).toEqual(expected);
+    });
+  });
 });
+
+
