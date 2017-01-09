@@ -36,7 +36,7 @@ import {runConfirmInPlace} from 'common/actions/confirm-actions';
 installPolyfills();
 
 const reducer = combineReducers({
-  confirm: confirmReducer,
+  confirmation: confirmReducer,
 });
 
 const thunkExtra = {};

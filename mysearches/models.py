@@ -582,18 +582,41 @@ class PartnerSavedSearch(SavedSearch):
     last_action_time = models.DateTimeField(default=datetime.now, blank=True)
 
     def save(self, *args, **kwargs):
+        new = not hasattr(self, 'id') or not self.id
         if hasattr(self, 'changed_data') and hasattr(self, 'request'):
+            # Pop request and changed_data off so they can be used,
+            # but they don't mess with pickling the saved search
+            # if sending the saved search is necessary.
+            request = self.request
+            delattr(self, 'request')
+
+            changed_data = self.changed_data
+            delattr(self, 'changed_data')
+
             # This save was initiated by a form. Update unsubscriber and send
             # notifications as appropriate.
-            if 'is_active' in self.changed_data and self.pk:
+            if 'is_active' in changed_data and self.pk:
                 if self.is_active:
                     self.unsubscriber = ''
                     self.unsubscribed = False
                 else:
-                    self.unsubscriber = self.request.user.email
+                    self.unsubscriber = request.user.email
                     self.unsubscribed = True
                     self.user.send_opt_out_notifications([self])
         super(PartnerSavedSearch, self).save(*args, **kwargs)
+        if new:
+            now = datetime.now()
+            after_ten = now.hour > 10 or (now.hour == 10 and now.minute > 0)
+            from tasks import send_search_digest
+            if after_ten:
+                if self.frequency == 'D':
+                    send_search_digest.s(self).apply_async()
+                elif self.frequency == 'W':
+                    if int(self.day_of_week) == now.isoweekday():
+                        send_search_digest.s(self).apply_async()
+                elif self.frequency == 'M':
+                    if self.day_of_month == now.day:
+                        send_search_digest.s(self).apply_async()
 
     def create_record(self, change_msg=None, body=None, failure_message=None):
         """

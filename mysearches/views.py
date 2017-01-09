@@ -354,6 +354,7 @@ def unsubscribe(request, user=None):
 
 def saved_search_widget(request):
     saved_search_url = request.REQUEST.get('url')
+    use_v2 = request.REQUEST.get('v2', 0)
     callback = request.REQUEST.get('callback')
     success_email = request.REQUEST.get('success')
     search = None
@@ -379,7 +380,13 @@ def saved_search_widget(request):
         'success': success_email,
         'is_pss': hasattr(search, 'partnersavedsearch'),
     }
-    html = render_to_response('mysearches/saved_search_widget.html', ctx,
+
+    if use_v2:
+        template_string = 'mysearches/saved_search_widget_bootstrap3.html'
+    else:
+        template_string = 'mysearches/saved_search_widget.html'
+
+    html = render_to_response(template_string, ctx,
                               RequestContext(request))
 
     return HttpResponse("%s(%s)" % (callback, json.dumps(html.content)),

@@ -22,7 +22,7 @@
                     <ul style="margin-left: 5px;" role="menu" class="siteTagsList hideTagList" id="allTags">
                         {% all_site_tags as tags %}
                         {% for tag in tags %}
-                            <li role="menuitem">{{tag.title}}</li>
+                            <li class="menu-item" role="menuitem">{{tag.title}}</li>
                         {% endfor %}
                     </ul>
                     <ul style="margin-left: 5px;" role="menu" class="siteTagsList showTagList" id="topTags" style="border: none;">

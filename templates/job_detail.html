@@ -1,12 +1,13 @@
 {% extends "seo_base.html" %}
 {% load i18n %}
 {% load seo_extras %}
+{% load redirect_urls %}
 {% block direct_extraHeaderContent %}
 <link rel="stylesheet" href="/style/def.ui.dotjobs.results.css" type="text/css">
 
 <title>{{ the_job.title}}</title>
 {%endblock%}
-     
+
 {% block direct_extraMetaOpenGraph %}
     <meta property="og:title" content="{{ pg_title }}"/>
     <meta property="og:type" content="article"/>
@@ -27,15 +28,15 @@
     {% if site_commitments_string %}
     <meta itemprop="specialCommitments" content="{{site_commitments_string}}" />
     {% endif %}
-    <meta itemprop="employmentType" content="Paid Work" /> 
+    <meta itemprop="employmentType" content="Paid Work" />
     <div id="direct_jobListingTitle">
         <h3>
-          <span class="direct_jobListingCompany" itemprop="hiringOrganization" 
+          <span class="direct_jobListingCompany" itemprop="hiringOrganization"
             itemscope itemtype="http://schema.org/Organization">
             <span itemprop="name">{{the_job.company}}</span>
           </span>
           <span class="direct_highlightedText">
-            <span itemprop="title">{{ the_job.title|cut:"?"|cut:"~" }}</span> in 
+            <span itemprop="title">{{ the_job.title|cut:"?"|cut:"~" }}</span> in
             <span itemprop="jobLocation" itemscope itemtype="http://schema.org/Place">
               {% spaceless %}
               <span itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
@@ -50,7 +51,9 @@
                   {% if special_case %}
                       <meta itemprop="addressCountry" content="{{ the_job.country }}" />
                   {% else %}
-                      <span itemprop="addressCountry">{{ the_job.country }}</span>
+                      {% if the_job.country %}
+                          <span itemprop="addressCountry">{{ the_job.country }}</span>
+                      {% endif %}
                   {% endif %}
               </span>
               {% endspaceless %}
@@ -77,12 +80,12 @@
         </div>
         <div class='direct-action-btn' id="direct_applyButtonBottom">
             {% if the_job.link %}
-            <a href="{{the_job.link}}" onclick="goalClick('/G/apply-click', this.href); return false;">{% blocktrans %}Apply Now{% endblocktrans %}</a>
+            <a href="{{the_job.link|swap_http_with_https:"my.jobs"}}" onclick="goalClick('/G/apply-click', this.href); return false;">{% blocktrans %}Apply Now{% endblocktrans %}</a>
             {% elif the_job.apply_info %}
             <div id="apply-block">{{ the_job.apply_info }}</div>
             {% endif %}
         </div>
-        
+
     </div>
 </div>
 {% endblock %}
@@ -97,7 +100,7 @@
 <div id="direct_applyDiv" class="direct_rightColBox">
     <div id="direct_applyButton" class="direct-action-btn" role="menu">
         {% if the_job.link %}
-        <a href="{{the_job.link}}" onclick="goalClick('/G/apply-click', this.href); return false;">{% blocktrans %}Apply Now{% endblocktrans %}</a>
+        <a href="{{the_job.link|swap_http_with_https:"my.jobs"}}" onclick="goalClick('/G/apply-click', this.href); return false;">{% blocktrans %}Apply Now{% endblocktrans %}</a>
         {% elif the_job.apply_info %}
         <br/>
         <div id="apply-block">{{ the_job.apply_info }}</div>
@@ -120,11 +123,13 @@
             </a>
           </li>
           {% endif %}
+          {% if crumbs.title %}
           <li>
             <a href="{{ crumbs.title.path }}" title="Remove {{ crumbs.title.display }}">
               {{ crumbs.title.display|smart_truncate }}
             </a>
           </li>
+          {% endif %}
           {# if crumbs.city.display #}
           <li>
             <a href="{{ crumbs.city.path }}" title="Remove {{ crumbs.city.display }}">
@@ -164,5 +169,5 @@
     <script>
         $(document).ready(function(){RetrieveExternalCampaignCookie();});
     </script>
-    <script id="detrack" defer src="https://d2e48ltfsb5exy.cloudfront.net/t/t.js?i=0,1"></script> 
+    <script id="detrack" defer src="https://d2e48ltfsb5exy.cloudfront.net/t/t.js?i=0,1,6"></script>
 {% endblock %}

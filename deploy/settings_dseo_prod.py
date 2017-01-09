@@ -108,11 +108,6 @@ TEMPLATE_CONTEXT_PROCESSORS += (
     "seo.context_processors.site_config_context",
 )
 
-SOLR = {
-    'all': 'http://ec2-23-20-67-65.compute-1.amazonaws.com:8983/solr/myjobs_test/',
-    'current': 'http://ec2-23-20-67-65.compute-1.amazonaws.com:8983/solr/myjobs_test_current/',
-    }
-
 ABSOLUTE_URL = 'https://secure.my.jobs/'
 
 PROJECT = "dseo"
@@ -121,7 +116,7 @@ PROJECT = "dseo"
 BROKER_HOST = '204.236.236.123'
 BROKER_PORT = 5672
 BROKER_USER = 'celery'
-BROKER_VHOST = 'dseo-vhost'
+BROKER_VHOST = 'dseo-prod'
 
 CELERY_DEFAULT_EXCHANGE = 'tasks'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'

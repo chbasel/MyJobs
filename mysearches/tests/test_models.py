@@ -7,10 +7,11 @@ from django.conf import settings
 from django.core import mail
 
 from bs4 import BeautifulSoup
+from freezegun import freeze_time
 from mock import patch, Mock
 
 from myjobs.tests.setup import MyJobsBase
-from mydashboard.tests.factories import CompanyFactory
+from seo.tests.factories import CompanyFactory
 from myjobs.tests.factories import UserFactory
 from myjobs.tests.helpers import return_file
 from mymessages.models import MessageInfo
@@ -28,6 +29,7 @@ from registration.models import ActivationProfile, Invitation
 from tasks import send_search_digests, requeue_missed_searches
 
 
+@freeze_time("2016-10-01 10:00:00")
 class SavedSearchModelsTests(MyJobsBase):
     def test_send_search_email(self):
         SavedSearchDigestFactory(user=self.user,
@@ -262,7 +264,7 @@ class SavedSearchModelsTests(MyJobsBase):
         search.send_email()
         record = ContactRecord.objects.get(tags__name=tag.name)
         self.assertTrue(record.contactlogentry.successful)
-
+  
     @patch('mysearches.models.send_email')
     def test_send_pss_fails(self, mock_send_email):
         """
@@ -407,6 +409,7 @@ class SavedSearchModelsTests(MyJobsBase):
         self.assertEqual(len(mail.outbox), 0)
 
 
+@freeze_time("2016-10-01 10:00:00")
 class PartnerSavedSearchTests(MyJobsBase):
     def setUp(self):
         super(PartnerSavedSearchTests, self).setUp()
@@ -597,6 +600,52 @@ class PartnerSavedSearchTests(MyJobsBase):
             'last_sent__isnull': True,
         }
         self.assertEqual(SavedSearch.objects.filter(**kwargs).count(), 0)
+
+    @freeze_time("2016-10-01 10:01:00")
+    def test_send_pss_after_10(self):
+        """
+        Ensures that partner saved searches that are created and scheduled for
+        today are sent immediately if they are saved after the batch sending
+        process begins.
+        """
+        company = CompanyFactory()
+        partner = PartnerFactory(owner=company)
+
+        communication_records = ContactRecord.objects.count()
+
+        # The act of creating a daily partner saved search after 10 AM should
+        # send the saved search being created.
+        PartnerSavedSearchFactory(user=self.user, created_by=self.user,
+                                  provider=company, partner=partner,
+                                  frequency='D')
+
+        self.assertEqual(ContactRecord.objects.count(),
+                         communication_records + 1,
+                         msg=("No communication record after "
+                              "daily search creation"))
+
+        today = datetime.date.today()
+
+        # Creating a weekly partner saved search with a day_of_week of today
+        # should send the saved search on save.
+        PartnerSavedSearchFactory(user=self.user, created_by=self.user,
+                                  provider=company, partner=partner,
+                                  frequency='W',
+                                  day_of_week=today.isoweekday())
+
+        self.assertEqual(ContactRecord.objects.count(),
+                         communication_records + 2,
+                         msg=("No communication record after "
+                              "weekly search creation"))
+
+        PartnerSavedSearchFactory(user=self.user, created_by=self.user,
+                                  provider=company, partner=partner,
+                                  frequency='M', day_of_month=today.day)
+
+        self.assertEqual(ContactRecord.objects.count(),
+                         communication_records + 3,
+                         msg=("No communication record after "
+                              "monthly search creation"))
 
 
 class SavedSearchSendingTests(MyJobsBase):

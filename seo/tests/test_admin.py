@@ -133,13 +133,13 @@ class DJCeleryAdminTestCase(DirectSEOBase):
                           password=self.password)
 
         # Task to resend
-        self.id = 24974
+        self.id = 25506
         self.date = datetime(year=2015, month=1, day=1, hour=1, minute=1, second=1, tzinfo=pytz.utc)
         self.bu = BusinessUnit(id=self.id, date_updated=self.date, date_crawled=self.date)
         self.bu.save()
         self.etl_to_solr = TaskState(state="test", task_id="testing",
                                      name="priority_etl_to_solr", tstamp=datetime.now(),
-                                     args="""(u'8f3dcec2-264d-49fb-98df-8c6f52fb3936', u'24974', u"Gold's Gym")""",
+                                     args="""(u'442e8eab-a4d8-4c49-9ee1-c408c509c1ca', u'25506', u'Penske')""",
                                      kwargs="{}")
         self.etl_to_solr.save()
 

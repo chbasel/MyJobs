@@ -106,6 +106,7 @@ class MyJobsAdminTests(MyJobsBase):
         # into a list of dicts
         formatted_manipulations = [{
             u'View Source': unicode(m.view_source),
+            u'View Source Name': '',
             u'BUID': unicode(m.buid),
             u'Action Type': unicode(m.action_type),
             u'Value 1': unicode(m.value_1),

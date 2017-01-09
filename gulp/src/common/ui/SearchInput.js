@@ -107,8 +107,8 @@ export class SearchInput extends Component {
 
   async search(partialValue) {
     const {getHints} = this.props;
-    this.setState({dropped: true});
     await getHints(partialValue);
+    this.setState({dropped: true});
   }
 
   focus() {
@@ -133,12 +133,56 @@ export class SearchInput extends Component {
     return this.suggestId(id) + '-' + index.toString();
   }
 
+  renderItems(isExpanded) {
+    const {theme, hints, loading} = this.props;
+    const {keySelectedIndex} = this.state;
+
+    if (loading) {
+      return (
+        <ul className={theme.suggestions}>
+          <li className={theme.hint}>
+            <span className="report-loader"></span>
+          </li>
+        </ul>
+      );
+    }
+
+    if (isExpanded) {
+      return (
+        <ul
+          id={this.suggestId()}
+          className={theme.suggestions}
+          onMouseEnter={() => this.handleMouseInMenu(true)}
+          onMouseLeave={() => this.handleMouseInMenu(false)}>
+          {hints.map((hint, index) =>
+            <li
+              id={this.itemId(index)}
+              key={hint.value}
+              className={classnames(
+                theme.hint,
+                {
+                  [theme.itemActive]: index === keySelectedIndex,
+                })}>
+              <a
+                href="#"
+                onClick={e => this.handleSelect(e, index)}>
+                {hint.display}
+              </a>
+            </li>
+          )}
+        </ul>
+      );
+    }
+
+    return '';
+  }
+
   render() {
     const {id, theme, placeholder, autofocus, hints} = this.props;
     const {dropped, partialValue, keySelectedIndex} = this.state;
     const suggestId = id + '-suggestions';
 
-    const showItems = Boolean(dropped && hints && hints.length);
+    const isExpanded = Boolean(dropped && hints && hints.length);
     const activeId = this.itemId(keySelectedIndex);
 
     return (
@@ -157,33 +201,10 @@ export class SearchInput extends Component {
           type="search"
           aria-autocomplete="list"
           aria-owns={suggestId}
-          aria-expanded={showItems}
+          aria-expanded={isExpanded}
           aria-activedescendant={activeId}
           autoFocus={autofocus} />
-        {showItems ?
-          <ul
-            id={this.suggestId()}
-            className={theme.suggestions}
-            onMouseEnter={() => this.handleMouseInMenu(true)}
-            onMouseLeave={() => this.handleMouseInMenu(false)}>
-            {hints.map((hint, index) =>
-              <li
-                id={this.itemId(index)}
-                key={hint.value}
-                className={classnames(
-                  theme.hint,
-                  {
-                    [theme.itemActive]: index === keySelectedIndex,
-                  })}>
-                <a
-                  href="#"
-                  onClick={e => this.handleSelect(e, index)}>
-                  {hint.display}
-                </a>
-              </li>
-            )}
-          </ul>
-        : null}
+        {this.renderItems(isExpanded)}
       </div>
     );
   }
@@ -276,4 +297,9 @@ SearchInput.propTypes = {
    * Should this bad boy focus, all auto like?
    */
   autofocus: React.PropTypes.string,
+
+  /**
+   * Mark control as loading
+   */
+  loading: PropTypes.bool,
 };

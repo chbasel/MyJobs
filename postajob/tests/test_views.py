@@ -5,12 +5,12 @@ from datetime import date, timedelta
 from django.conf import settings
 from django.core import mail
 from django.core.urlresolvers import reverse
-from django.http import Http404
 
 from seo.tests.setup import DirectSEOBase
-from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
-                                         SeoSiteFactory)
+from seo.tests.factories import (BusinessUnitFactory, CompanyFactory,
+                                 SeoSiteFactory)
 from myjobs.decorators import MissingActivity
+from myjobs.models import AppAccess
 from myjobs.tests.setup import TestClient
 from myjobs.tests.factories import (UserFactory, RoleFactory, AppAccessFactory,
                                     ActivityFactory)
@@ -30,7 +30,6 @@ from myblocks.tests.factories import (LoginBlockFactory, PageFactory,
                                       RowFactory, RowOrderFactory,
                                       BlockOrderFactory)
 from seo.models import Company, SeoSite
-from universal.helpers import build_url
 
 
 class PostajobTestBase(DirectSEOBase):
@@ -41,8 +40,7 @@ class PostajobTestBase(DirectSEOBase):
         self.marketplace_access = AppAccessFactory(name='MarketPlace')
         self.user = UserFactory(password='5UuYquA@')
         self.company = CompanyFactory(
-            app_access=[self.posting_access, self.marketplace_access],
-            product_access=True, posting_access=True)
+            app_access=[self.posting_access, self.marketplace_access])
         self.posting_activities = [
             ActivityFactory(name=activity, app_access=self.posting_access)
             for activity in [
@@ -67,7 +65,8 @@ class PostajobTestBase(DirectSEOBase):
             activities=self.posting_activities + self.marketplace_activities)
         self.user.roles.add(self.admin_role)
 
-        self.site = SeoSiteFactory(canonical_company=self.company)
+        self.site = SeoSiteFactory(canonical_company=self.company,
+                                   domain='test.jobs')
         self.bu = BusinessUnitFactory()
         self.site.business_units.add(self.bu)
         self.company.job_source_ids.add(self.bu)
@@ -894,7 +893,7 @@ class ViewTests(PostajobTestBase):
         response = self.client.get(reverse('product_listing'))
 
         for text in [productgrouping.display_title, productgrouping.explanation,
-                     unicode(self.product)]:
+                     unicode(self.product), unicode(self.product.cost)]:
             # When the entire chain of objects exists, the return HTML should
             # include elements from the relevant ProductGrouping and Product
             # instances
@@ -1034,6 +1033,32 @@ class ViewTests(PostajobTestBase):
         response = self.client.get(
             reverse('purchasedmicrosite_admin_overview'))
         self.assertTrue(isinstance(response, MissingActivity))
+
+    def test_authorize_net_credentials(self):
+        """
+        Authorize.net credentials should appear in the company profile form if
+        the company in question has the MarketPlace AppAccess but not if it has
+        just the Posting AppAccess.
+        """
+        # Ensures that we will still have permission to view this form once
+        # MarketPlace is removed.
+        self.assertTrue({'MarketPlace', 'Posting'}.issubset(
+            self.company.app_access.values_list('name', flat=True)))
+        response = self.client.get(reverse('companyprofile_add'))
+        # Pick a field that's on both versions of the page. This proves we're
+        # looking at the form and not a 404/500 page.
+        self.assertContains(response, 'name="outgoing_email_domain"')
+        for field in ['authorize_net_transaction_key', 'authorize_net_login']:
+            self.assertContains(response, 'name="%s"' % field)
+
+        self.company.app_access.remove(AppAccess.objects.get(
+            name='MarketPlace'))
+        response = self.client.get(reverse('companyprofile_add'))
+        # Check for the same field as before. Blindly checking for the absence
+        # of text may result in false success.
+        self.assertContains(response, 'name="outgoing_email_domain"')
+        for field in ['authorize_net_transaction_key', 'authorize_net_login']:
+            self.assertNotContains(response, 'name="%s"' % field)
 
 
 class PurchasedJobActionTests(PostajobTestBase):

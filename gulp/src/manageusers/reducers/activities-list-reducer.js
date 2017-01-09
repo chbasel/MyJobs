@@ -1,34 +1,20 @@
 import {handleActions} from 'redux-actions';
 
-/**
- * activities list format example: {
- *
- *   data: [
-   {
-     activity_name: "create product",
-     app_access_name: "MarketPlace",
-     activity_description: "Add new products",
-     activity_id: 33,
-     app_access_id: 5
-   },
-   {
-     activity_name: "read product",
-     app_access_name: "MarketPlace",
-     activity_description: "View existing products.",
-     activity_id: 34,
-     app_access_id: 5
-   },
- *   ]
- * }
- */
+export const initialActivities = {};
+
 export default handleActions({
-  'REPLACE_ACTIVITIES_LIST': (state, action) => {
-    const data = action.payload;
-    return {
-      ...state,
-      data,
-    };
-  },
-}, {
-  data: [],
-});
+  /** payload: An object whose keys are app-level access names and values are
+   *           activities.
+   *  example:
+   *   {
+   *     PRM: [
+   *       {
+   *         id: 2,
+   *         name: 'read role',
+   *         description: 'View existing roles.'
+   *       }
+   *     ]
+   *   }
+   */
+  'UPDATE_ACTIVITIES': (state, action) => action.payload,
+}, initialActivities);

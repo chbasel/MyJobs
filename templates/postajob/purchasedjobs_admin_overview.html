@@ -82,6 +82,8 @@
         <b>{{ purchased_product.purchase_date }}</b>
         <br/><label>Expire{%if is_expired %}d{%else%}s{%endif%}:</label>
         <b>{{ purchased_product.expiration_date }}</b>
+        <br /><label>Price:</label>
+        <b>${{ purchased_product.product.cost }}</b>
         {% endwith %}
     </div>
 <div class="clearfix"></div>

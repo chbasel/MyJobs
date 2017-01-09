@@ -1,8 +1,7 @@
 import datetime
 
 from myjobs.tests.setup import MyJobsBase
-from mydashboard.tests.factories import CompanyFactory
-from myjobs.tests.factories import UserFactory
+from seo.tests.factories import CompanyFactory
 from postajob.models import Job, JobLocation
 from tasks import expire_jobs
 

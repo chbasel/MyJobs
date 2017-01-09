@@ -4,7 +4,21 @@ import React from 'react';
  * Simple input element with onChange handler
  */
 function TextField(props) {
-  const {name, onChange, required, maxLength, value, isHidden, placeholder, autoFocus, onFocus, className, onBlur} = props;
+  const {
+    name,
+    onChange,
+    required,
+    maxLength,
+    value,
+    isHidden,
+    placeholder,
+    autoFocus,
+    onFocus,
+    className,
+    onBlur,
+    disable,
+  } = props;
+
   return (
     <span className="react-component">
       <input
@@ -21,6 +35,7 @@ function TextField(props) {
         onChange={onChange}
         autoFocus={autoFocus}
         onFocus={onFocus}
+        disabled={disable}
         onBlur={onBlur}
         />
     </span>
@@ -71,6 +86,10 @@ TextField.propTypes = {
    * What happens onBlur?
    */
   onBlur: React.PropTypes.func,
+  /**
+   * Disable this control
+   */
+  disable: React.PropTypes.bool,
   /**
    * Classes
    */

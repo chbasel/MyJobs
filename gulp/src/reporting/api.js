@@ -88,6 +88,17 @@ class Api {
       formData);
   }
 
+  async runTrialReport(reportDataId, filter, values) {
+    const formData = {
+      filter: JSON.stringify(filter),
+      values: JSON.stringify(values),
+      report_data_id: reportDataId,
+    };
+    return await this.postToReportingApi(
+      '/reports/api/run_trial_report',
+      formData);
+  }
+
   async refreshReport(reportId) {
     const formData = {
       report_id: reportId,

@@ -3,6 +3,7 @@
 {% load common_tags %}
 {% load postajob_tags %}
 {% load compress %}
+{% load staticfiles %}
 
 
 {% block directseo_main_content %}
@@ -10,7 +11,7 @@
 {{ form.media }}
 {% compress css %}
 <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap-3/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-<link rel="stylesheet" href="{{ STATIC_URL }}custom.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="{% static "bundle/custom.css" %}" rel="stylesheet" type="text/css">
 {% endcompress %}
 <div id="job-form" class="container-fluid">
     <form action="?" method="post">

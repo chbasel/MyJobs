@@ -35,7 +35,8 @@ from myjobs.tests.factories import UserFactory, RoleFactory
 from postajob.models import SitePackage
 from postajob.tests.factories import (JobFactory, JobLocationFactory,
                                       SitePackageFactory)
-from redirect.tests.factories import RedirectFactory
+from redirect.models import ViewSource
+from redirect.tests.factories import RedirectFactory, ViewSourceFactory
 from seo import helpers
 from seo.tests.setup import (DirectSEOBase,
                              DirectSEOTestCase,
@@ -370,7 +371,7 @@ class SeoSiteTestCase(DirectSEOTestCase):
         self.assertEqual(resp.status_code, 404)
 
     def test_update_email_domain(self):
-        company = factories.CompanyFactory(product_access=True)
+        company = factories.CompanyFactory()
         site = factories.SeoSiteFactory(canonical_company=company)
         site2 = factories.SeoSiteFactory(canonical_company=company)
 
@@ -2725,6 +2726,23 @@ class SeoViewsTestCase(DirectSEOTestCase):
                              'https://secure.my.jobs/%s' % (
                                  path.replace('_', '-'), ))
             site.site_tags.remove(tag)
+
+    def test_view_source_api(self):
+        ViewSourceFactory()
+        User.objects.create_user(email='user@example.com',
+                                 password='pass')
+        User.objects.create_superuser(email='staff@example.com',
+                                      password='pass')
+        for creds, status in [({'un': '', 'pw': ''}, 404),
+                              ({'un': 'user@example.com', 'pw': 'pass'}, 404),
+                              ({'un': 'staff@example.com', 'pw': 'pass'}, 200)]:
+            response = self.client.post(reverse('get_view_sources'),
+                                        json.dumps(creds),
+                                        content_type="application/json")
+            self.assertEqual(response.status_code, status)
+            if status == 200:
+                content = json.loads(response.content)
+                self.assertEqual(len(content), ViewSource.objects.count())
 
     def test_network_states_loads(self):
         response = self.client.get('/network/states/',

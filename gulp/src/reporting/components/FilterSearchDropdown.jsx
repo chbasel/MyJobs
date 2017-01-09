@@ -9,7 +9,7 @@ export default class FilterSearchDropdown extends Component {
   }
 
   render() {
-    const {id, placeholder, value, getHints, hints} = this.props;
+    const {id, placeholder, value, getHints, hints, loading} = this.props;
     const eid = 'filter-autosuggest-' + id;
 
     return (
@@ -20,6 +20,7 @@ export default class FilterSearchDropdown extends Component {
         placeholder={placeholder}
         onSelect={v => this.onSearchSelect(v)}
         hints={hints}
+        loading={loading}
         getHints={p => getHints(p)}/>
     );
   }
@@ -36,4 +37,5 @@ FilterSearchDropdown.propTypes = {
       display: PropTypes.string.isRequired,
     }).isRequired),
   placeholder: PropTypes.string,
+  loading: PropTypes.bool,
 };

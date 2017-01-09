@@ -248,7 +248,8 @@ def ajax_get_facets(request, filter_path, facet_type):
         query_string = qs.urlencode()
 
         widget = FacetListWidget(request, site_config, _type, facet_results,
-                                 filters, query_string=query_string)
+                                 filters, query_string=query_string,
+                                 version=site_config.template_version)
 
         items = []
         for facet in facet_results:
@@ -442,12 +443,16 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
         company_data = None
 
     # This check is to make sure we're at the canonical job detail url.
-
     # We only need the job id to be in the url, but we also put the title.
     # The offshoot of that is that if someone mistypes or mispells the title
     # in the url, then we want whoever clicks the link to be directed to the
     # canonical (and correctly spelled/no typo) version.
-    if (title_slug == the_job.title_slug and
+
+    def replace_none(i, s):
+        return i if i else s
+
+    if (replace_none(title_slug, 'na') ==
+            replace_none(the_job.title_slug, 'na') and
             location_slug == slugify(the_job.location)) \
             and not search_type == 'uid':
         ga = settings.SITE.google_analytics.all()
@@ -461,7 +466,8 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
             url = ''
             path = ''
         else:
-            url = urlparse(the_job.link)
+            url = urlparse(the_job.link.replace("http://my.jobs",
+                                                "https://my.jobs"))
             path = url.path.replace("/", "")
             # use the override view source
             if settings.VIEW_SOURCE and url.scheme != "mailto":
@@ -542,8 +548,8 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
         }
         # Render the response, but don't return it yet--we need to add an
         # additional canonical url header to the response.
-        the_response = render_to_response('job_detail.html', data_dict,
-                                  context_instance=RequestContext(request))
+        the_response = render_to_response(site_config.get_template('job_detail.html'),
+                                        data_dict, context_instance=RequestContext(request))
 
         # The test described in MS-481 was considered a success and the code
         # is now in a more general form (MS-604). Companies with a microsite use
@@ -572,7 +578,7 @@ def job_detail_by_title_slug_job_id(request, job_id, title_slug=None,
         # job with the passed in id.
         kwargs = {
             'location_slug': slugify(the_job.location),
-            'title_slug': the_job.title_slug,
+            'title_slug': the_job.title_slug or 'na',
             'job_id': the_job.guid
         }
         redirect_url = reverse(
@@ -1691,7 +1697,7 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         cf_count_tup = get_custom_facets(request, filters=filters,
                                          query_string=query_path)
 
-        if not filters['facet_slug']:
+        if not filters.get('facet_slug', None):
             custom_facet_counts = cf_count_tup
         else:
             facet_slugs = filters['facet_slug'].split('/')
@@ -1754,7 +1760,6 @@ def search_by_results_and_slugs(request, *args, **kwargs):
     results_heading = helpers.build_results_heading(breadbox)
     breadbox.job_count = intcomma(total_default_jobs + total_featured_jobs)
     count_heading = helpers.build_results_heading(breadbox)
-
     data_dict = {
         'breadbox': breadbox,
         'build_num': settings.BUILD,
@@ -1770,7 +1775,10 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         'max_filter_settings': settings.ROBOT_FILTER_LEVEL,
         'moc_id_term': moc_id_term if moc_id_term else '\*',
         'moc_term': moc_term,
-        'num_filters': len([k for (k, v) in filters.iteritems() if v]),
+        # see how many active filters there are and then add total number of
+        # facet slugs as there may be multiple filters in the facet slug entry
+        'num_filters': len([k for (k, v) in filters.iteritems()
+                            if v and k != 'facet_slug']) + len(facet_slugs),
         'total_jobs_count': get_total_jobs_count(),
         'results_heading': results_heading,
         'search_url': request.path,
@@ -1789,8 +1797,8 @@ def search_by_results_and_slugs(request, *args, **kwargs):
         'widgets': widgets,
         'analytics_info': get_analytics_info()
     }
-    return render_to_response('job_listing.html', data_dict,
-                              context_instance=RequestContext(request))
+    return render_to_response(site_config.get_template('job_listing.html'),
+                              data_dict, context_instance=RequestContext(request))
 
 
 def get_analytics_info():
@@ -1851,7 +1859,7 @@ def urls_redirect(request, guid, vsid=None, debug=None):
     qs = QueryDict(request.META['QUERY_STRING'], mutable=True)
     qs['my.jobs.site.id'] = site.pk
     qs = qs.urlencode()
-    return HttpResponseRedirect('http://my.jobs/%s%s%s?%s' %
+    return HttpResponseRedirect('https://my.jobs/%s%s%s?%s' %
                                 (guid, vsid, debug, qs))
 
 
@@ -1927,8 +1935,8 @@ def test_markdown(request):
             data_dict = {
                 'the_job': TempJob(**job_json)
             }
-            return render_to_response('job_detail.html', data_dict,
-                                      context_instance=RequestContext(request))
+            return render_to_response(site_config.get_template('job_detail.html'),
+                                      data_dict, context_instance=RequestContext(request))
     else:
         form = UploadJobFileForm()
         data_dict = {

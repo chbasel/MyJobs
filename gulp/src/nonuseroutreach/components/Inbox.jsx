@@ -17,11 +17,24 @@ import {
   doDeleteInbox,
 } from '../actions/inbox-actions';
 
+import {runConfirmInPlace} from 'common/actions/confirm-actions';
+
 /* Inbox
  * Component for manipulating NonUser Outreach inboxes (the
  * OutreachEmailAddress model in Django)
  */
+
+
 export default class Inbox extends React.Component {
+
+  async handleDelete() {
+    const {dispatch, inbox} = this.props;
+    const message = 'Are you sure you want to delete this inbox?';
+    if (await runConfirmInPlace(dispatch, message)) {
+      dispatch(doDeleteInbox(inbox));
+    }
+  }
+
   render() {
     const {dispatch, inbox} = this.props;
     // For new inboxes, we only show the add button. For existing inboxes, we
@@ -33,7 +46,7 @@ export default class Inbox extends React.Component {
         buttons = [
           <Button
             key={'delete-' + inbox.pk}
-            onClick={() => dispatch(doDeleteInbox(inbox))}>
+            onClick={() => this.handleDelete(inbox)}>
             Delete
           </Button>,
         ];

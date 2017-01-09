@@ -336,18 +336,20 @@ def process_csv(location, buids, add_codes=True):
 
     # The csvs exported from our Django admin include human-readable column
     # names. We want the actual columns.
-    expected_header = [u'BUID', u'View Source', u'Action Type', u'Action',
-                       u'Value 1', u'Value 2']
+    expected_header = [u'BUID', u'View Source', u'View Source Name',
+                       u'Action Type', u'Action', u'Value 1', u'Value 2']
     # This file should have come from an export. If the headers are off,
     # other elements may be incorrect. Fail early.
     assert header == expected_header, ('Header mismatch: csv has "%s", '
                                        'expected "%s"') % (
         ",".join(set(header).difference(expected_header)),
         ",".join(set(expected_header).difference(header)))
-    fields = ['buid', 'view_source', 'action_type', 'action',
-              'value_1', 'value_2']
+    fields = ['buid', 'view_source', 'view_source_name', 'action_type',
+              'action', 'value_1', 'value_2']
     codes = [dict(zip(fields, code)) for code in csv]
-    [code.update(view_source=int(code['view_source'])) for code in codes]
+    for code in codes:
+        code['view_source'] = int(code['view_source'])
+        del code['view_source_name']
 
     seen = set()
     with open(path.join(settings.PROJ_ROOT,

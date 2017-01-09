@@ -1,9 +1,10 @@
 from django.core.urlresolvers import reverse
+from django.conf import settings
 import datetime
 import pytz
 
 from myjobs.forms import ChangePasswordForm
-from myjobs.models import CompanyAccessRequest
+from myjobs.models import CompanyAccessRequest, User
 from myjobs.tests.factories import UserFactory, CompanyAccessRequestFactory
 from myprofile.tests.factories import PrimaryNameFactory
 import hashlib
@@ -44,6 +45,70 @@ class AccountFormTests(MyJobsBase):
         self.failUnless(form.is_valid())
         form.save()
         self.failUnless(self.user.check_password('7dY=Ybtk'))
+
+    def test_allow_password_reuse(self):
+        """
+        If the company doesn't enforce password expiration, allow dup passwords
+        """
+        self.company.password_expiration = False
+        self.company.save()
+        self.user = User.objects.get(pk=self.user.pk)
+
+        password = 'password-enTry-0293'
+        self.user.set_password(password)
+        self.user.save()
+
+        form = ChangePasswordForm(
+            user=self.user,
+            data={
+                'password': password,
+                'new_password1': password,
+                'new_password2': password,
+            })
+        self.assertTrue(form.is_valid())
+
+    def test_prevent_password_reuse(self):
+        """
+        Prevent password reuse if any of the users' companies require it.
+        """
+        self.company.password_expiration = True
+        self.company.save()
+        self.user = User.objects.get(pk=self.user.pk)
+
+        limit = settings.PASSWORD_HISTORY_ENTRIES
+
+        def password(i):
+            return 'password-enTry-%d' % i
+
+        for i in range(0, limit + 1):
+            entry = password(i)
+            self.user.set_password(entry)
+            self.user.save()
+            last_pw = entry
+
+        for i in range(1, limit + 1):
+            entry = password(i)
+            form = ChangePasswordForm(
+                user=self.user,
+                data={
+                    'password': last_pw,
+                    'new_password1': entry,
+                    'new_password2': entry,
+                })
+            self.assertFalse(form.is_valid())
+            self.assertRegexpMatches(
+                form.errors['new_password1'][0],
+                r'different from the previous')
+
+        entry = password(0)
+        form = ChangePasswordForm(
+            user=self.user,
+            data={
+                'password': last_pw,
+                'new_password1': entry,
+                'new_password2': entry,
+            })
+        self.assertTrue(form.is_valid())
 
 
 class CompanyAccessRequestFormTests(MyJobsBase):

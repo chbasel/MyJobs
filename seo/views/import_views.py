@@ -12,7 +12,8 @@ import logging
 # Our Imports
 from seo import helpers
 from seo.decorators import sns_json_message
-from tasks import task_check_solr_count, task_priority_etl_to_solr, task_etl_to_solr, task_update_solr
+from tasks import task_etl_to_solr, task_update_solr, task_priority_etl_to_solr,task_jobsfs_to_mongo, \
+    task_seoxml_to_mongo
 
 
 
@@ -93,17 +94,12 @@ def confirm_load_jobs_from_etl(response):
                 logger.info("Ignoring sns for %s", jsid)
                 return None
 
-            # Setup a check on this business unit down the road.
-            if 'count' in msg:
-                logger.info("Creating check_solr_count task (%s, %s)"%(buid, msg['count']))
-                eta=timezone.now() + timedelta(minutes=20)
-                task_check_solr_count.apply_async((buid, msg['count']), eta=eta)
-
             logger.info("Creating ETL Task (%s, %s, %s)"%(jsid, buid, name))
             if int(prio)==1:
                 task_priority_etl_to_solr.delay(jsid, buid, name)
             else:
                 task_etl_to_solr.delay(jsid, buid, name)
+            task_jobsfs_to_mongo.delay(jsid, buid, name)
 
 
 @csrf_exempt
@@ -125,6 +121,7 @@ def send_sns_confirm(response):
                 logger.info("Creating update_solr task for %s"%buid)
                 set_title=helpers.create_businessunit(int(buid))
                 task_update_solr.delay(buid, force=True, set_title=set_title)
+                task_seoxml_to_mongo.delay(buid)
             else:
                 logger.info("Skipping update_solr for %s because it is not in the allowed buids list." % buid)
 

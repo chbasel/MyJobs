@@ -3,6 +3,7 @@ from datetime import datetime
 import json
 
 from django.core.files.base import ContentFile
+from django.db.models import Q
 from django.db.models.loading import get_model
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render_to_response
@@ -12,6 +13,7 @@ from django.views.generic import View
 from django.views.decorators.http import require_http_methods
 
 from myreports.helpers import humanize, serialize, sort_records
+from myreports.result_encoder import ReportJsonEncoder
 from myjobs.decorators import requires
 from myreports.models import (
     Report, ReportPresentation, DynamicReport, ReportTypeDataTypes,
@@ -397,6 +399,7 @@ def select_data_type_api(request):
             selected_data_type: suggested selected data type
         }
     """
+    company = get_company_or_404(request)
     reporting_type = request.POST.get('reporting_type')
     report_type = request.POST.get('report_type')
     data_type = request.POST.get('data_type')
@@ -408,6 +411,7 @@ def select_data_type_api(request):
         {'value': rit.reporting_type, 'display': rit.description}
         for rit in choices['reporting_types']
     ]
+
     report_type_list = [
         {'value': rt.report_type, 'display': rt.description}
         for rt in choices['report_types']
@@ -416,6 +420,12 @@ def select_data_type_api(request):
         {'value': dt.data_type, 'display': dt.description}
         for dt in choices['data_types']
     ]
+
+    # Weird hard coded thing for analytics right now:
+    if ('Analytics' in company.enabled_access and
+            request.user.can(company, "view analytics")):
+        reporting_type_list.append(
+            {'value': -1, 'display': 'Web Analytics', 'link': 'analytics'})
 
     report_data = (
         ReportTypeDataTypes.objects.
@@ -510,6 +520,7 @@ def export_options_api(request):
     cols = (
         ConfigurationColumn.objects
         .active_for_report_data(report.report_data)
+        .filter(Q(filter_only__isnull=True) | Q(filter_only=False))
         .order_by('order'))
     values = [
         {'value': c.column_name, 'display': c.alias or c.column_name}
@@ -623,6 +634,34 @@ def run_dynamic_report(request):
     data = {'id': report.id}
     return HttpResponse(content_type='application/json',
                         content=json.dumps(data))
+
+
+@requires('read partner', 'read contact', 'read communication record')
+@require_http_methods(['POST'])
+def run_trial_dynamic_report(request):
+    """Run a dynamic report.
+
+    report_data_id: Report Presentation ID
+    name: name of report
+    filter_spec: JSON string with user filter to use
+
+    response: {'id': new dynamic report id}
+    """
+    company = get_company_or_404(request)
+    report_data_id = request.POST['report_data_id']
+    filter_spec = request.POST.get('filter', '{}')
+    values_spec = request.POST.get('values', '[]')
+    report_data = ReportTypeDataTypes.objects.get(id=report_data_id)
+
+    data_type = report_data.data_type
+
+    driver = ds_json_drivers[report_data.report_type.datasource]
+    data_type_name = data_type.data_type
+    data = driver.run(data_type_name, company, filter_spec, values_spec)
+
+    contents = json.dumps(data, cls=ReportJsonEncoder)
+    return HttpResponse(content_type='application/json',
+                        content=contents)
 
 
 @requires('read partner', 'read contact', 'read communication record')

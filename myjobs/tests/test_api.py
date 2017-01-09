@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 
 from tastypie.models import create_api_key
 
+from myjobs.tests.factories import RoleFactory
 from myjobs.models import User
 from myjobs.tests.factories import UserFactory
 from myjobs.tests.test_views import TestClient
@@ -12,9 +13,9 @@ from mysearches.models import SavedSearch
 from setup import MyJobsBase
 
 
-class UserResourceTests(MyJobsBase):
+class UserResourceTestCase(MyJobsBase):
     def setUp(self):
-        super(UserResourceTests, self).setUp()
+        super(UserResourceTestCase, self).setUp()
         create_api_key(User, instance=self.user, created=True)
         self.client = TestClient(
             path='/api/v1/user/',
@@ -54,10 +55,51 @@ class UserResourceTests(MyJobsBase):
             self.assertFalse(content['user_created'])
             self.assertEqual(content['email'].lower(), 'alice@example.com')
 
-
-class SavedSearchResourceTests(MyJobsBase):
+class UserManagementTestCase(MyJobsBase):
     def setUp(self):
-        super(SavedSearchResourceTests, self).setUp()
+        super(UserManagementTestCase, self).setUp()
+        self.role.activities = self.activities
+
+    def test_removing_admin_role_from_last_admin(self):
+        """
+        Tests that it's not possible to remove the Admin role from a user if
+        that user is the last Admin for a company.
+
+        """
+        self.assertEqual(self.role.user_set.all().count(), 1)
+        empty_role = RoleFactory.build(company=self.company, name="Empty")
+
+        response = self.client.post(
+            path='/manage-users/api/users/%s/' % self.user.id,
+            data={'add': ['Empty'], 'remove': ['Admin']})
+        self.assertEqual(self.role.user_set.all().count(), 1,
+                         "Removed last User from Admin Role")
+        response_data = json.loads(response.content)
+        self.assertIn(
+            'Operation failed, as completing it would have removed the last '
+            'Admin from the company. Is another Admin also editing users?',
+            response_data['errors'])
+
+    def test_delete_user_who_is_last_admin(self):
+        """
+        Tests that it is not possible to remove a user from a company if that
+        user is the last admin for a company.
+
+        """
+        response = self.client.delete(
+            path='/manage-users/api/users/remove/%s/' % self.user.id)
+        response_data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.role.user_set.all().count(), 1,
+                         "Removed last User from Admin Role")
+        self.assertIn('Operation failed, as completing it would have removed '
+                      'the last Admin from the company. Is another Admin also '
+                      'editing users?', response_data['errors'])
+
+
+class SavedSearchResourceTestCase(MyJobsBase):
+    def setUp(self):
+        super(SavedSearchResourceTestCase, self).setUp()
         self.client = TestClient(
             path='/api/v1/savedsearch/',
             data={'email': 'alice@example.com',

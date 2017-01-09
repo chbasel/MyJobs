@@ -11,7 +11,7 @@
                 <ul>
                     {% for product in grouping.products.all %}
                         <li id="product-{{ grouping.pk }}-{{ product.pk }}">
-                            <a href="{% url 'purchasedproduct_add' product.pk %}">{{ product }}</a>
+                            <a href="{% url 'purchasedproduct_add' product.pk %}">{{ product }}</a> <span>${{ product.cost }}</span>
                         </li>
                     {% endfor %}
                 </ul>

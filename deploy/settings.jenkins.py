@@ -33,10 +33,6 @@ DATABASES = {
         'PORT': '3306',
     },
 }
-SOLR = {
-    'all': 'http://127.0.0.1:8983/solr/myjobs/',
-    'current': 'http://127.0.0.1:8983/solr/myjobs/',
-}
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -48,7 +44,6 @@ PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',
 )
 JENKINS_TEST_RUNNER = 'silent_testrunner.SilentTestRunner'
-TEST_SOLR_INSTANCE = SOLR
 CELERY_ALWAYS_EAGER = True
 
 CC_AUTH = TESTING_CC_AUTH
@@ -100,4 +95,9 @@ LOGGING = {
             'level': 'WARN',
         }
     }
+}
+
+SOLR = {
+    # seo_test would be better...
+    'seo_test': 'http://127.0.0.1:8983/solr/seo',
 }

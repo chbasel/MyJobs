@@ -1,9 +1,7 @@
 """CommRecords DataSource"""
 from HTMLParser import HTMLParser
-from operator import __or__
 from datetime import datetime
 
-from django.db.models import Q
 from django.utils.html import strip_tags
 
 from mypartners.models import (
@@ -13,7 +11,9 @@ from postajob.location_data import states
 
 from myreports.datasources.util import (
     dispatch_help_by_field_name, dispatch_run_by_data_type,
-    filter_date_range, extract_tags)
+    extract_tags, adorn_filter,
+    apply_filter_to_queryset,
+    NoFilter, CompositeAndFilter, DateRangeFilter)
 from myreports.datasources.base import DataSource, DataSourceFilter
 
 from universal.helpers import dict_identity, extract_value
@@ -30,36 +30,46 @@ def contact_type_help_entry(contact_type):
 
 
 class CommRecordsDataSource(DataSource):
-    def run(self, data_type, company, filter_spec, order):
+    def run(self, data_type, company, filter_spec, values):
         return dispatch_run_by_data_type(
-            self, data_type, company, filter_spec, order)
+            self, data_type, company, filter_spec, values)
 
-    def run_unaggregated(self, company, filter_spec, order):
+    def run_unaggregated(self, company, filter_spec, values):
         qs_filtered = self.filtered_query_set(company, filter_spec)
-        qs_ordered = qs_filtered.order_by(*order)
-        qs_distinct = qs_ordered.distinct()
-        return [self.extract_record(r) for r in qs_distinct]
+        qs_distinct = qs_filtered.distinct()
+        return [self.extract_record(r, values) for r in qs_distinct]
 
-    def extract_record(self, record):
+    def extract_record(self, record, values):
+        fields = {
+            'contact': lambda r: extract_value(r, 'contact', 'name'),
+            'contact_email': lambda r: r.contact_email,
+            'contact_phone': lambda r: r.contact_phone,
+            'communication_type': lambda r: r.contact_type,
+            'created_on': lambda r: r.created_on,
+            'created_by': lambda r: extract_value(r, 'created_by', 'email'),
+            'date_time': lambda r: r.date_time,
+            'job_applications': lambda r: r.job_applications,
+            'job_hires': lambda r: r.job_hires,
+            'job_id': lambda r: r.job_id,
+            'job_interviews': lambda r: r.job_interviews,
+            'last_action_time': lambda r: r.last_action_time,
+            'length': lambda r: r.length,
+            'location': lambda r: r.location,
+            'notes': lambda r: self.normalize_html(r.notes),
+            'partner': lambda r: extract_value(r, 'partner', 'name'),
+            'subject': lambda r: r.subject,
+            'tags': lambda r: extract_tags(r.tags),
+        }
+
+        if values:
+            return_values = values
+        else:
+            return_values = fields.keys()
+
         return {
-            'contact': extract_value(record, 'contact', 'name'),
-            'contact_email': record.contact_email,
-            'contact_phone': record.contact_phone,
-            'communication_type': record.contact_type,
-            'created_on': record.created_on,
-            'created_by': extract_value(record, 'created_by', 'email'),
-            'date_time': record.date_time,
-            'job_applications': record.job_applications,
-            'job_hires': record.job_hires,
-            'job_id': record.job_id,
-            'job_interviews': record.job_interviews,
-            'last_action_time': record.last_action_time,
-            'length': record.length,
-            'location': record.location,
-            'notes': self.normalize_html(record.notes),
-            'partner': extract_value(record, 'partner', 'name'),
-            'subject': record.subject,
-            'tags': extract_tags(record.tags.all()),
+            k: v(record)
+            for k, v in fields.iteritems()
+            if k in return_values
         }
 
     def normalize_html(self, html):
@@ -122,6 +132,41 @@ class CommRecordsDataSource(DataSource):
                 'hexColor': t['hex_color'],
             } for t in tags_qs]
 
+    def help_contact_tags(self, company, filter_spec, partial):
+        """Get help for the contact tags field."""
+        comm_records_qs = self.filtered_query_set(company, CommRecordsFilter())
+
+        contact_qs = Contact.objects.filter(contactrecord__in=comm_records_qs)
+        tags_qs = (
+            Tag.objects
+            .filter(contact__in=contact_qs)
+            .filter(name__icontains=partial)
+            .values('name', 'hex_color').distinct())
+        return [
+            {
+                'value': t['name'],
+                'display': t['name'],
+                'hexColor': t['hex_color'],
+            } for t in tags_qs]
+
+    def help_partner_tags(self, company, filter_spec, partial):
+        """Get help for the partner tags field."""
+        comm_records_qs = self.filtered_query_set(company, CommRecordsFilter())
+
+        partner_qs = Partner.objects.filter(
+            contact__contactrecord__in=comm_records_qs)
+        tags_qs = (
+            Tag.objects
+            .filter(partner__in=partner_qs)
+            .filter(name__icontains=partial)
+            .values('name', 'hex_color').distinct())
+        return [
+            {
+                'value': t['name'],
+                'display': t['name'],
+                'hexColor': t['hex_color'],
+            } for t in tags_qs]
+
     def help_communication_type(self, company, filter_spec, partial):
         """Get help for the communication type field."""
         return [
@@ -171,93 +216,109 @@ class CommRecordsDataSource(DataSource):
             .filter(approval_status__code__iexact=Status.APPROVED)
             .filter(archived_on__isnull=True))
         qs_filtered = filter_spec.filter_query_set(qs_live)
-        return qs_filtered
+        qs_optimized = (
+            qs_filtered.prefetch_related('contact')
+            .prefetch_related('partner')
+            .prefetch_related('created_by')
+            .prefetch_related('tags'))
+        return qs_optimized
 
-    def adorn_filter(self, company, filter_spec):
+    def adorn_filter_items(self, company, found_filter_items):
         adorned = {}
         empty = CommRecordsFilter()
 
-        if filter_spec.date_time:
-            adorned[u'date_time'] = filter_spec.date_time
+        if 'tags' in found_filter_items:
+            adorned[u'tags'] = {
+                found['value']: found
+                for found in [
+                    result
+                    for result in self.help_tags(company, empty, '')
+                ]
+            }
 
-        if filter_spec.locations:
-            adorned[u'locations'] = {}
-            known_city = filter_spec.locations.get('city', None)
-            if known_city:
-                cities = self.help_city(company, empty, known_city)
-                if cities:
-                    adorned[u'locations'][u'city'] = cities[0]['value']
-            known_state = filter_spec.locations.get('state', None)
-            if known_state:
-                states = self.help_state(company, empty, known_state)
-                if states:
-                    adorned[u'locations'][u'state'] = states[0]['value']
+        if 'contact_tags' in found_filter_items:
+            adorned[u'contact_tags'] = {
+                found['value']: found
+                for found in [
+                    result
+                    for result in self.help_contact_tags(company, empty, '')
+                ]
+            }
 
-        if filter_spec.tags:
-            adorned[u'tags'] = []
-            for known_or_tags in filter_spec.tags:
-                or_group = []
+        if 'partner_tags' in found_filter_items:
+            adorned[u'partner_tags'] = {
+                found['value']: found
+                for found in [
+                    result
+                    for result in self.help_partner_tags(company, empty, '')
+                ]
+            }
 
-                for known_tag in known_or_tags:
-                    tags = self.help_tags(company, empty, known_tag)
-                    if tags:
-                        or_group.append(tags[0])
-
-                if or_group:
-                    adorned[u'tags'].append(or_group)
-
-        if filter_spec.partner:
+        if 'partner' in found_filter_items:
             partners_qs = (
                 Partner.objects
                 .filter(owner=company)
-                .filter(pk__in=filter_spec.partner)
+                .filter(pk__in=found_filter_items['partner'])
                 .values('name', 'pk').distinct())
-            adorned[u'partner'] = [
-                {'value': p['pk'], 'display': p['name']}
-                for p in partners_qs
-            ]
 
-        if filter_spec.contact:
+            adorned[u'partner'] = {
+                found['value']: found
+                for found in [
+                    {'value': p['pk'], 'display': p['name']}
+                    for p in partners_qs
+                ]
+            }
+
+        if 'contact' in found_filter_items:
             contacts_qs = (
                 Contact.objects
                 .filter(partner__owner=company)
-                .filter(pk__in=filter_spec.contact)
+                .filter(pk__in=found_filter_items['contact'])
                 .values('name', 'pk').distinct())
-            adorned[u'contact'] = [
-                {'value': p['pk'], 'display': p['name']}
-                for p in contacts_qs
-            ]
 
-        if filter_spec.communication_type:
-            adorned[u'communication_type'] = [
-                contact_type_help_entry(c)
-                for c in filter_spec.communication_type
-            ]
+            adorned[u'contact'] = {
+                found['value']: found
+                for found in [
+                    {'value': p['pk'], 'display': p['name']}
+                    for p in contacts_qs
+                ]
+            }
+
+        if 'communication_type' in found_filter_items:
+            adorned[u'communication_type'] = {
+                contact_type_help_entry(c)['value']: contact_type_help_entry(c)
+                for c in found_filter_items['communication_type']
+            }
 
         return adorned
 
     def get_default_filter(self, data_type, company):
         filter_spec = CommRecordsFilter(
-            date_time=[datetime(2014, 1, 1), datetime.now()])
-        adorned = self.adorn_filter(company, filter_spec)
+            date_time=DateRangeFilter([datetime(2014, 1, 1), datetime.now()]))
+        adorned = adorn_filter(company, self, filter_spec)
         return adorned
 
 
 @dict_identity
 class CommRecordsFilter(DataSourceFilter):
-    def __init__(self, date_time=None, locations=None, tags=None,
-                 communication_type=None, partner=None, contact=None):
+    def __init__(self, date_time=NoFilter(), locations=NoFilter(),
+                 tags=NoFilter(), communication_type=NoFilter(),
+                 partner=NoFilter(), contact=NoFilter(),
+                 contact_tags=NoFilter(), partner_tags=NoFilter()):
         self.date_time = date_time
         self.locations = locations
         self.tags = tags
         self.communication_type = communication_type
         self.partner = partner
         self.contact = contact
+        self.contact_tags = contact_tags
+        self.partner_tags = partner_tags
 
     @classmethod
     def filter_key_types(self):
         return {
             'date_time': 'date_range',
+            'locations': 'composite',
         }
 
     def clone_without_city(self):
@@ -266,12 +327,12 @@ class CommRecordsFilter(DataSourceFilter):
         Return a new CommRecordsFilter without the current city filter applied.
         """
         new_root = dict(self.__dict__)
-        locations = new_root.get('locations', None)
+        locations = new_root.get('locations', NoFilter())
         if locations:
-            new_locations = dict(locations)
-            if 'city' in locations:
+            new_locations = dict(locations.field_map)
+            if 'city' in locations.field_map:
                 del new_locations['city']
-            new_root['locations'] = new_locations
+            new_root['locations'] = CompositeAndFilter(new_locations)
         return CommRecordsFilter(**new_root)
 
     def clone_without_state(self):
@@ -281,12 +342,12 @@ class CommRecordsFilter(DataSourceFilter):
         applied.
         """
         new_root = dict(self.__dict__)
-        locations = new_root.get('locations', None)
+        locations = new_root.get('locations', NoFilter())
         if locations:
-            new_locations = dict(locations)
-            if 'state' in locations:
+            new_locations = dict(locations.field_map)
+            if 'state' in locations.field_map:
                 del new_locations['state']
-            new_root['locations'] = new_locations
+            new_root['locations'] = CompositeAndFilter(new_locations)
         return CommRecordsFilter(**new_root)
 
     def clone_without_tags(self):
@@ -309,45 +370,55 @@ class CommRecordsFilter(DataSourceFilter):
         return CommRecordsFilter(**new_root)
 
     def filter_query_set(self, qs):
-        qs = filter_date_range(self.date_time, 'date_time', qs)
+        qs = apply_filter_to_queryset(
+            qs,
+            self.date_time,
+            'date_time')
+        qs = apply_filter_to_queryset(
+            qs,
+            self.communication_type,
+            'contact_type')
+        qs = apply_filter_to_queryset(
+            qs,
+            self.tags,
+            'tags', '__name__iexact')
 
-        if self.communication_type:
-            qs = qs.filter(contact_type__in=self.communication_type)
-
-        if self.tags is not None:
-            list_empty = True
-            or_qs = []
-            for tag_ors in self.tags:
-                if tag_ors:
-                    list_empty = False
-                    or_qs.append(
-                        reduce(
-                            __or__,
-                            map(lambda t: Q(tags__name__iexact=t), tag_ors)))
-            for or_q in or_qs:
-                qs = qs.filter(or_q)
-            if list_empty:
-                # if an empty tags list was received, return only untagged items
-                qs = qs.filter(tags=None)
-
-        if self.locations is not None:
+        if self.locations or self.contact or self.contact_tags:
             contact_qs = Contact.objects.all()
+            contact_qs = apply_filter_to_queryset(
+                contact_qs,
+                self.locations,
+                {
+                    'city': 'locations__city__iexact',
+                    'state': 'locations__state__iexact',
+                })
+            contact_qs = apply_filter_to_queryset(
+                contact_qs,
+                self.contact,
+                'pk')
+            contact_qs = apply_filter_to_queryset(
+                contact_qs,
+                self.contact_tags,
+                'tags', '__name__iexact')
 
-            city = self.locations.get('city', None)
-            if city:
-                contact_qs = contact_qs.filter(locations__city__iexact=city)
+            contact_qs = contact_qs.distinct()
 
-            state = self.locations.get('state', None)
-            if state:
-                contact_qs = contact_qs.filter(locations__state__iexact=state)
-
-            contact_qs.distinct()
             qs = qs.filter(contact=contact_qs)
 
-        if self.partner is not None:
-            qs = qs.filter(partner__pk__in=self.partner)
+        if self.partner or self.partner_tags:
+            partner_qs = Partner.objects.all()
 
-        if self.contact is not None:
-            qs = qs.filter(contact__pk__in=self.contact)
+            partner_qs = apply_filter_to_queryset(
+                partner_qs,
+                self.partner,
+                'pk')
+            partner_qs = apply_filter_to_queryset(
+                partner_qs,
+                self.partner_tags,
+                'tags', '__name__iexact')
+
+            partner_qs = partner_qs.distinct()
+
+            qs = qs.filter(partner=partner_qs)
 
         return qs

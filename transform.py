@@ -227,29 +227,28 @@ def hr_xml_to_json(xml, business_unit):
     etree.cleanup_namespaces(xml)
 
     # Get some useful references
-    app = xml.xpath('.//ApplicationArea')[0]
-    data = xml.xpath('.//PositionOpening')[0]
 
-    guid = data.find(".//*[@schemeName='juid']").text
+    guid = xml.find("./jobuuid").text
     logger.debug("Parsing job %s", guid)
 
-    reqid = data.find(".//*[@schemeName='reqid']").text
-    city = data.find('.//CityName').text
+    reqid = xml.find("./reqid").text
+    city = xml.find('.//locations/loc[@type="primary"]/city').text
     city = city if city not in ['', 'XX'] else None
-    state_code = data.find('.//CountrySubDivisionCode').text
+    state_code = xml.find('./locations/loc[@type="primary"]/state').text
     state_short = state_code if state_code in states.keys() else None
     state = states.get(state_code, None)
-    country_short = data.find('.//CountryCode').text
+    country_short = xml.find('./locations/loc[@type="primary"]/country').text
     if country_short in [None, '', 'XXX']:
         country = country_short = ""
     else:
         country = Country.objects.get(abbrev=country_short).name
-    title = data.find('.//PositionTitle').text
-    description = data.find('.//PositionFormattedDescription/Content').text
-    link = data.find('.//Communication/URI').text
+    zipcode = xml.find('./locations/loc[@type="primary"]/postalcode')
+    title = xml.find('./jobtitle').text
+    description = xml.find('./jobdescription').text
+    link = xml.find('./joburl').text
 
-    latitude = data.find('.//SpatialLocation/Latitude').text
-    longitude = data.find('.//SpatialLocation/Longitude').text
+    latitude = xml.find('./locations/loc[@type="primary"]/latitude').text
+    longitude = xml.find('./locations/loc[@type="primary"]/longitude').text
 
     # Lookup the company.  (Assumes that company is 1-to-1 on BusinessUnit)
     try:
@@ -262,10 +261,9 @@ def hr_xml_to_json(xml, business_unit):
     job = {'is_posted': False}
     # Use dateutil here because datetime.strptime does not support this format.
     try:
-        date_new = data.get('validFrom')
+        date_new = xml.find('./datenew').text
         job['date_new'] = date_parse(date_new)
-        updated = date_parse(app.find('.//CreationDateTime').text)
-        job['date_updated'] = updated
+        job['date_updated'] = job['date_new']
     except ValueError:
         logger.error("Unable to parse string %s as a date", date_new)
         raise
@@ -317,7 +315,6 @@ def hr_xml_to_json(xml, business_unit):
     job['city_exact'] = city
     job['title_slug'] = slugify(title)
     job['state_exact'] = state
-    zipcode = data.find('.//PostalCode')
     job['zipcode'] = zipcode.text if zipcode != None else ""
     job['title'] = title
     job['date_new_exact'] = job['date_new']
@@ -352,7 +349,7 @@ def hr_xml_to_json(xml, business_unit):
     job['city_slab_exact'] = job['city_slab']
     job['title_slab_exact'] = job['title_slab']
 
-    onets = [node.text for node in data.findall('.//JobCategoryCode')]
+    onets = [node.text for node in xml.findall('.//onet')]
     onets = set(DEJobFeed.clean_onet(onet) for onet in onets)
     job['onet'] = job['onet_exact'] = list(onets)
 

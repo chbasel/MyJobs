@@ -9,6 +9,7 @@ from seo.views.search_views import (BusinessUnitAdminFilter, SeoSiteAdminFilter,
 from seo.views.settings_views import secure_redirect
 from registration import views as registration_views
 from ajax_select import urls as ajax_select_urls
+from myjobs.forms import MyJobsAdminAuthenticationForm
 
 # This is a bit of code pulled from a Django TRAC ticket describing a problem
 # I was seeing when working with the inline model forms:
@@ -49,6 +50,7 @@ v1_api.register(resources.JobSearchResource())
 v1_api.register(resources.JobResource())
 
 admin.autodiscover()
+admin.site.login_form = MyJobsAdminAuthenticationForm
 handler404 = Dseo404.as_view()
 handler500 = 'seo.views.search_views.dseo_500'
 

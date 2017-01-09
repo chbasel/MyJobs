@@ -78,11 +78,6 @@ CACHES = {
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
-SOLR = {
-    'all': 'http://ec2-54-87-235-123.compute-1.amazonaws.com:8080/solr/profiles/',
-    'current': 'http://ec2-54-87-235-123.compute-1.amazonaws.com:8080/solr/profiles_current/',
-}
-
 AWS_STORAGE_BUCKET_NAME = 'my-jobs'
 AWS_CALLING_FORMAT = CallingFormat.SUBDOMAIN
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
@@ -120,7 +115,7 @@ TEMPLATE_CONTEXT_PROCESSORS += (
 BROKER_HOST = '204.236.236.123'
 BROKER_PORT = 5672
 BROKER_USER = 'celery'
-BROKER_VHOST = 'dseo-vhost'
+BROKER_VHOST = 'myjobs-prod'
 
 EMAIL_HOST_USER = PRODUCTION_EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = PRODUCTION_EMAIL_HOST_PASSWORD

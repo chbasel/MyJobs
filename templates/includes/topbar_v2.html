@@ -1,0 +1,119 @@
+{% load common_tags %}
+{% load staticfiles %}
+{% load compress %}
+
+<header>
+<nav class="navbar navbar-default main-nav-topbar navbar-fixed-top" data-dropdown="dropdown" role="menubar">
+    <div class="container-fluid">
+        <div id="de-topbar-content" class="main-nav-collapse top-navbar">
+            <section class="navbar-left left-logo">
+                <div class="jobs-logo">
+                    <a id="anchor-logo" class="my-jobs-logo" href="http://www.my.jobs/">
+                        <img src="{{ STATIC_URL }}svg/topbar-dotjobs-logo.svg" alt="dot jobs logo">
+                    </a>
+                    {% get_ms_name as last_microsite_name %}
+                    {% if current_microsite_name or last_microsite_name %}
+                        <span class="glyphicon glyphicon-play text-success"></span>
+                        <a href="{% if current_microsite_url %}{{current_microsite_url}}
+                                {% else %}{% get_ms_url %}{% endif %}">
+                            <span id="last-microsite-name">
+                                {% firstof current_microsite_name last_microsite_name %}
+                            </span>
+                        </a>
+                    {% endif %}
+                </div>
+            </section>
+
+            {% get_menus as menus %}
+            <section class="menu-container" role="menu">
+                {% if user.is_authenticated and request.session.keys|length %}
+                <ul class="nav navbar-nav navbar-right right-nav desktop-right-nav">
+                  {% for menu in menus %}
+                    <li {% if menu.submenus %}class="dropdown"{% endif %}>
+                      <a id="{{ menu.id }}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% firstof menu.iconLabel menu.label %}{% if menu.icon %}<div class="{{ menu.icon }}"></div>{% endif %}<span class="caret"></span></a>
+                      <ul class=" dropdown-menu" id="{{ menu.submenuId }}">
+                        {% for submenu in menu.submenus %}
+                          <li id="{{ submenu.id }}">
+                            <a href="{{ submenu.href }}">{{ submenu.label }}</a>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </li>
+                  {% endfor %}
+                    {% is_a_group_member company user "Employer" as group_member %}
+                    {% get_company_name user as company_name %}
+                </ul>
+                {% else %}
+                    <ul class="mobile_hide nav navbar-nav navbar-right right-nav desktop-right-nav">
+                        <li class="dropdown"><a class="dropdown-toggle" href="http://www.my.jobs/employers/">Employers / Post Jobs</a></li>
+                        <li class="dropdown"><a class="dropdown-toggle" href="{{ ABSOLUTE_URL }}">Create Account / Log In</a></li>
+                    </ul>
+                {% endif %}
+            </section>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+</header>
+
+{% comment %} Mobile Bottom Nav {% endcomment %}
+{% get_menus as menus %}
+<nav id="mobile_footer" class="menu-container" role="menu">
+  <div class="row">
+      {% if user.is_authenticated and request.session.keys|length %}
+        <ul class="mob-nav-section">
+            {% for menu in menus %}
+                <li class="col-xs-3 mob-nav-content mobile-trigger" {% if menu.submenus %}class=""{% endif %}>
+                  <a id="{{ menu.id }}-mobile" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                      {% if menu.mobile_icon_v2 %}
+                          <i class="{{ menu.mobile_icon_v2 }}"></i>
+                      {% endif %}
+
+                      {% if menu.label_mobile_v2 %}
+                          <p>{% firstof menu.label_mobile_v2 %}</p>
+                      {% else %}
+
+                          <p>{% firstof menu.iconLabel menu.label %}</p>
+                      {% endif %}
+                  </a>
+                    {% comment %} Sub-menus {% endcomment %}
+                    <ul class="mobile-submenu" id="{{ menu.mobile_submenuId }}">
+                    {% for submenu in menu.submenus %}
+                      <li class="mobile-sub-nav" id="{{ submenu.id }}-mobile">
+                        <a href="{{ submenu.href }}">{{ submenu.label }}</a>
+                      </li>
+                    {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+            {% is_a_group_member company user "Employer" as group_member %}
+            {% get_company_name user as company_name %}
+        </ul>
+      {% else %}
+        {% comment %} When logged out {% endcomment %}
+        <ul class="mob-nav-section">
+            <li class="col-xs-6 mob-nav-content">
+                <a href="http://www.my.jobs/employers/">
+                    <i class="glyphicon glyphicon-cloud-upload"></i>
+                    <p>Employers</p>
+                </a>
+            </li>
+            <li class="col-xs-6 mob-nav-content">
+                <a href="{{ ABSOLUTE_URL }}">
+                    <i class="glyphicon glyphicon-user"></i>
+                    <p>Log In</p>
+                </a>
+            </li>
+        </ul>
+      {% endif %}
+
+  </div>
+</nav>
+
+{% if group_member and company_name|length > 1 %}
+{% json_companies company_name as companies %}
+    <script>
+        var tools_companies = {{ companies|safe }};
+    </script>
+{% endif %}
+
+<script defer src="{% static "topbar_v2-184-6.js" %}"></script>

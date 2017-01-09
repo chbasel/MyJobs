@@ -42,15 +42,28 @@ class DjangoRowBuilder(object):
         """List of fields available in the row dictionaries."""
         self.django_fields = django_fields
 
-    def get_fields(self):
-        """Field list for this record set."""
-        return [f.get_name() for f in self.django_fields]
+    def limit_fields(self, names):
+        """
+        Limit fields by this list of fields.
 
-    def get_values(self, record):
+        names: list of field names to return.
+            If falsey, return all fields.
+
+        """
+        if names:
+            return [f for f in self.django_fields if f.get_name() in names]
+        else:
+            return self.django_fields
+
+    def get_fields(self, fields=None):
+        """Field list for this record set."""
+        return [f.get_name() for f in self.limit_fields(fields)]
+
+    def get_values(self, record, fields=None):
         """Return a row dictionary."""
         return {
             f.get_name(): f.get_value(record)
-            for f in self.django_fields}
+            for f in self.limit_fields(fields)}
 
 
 class DjangoField(object):
@@ -88,21 +101,24 @@ class DjangoField(object):
 
 
 class DjangoRowStream(object):
-    def __init__(self, builder, query_set):
+    def __init__(self, builder, query_set, values=None):
         self.builder = builder
         self.query_set = query_set
+        self.values = values
 
     @property
     def fields(self):
-        return self.builder.get_fields()
+        return self.builder.get_fields(self.values)
 
     def __iter__(self):
-        return (self.builder.get_values(r) for r in self.query_set)
+        return (
+            self.builder.get_values(r, self.values)
+            for r in self.query_set)
 
 
-def from_django(builder, query_set):
+def from_django(builder, query_set, values=None):
     """Create a RowStream for this queryset using the given builder."""
-    return DjangoRowStream(builder, query_set)
+    return DjangoRowStream(builder, query_set, values)
 
 
 class SqlRowStream(object):

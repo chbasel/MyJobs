@@ -54,39 +54,30 @@ Our goal here is to get Docker installed and our shell aliases working.
 First Time (OSX)
 ----------------
 
-Install `Docker Toolbox <https://www.docker.com/docker-toolbox>`_.
-1.9.1b is known to work
+Install `Docker for Mac <https://download.docker.com/mac/stable/Docker.dmg>`_.
 
-Run the terminal which the installer offers after the install completes.
-(This creates the default virtual machine.)
+Open the dmg file and place the application in your Applications folder.
 
-Run ``docker ps`` in this terminal. It should run without errors.
+Follow the prompts to install.
 
-Run ``docker-machine ip default``. Note this ip. We'll call it $myip from now
-on.
+Open the application. An icon of a whale will apear in the top bar and will
+animate until docker has successfully started.
 
-After Boot (OSX)
-----------------
+Once the animation has stopped, run ``docker ps`` in a terminal.
+It should run without errors.
 
-Run ``docker-machine start default``. This will be needed after every reboot.
+Know your local ip address. We'll call it $myip from now on.
 
 First Time (Linux)
 ------------------
 
-Install docker from your distro.
+Check your distro's repositories. If Docker < 1.9 is available, install from `the Docker website <https://docs.docker.com/engine/installation/linux/ubuntulinux/>`_ as appropriate. Otherwise, install docker from your distro.
 
-Make sure your user is added to the docker group.  
+Make sure your user is added to the docker group.
 
 docker should be shown when you run ``groups``
 
 Know your local ip address. We'll call it $myip from now on.
-
-Terminal Setup (OSX)
---------------------
-
-Run these commands in every shell:
-
-``eval "$(docker-machine env default)"``
 
 Terminal Setup (Both)
 ---------------------
@@ -131,7 +122,7 @@ docker virtual machine.
 
 If needed on Linux: ``systemctl restart docker``
 
-If needed on OSX: ``docker-machine restart default``
+If needed on OSX: Click the whale icon and press "reset" on the drop down.
 
 Keep trying until ``docker ps`` shows no running machines.
 
@@ -143,12 +134,14 @@ stay running.
 
 ``dk maint mysql:5.5`` Start an interactive container based on MySQL
 
-``cp -a solr_config/* /var/solr/data`` assuming you have ``solr.xml`` and
-friends in ``solr_config/``
+``cp -a solr/* /var/solr/data`` assuming you have ``solr.xml`` and
+friends in ``solr/``
 
 ``mysql -u root -p -h $myip``
 
 ``mysql> SET GLOBAL max_allowed_packet=1073741824;``
+
+``CREATE DATABASE db;``
 
 ``exit``
 
@@ -163,7 +156,7 @@ backup file is ``dbbackup.sql``
 
 ``dk background``
 
-``docker ps`` Should show MySQL, Solr, and revproxy running.
+``docker ps`` Should show MySQL, Solr, Mongo, and revproxy running.
 
 Configure MyJobs to Run in Docker Containers
 ============================================
@@ -221,7 +214,7 @@ Add to dev_settings.py::
 
 Run::
 
-    dkg npm run devserver
+    dk rundevserver
 
 Visit the webpack base url above in a browser. Accept the certificate.
 

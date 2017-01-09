@@ -1,0 +1,97 @@
+{% extends "seo_base_bootstrap3.html" %}
+{% load i18n %}
+{% load seo_extras %}
+{% load cache %}
+{% cache 600 joblisting %}
+
+{% block direct_extraHeaderContent %}
+
+{% endblock direct_extraHeaderContent %}
+
+{% block meta_serp_schema %}
+    <script type="application/ld+json">
+        {
+            "@context": "http://schema.org",
+            "@type": "WebSite",
+            "url": "{{request.get_host}}",
+            "potentialAction": {
+                "@type":"SearchAction",
+                "target":"{{request.get_host}}/jobs/?q={q}&de_n=google&de_m=web&de_c=sitelinks",
+                "query-input":"required name=q"
+            }
+        }
+    </script>
+{% endblock meta_serp_schema %}
+
+{% block publisher %}
+    {% if site_config.publisher and "network" not in site_tags %}
+        <link href="https://plus.google.com/{{ site_config.publisher }}" rel="publisher" />
+    {% else %}
+        <link href="https://plus.google.com/100406566063094579991" rel="publisher" />
+    {% endif %}
+{% endblock %}
+
+{% block directseo_title %}
+    {{site_title}}
+{% endblock directseo_title %}
+
+{% block rss_feed %}
+<link rel="alternate" type="application/rss+xml" title="Jobs - {{site_title}}" href="{{request.build_absolute_uri}}feed/rss">
+{% endblock rss_feed %}
+{% block directseo_primary_navigation %}{% endblock directseo_primary_navigation %}
+
+{% block directseo_blurb %}
+<div id="direct_blurbDiv">
+    {% if site_config.defaultBlurbTitle %}<h3>{{site_config.defaultBlurbTitle}}</h3>{% endif %}
+    <div id="direct_blurbContents">
+        <p>{{site_config.defaultBlurb|safe}}</p>
+    </div>
+</div>
+{% endblock directseo_blurb %}
+
+{% block directseo_main_content %}
+{% include 'v2/includes/job_list.html' %}
+{% endblock directseo_main_content %}
+
+{% block directseo_right_hand_column %}
+<section class="mobile-search-criteria">
+    <button id="mobile_search" class="mobile-search-btn">Filter Search Criteria</button>
+</section>
+<section class="mobile-search-facets">
+{% if default_jobs or featured_jobs %}
+<div id="direct_disambiguationDiv" class="facets direct_rightColBox">
+  <div class="filter-box">
+    {% for widget in widgets %}
+    {% if widget.render %}
+    {{ widget.render }}
+    {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+</section>
+{% endblock directseo_right_hand_column %}
+
+{% block directseo_off_site_links %}
+    {% if site_config.show_home_social_footer %}
+        {% include "off_site_links.html" %}
+    {% else %}
+        <div id="direct_clearDiv"></div>
+    {% endif %}
+{% endblock directseo_off_site_links%}
+
+{% block directseo_micrositecarousel %}
+    {% if site_config.show_home_microsite_carousel %}
+    <div id="listing_microsite_carousel">
+        {{ block.super }}
+    </div>
+    {% endif %}
+{% endblock directseo_micrositecarousel %}
+{% block extra-js %}
+    <script type="text/javascript">
+        var analytics_info = {{ analytics_info|safe }};
+    </script>
+    <script id="detrack" defer src="https://d2e48ltfsb5exy.cloudfront.net/t/t.js?i=0,3,6"></script>
+{% endblock extra-js %}
+
+{% endcache %}

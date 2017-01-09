@@ -3,7 +3,6 @@ myjobs
 """
 
 import sys
-import solr.signals
 
 __version_info__ = {
     'major': 0,
@@ -12,6 +11,7 @@ __version_info__ = {
     'releaselevel': 'final',
     'serial': 1
 }
+
 
 def get_version():
     """

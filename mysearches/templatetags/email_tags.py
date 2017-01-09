@@ -35,7 +35,7 @@ def get_all_jobs_link(saved_search):
     """
     url = saved_search.url
 
-    if url.startswith('http://my.jobs'):
+    if url.startswith('http://my.jobs') or url.startswith('https://my.jobs'):
         feed = saved_search.feed
         if feed:
             url = feed.replace('/feed/rss', '')

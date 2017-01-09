@@ -70,7 +70,7 @@ export function doUpdateInbox(inbox) {
 
 /* doDeleteInbox
  * Given an unmodified inbox, asynchronously deletes that inbox based on that
- * inbox's :pk: and dispatches `dleteInboxAction` if the asynchronous delete
+ * inbox's :pk: and dispatches `deleteInboxAction` if the asynchronous delete
  * was a success.
  */
 export function doDeleteInbox(inbox) {

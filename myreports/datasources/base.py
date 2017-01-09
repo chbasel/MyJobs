@@ -35,15 +35,13 @@ class DataSource:
             "Missing filter_type method on this instance.")
 
     @abstractmethod
-    def run(self, data_type, company, filter_spec, order_spec):
-        """Run the query with the given company, filter, and ordering.
+    def run(self, data_type, company, filter_spec, values_spec):
+        """Run the query with the given company, filter, and values.
 
         data_type: data_type variant to run; i.e. unaggregated, per_year
         company: reference to the company for the logged in user
         filter_spec: an instance of the companion filter type for this class.
-        order_spec: a list of fields to order the query.
-            This list follows the same convention as Django with regard to
-            specifying asending/descending order.
+        values_spec: a list of fields to include in the query result
 
         returns: list of relatively flat dictionaries.
 
@@ -73,33 +71,28 @@ class DataSource:
         raise NotImplementedError("Missing help method on this instance.")
 
     @abstractmethod
-    def adorn_filter(self, company, filter_spec):
+    def adorn_filter_items(self, company, found_items):
         """Get a version of the filter with help added where available.
 
         company: company model object for this run.
-        filter_spec: an instance of the companion filter type for this class.
+        found_items: a dict of values found in the filter
+            e.g. {
+                'tags': ['east', 'west'],
+                'partner': [2, 5],
+            }
+
 
         returns:
-            an object shaped like filter_spec
-            values on fields with help available will be replaced with help
-            i.e.
-                {..., 'primary_contact': 4}
-                might be replaced with:
-                {..., 'primary_contact': {'value': 4, 'display': 'Brian Cox'}}
+            a dict of dicts of {value/display} objects for the ids given
+            in found_filter.
+            e.g. {
+                'tags': {
+                    'east': {'value': 'east', 'display': ... },
+                    'west': {'value': 'west', 'display': ... },
+                }, ...
+            }
         """
-        raise NotImplementedError("Missing adorn_filter method.")
-
-    @abstractmethod
-    def get_default_filter(self, data_type, company):
-        """Get a filter object for this datasource with defaults populated.
-
-        data_type: data_type variant to run; i.e. unaggregated, per_year
-        company: reference to the company for the logged in user
-
-        returns:
-            an opaque filter object
-        """
-        raise NotImplementedError("Missing get_default_filter method.")
+        raise NotImplementedError("Missing adorn_filter_items method.")
 
 
 class DataSourceFilter:

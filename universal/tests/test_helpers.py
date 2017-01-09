@@ -1,9 +1,9 @@
 """Tests for various universal helpers."""
-from django.contrib.auth.models import Group
 from mysearches.tests.factories import SavedSearchFactory
 from myjobs.tests.factories import RoleFactory
 from myjobs.tests.setup import MyJobsBase
 from universal.helpers import invitation_context
+
 
 class InvitationContextTests(MyJobsBase):
     """Tests for the generic invitation_context function."""

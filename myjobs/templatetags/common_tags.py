@@ -279,7 +279,9 @@ def get_menus(context):
         "label": "Messages",
         "id": "menu-inbox",
         "icon": "icon-envelope icon-white",
+        "mobile_icon_v2": "glyphicon glyphicon-envelope",
         "iconLabel": str(new_messages.count() if new_messages else 0),
+        "mobile_submenuId": "mobile-messages",
         "submenus": [
             {
                 "id": "menu-inbox-all",
@@ -293,29 +295,30 @@ def get_menus(context):
         beta_menu.update({
             "label": "Beta",
             "id": "beta-menu",
+            "mobile_icon_v2": "glyphicon glyphicon-flag",
+            "submenus": [],
+            "mobile_submenuId": "mobile-beta",
         })
 
         try:
-            can_read_outreach_email_address = user.can(
-                company, "read outreach email address")
+            can_view_analytics_info = user.can(
+                company, "view analytics")
         except MissingAppLevelAccess:
-            can_read_outreach_email_address = False
+            can_view_analytics_info = False
 
-        if can_read_outreach_email_address:
-            beta_menu.update({
-                "submenus": [
-                    {
-                        "id": "nonuseroutreach",
-                        "href": url("prm/view/nonuseroutreach"),
-                        "label": "Non-User Outreach",
-                    }
-                ],
-            })
+        if can_view_analytics_info:
+            beta_menu["submenus"].append({
+                        "id": "analytics",
+                        "href": url("analytics/view/main"),
+                        "label": "Analytics",
+                    })
 
     employer_menu = {
         "label": "Employers",
         "id": "employers",
+        "mobile_icon_v2": "glyphicon glyphicon-briefcase",
         "submenuId": "employer-apps",
+        "mobile_submenuId": "mobile-employer-apps",
         "submenus": [
         ]
     } if user.roles.exists() else {}
@@ -361,6 +364,10 @@ def get_menus(context):
 
     profile_menu = {
         "label": user.email,
+        "id": "profile_mobile_v2",
+        "mobile_icon_v2": "glyphicon glyphicon-user",
+        "label_mobile_v2": "Profile",
+        "mobile_submenuId": "mobile-profile",
         "submenus": [
             {
                 "id": "profile-tab",
@@ -404,3 +411,12 @@ def get_menus(context):
     # only return menus we've populated
     return [menu for menu in
             beta_menu, message_menu, employer_menu, profile_menu if menu]
+
+
+@register.assignment_tag
+def can(user, company, activity):
+    try:
+        has_activity = user.can(company, activity)
+    except MissingAppLevelAccess:
+        has_activity = False
+    return has_activity

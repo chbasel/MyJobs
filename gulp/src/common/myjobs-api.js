@@ -60,6 +60,37 @@ export class MyJobsApi {
   async delete(url, data) {
     return this.ajaxWithFormData('DELETE', url, data);
   }
+
+  /** Upload data to a server by submitting the contents of :data: as
+   * multi-part form data.
+   */
+  async upload(url, data) {
+    const formData = new FormData();
+    // passing an anonymous function within a for loop makes multiple function
+    // references, which is undesirable
+    const assignValue = key => value => formData.append(key, value);
+
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        if (Array.isArray(data[key])) {
+          data[key].forEach(assignValue(key));
+        } else {
+          formData.append(key, data[key]);
+        }
+      }
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': this.csrf,
+      },
+    });
+
+    return this.parseJSON(await this.checkStatus(response));
+  }
 }
 
 export function isClientError(exc) {

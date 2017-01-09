@@ -822,13 +822,20 @@ class Page(models.Model):
     def get_template(self, request):
         filters = context_tools.get_filters(request)
 
+        facet_slugs = []
+        if filters.get('facet_slugs', None):
+            facet_slugs = filters['facet_slug'].split('/')
+
         context = self.context(request)
         context.update({
             'body': mark_safe(self.get_body()),
             'google_analytics': context_tools.get_google_analytics(request),
             'head': mark_safe(self.get_head()),
             'max_filter_settings': settings.ROBOT_FILTER_LEVEL,
-            'num_filters': len([k for (k, v) in filters.iteritems() if v]),
+            # see how many active filters there are and then add total number of
+            # facet slugs as there may be multiple filters in the facet slug entry
+            'num_filters': len([k for (k, v) in filters.iteritems()
+                                if v and k != 'facet_slug']) + len(facet_slugs),
             'page': self,
             'STATIC_URL': settings.STATIC_URL,
         })

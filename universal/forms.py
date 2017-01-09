@@ -1,5 +1,4 @@
 from django.forms import ModelForm
-from django.conf import settings
 
 from universal.helpers import get_company
 
@@ -19,9 +18,12 @@ class NormalizedModelForm(ModelForm):
     """
 
     def clean(self):
-        self.cleaned_data = {key: ' '.join(value.split())
-                             # I don't see us porting to Python 3 any time soon
-                             if isinstance(value, basestring) else value
-                             for key, value in self.cleaned_data.items()}
-
-        return super(NormalizedModelForm, self).clean()
+        super(NormalizedModelForm, self).clean()
+        self.cleaned_data = {
+            key: '\n'.join(' '.join(line.split())
+                           for line in value.splitlines())
+            if isinstance(value, basestring)
+            else value
+            for key, value in self.cleaned_data.items()
+        }
+        return self.cleaned_data

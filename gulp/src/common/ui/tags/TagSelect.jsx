@@ -29,12 +29,27 @@ export default class TagSelect extends Component {
     return this.state[key];
   }
 
+  getAddButton() {
+    const {onNew} = this.props;
+
+    if (onNew) {
+      return (
+        <div className="col-xs-12 col-md-3">
+          <div className="button" onClick={() => this.handleNewTag()}>Add New</div>
+        </div>
+      );
+    }
+  }
+
   openSelectMenu() {
     this.setState({selectDropped: true});
   }
 
   closeSelectMenu() {
-    this.setState({selectDropped: false});
+    this.setState({
+      partial: '',
+      selectDropped: false,
+    });
   }
 
   toggleSelectMenu() {
@@ -49,15 +64,32 @@ export default class TagSelect extends Component {
     }
   }
 
+  handleNewTag() {
+    if (!this.state.partial) {
+      return;
+    }
+    const {onNew} = this.props;
+    onNew(this.state.partial);
+    this.setState({partial: null});
+  }
+
   selectAll() {
-    const {available} = this.props;
-    this.handleAdd(available);
+    this.handleAdd(this.filteredAvailable());
     this.closeSelectMenu();
+  }
+
+  filteredAvailable() {
+    const {available, selected} = this.props;
+    const {partial} = this.state;
+
+    return filter(available, at =>
+      (!partial ||
+       at.display.toUpperCase().indexOf(partial.toUpperCase()) !== -1) &&
+      !find(selected, st => st.value === at.value));
   }
 
   handleAdd(tags) {
     const {onChoose} = this.props;
-    this.setState({partial: ''});
     this.setHighlight(tags, false);
     onChoose(tags);
   }
@@ -95,13 +127,9 @@ export default class TagSelect extends Component {
   }
 
   render() {
-    const {available, selected, placeholder, searchPlaceholder} = this.props;
+    const {selected, placeholder, searchPlaceholder, onNew} = this.props;
     const {selectDropped, partial} = this.state;
-    const filteredAvailable =
-      filter(available, at =>
-        (!partial ||
-         at.display.toUpperCase().indexOf(partial.toUpperCase()) !== -1) &&
-        !find(selected, st => st.value === at.value));
+    const filteredAvailable = this.filteredAvailable();
 
     return (
       <div className="tag-select-input-element"
@@ -129,14 +157,15 @@ export default class TagSelect extends Component {
             <div className="tag-select-menu">
               <div className="container-fluid">
                 <div className="row">
-                  <div className="col-xs-12 col-md-8">
+                  <div className={'col-xs-12 col-md-' + (onNew ? '6' : '8') }>
                     <TextField
                       name="name"
                       value={partial}
                       onChange={e => this.handleFilterChange(e.target.value)}
                       placeholder={searchPlaceholder} />
                   </div>
-                  <div className="col-xs-12 col-md-4">
+                  { this.getAddButton() }
+                  <div className={'col-xs-12 col-md-' + (onNew ? '3' : '4' )}>
                     <div className="button" onClick={() => this.selectAll()}>Select All</div>
                   </div>
                 </div>
@@ -198,4 +227,10 @@ TagSelect.propTypes = {
    * placeholder text for select input
    */
   placeholder: PropTypes.any,
+
+   /**
+   *  function to handle adding a new tag, otherwise the "add new" button is
+   *  hidden.
+   */
+  onNew: PropTypes.func,
 };

@@ -37,10 +37,9 @@ class DESearchQuerySet(SearchQuerySet):
 
         facet_counts1 = self.facet_counts()
         facet_counts2 = sqs2.facet_counts()
-
         # field_counts = {facet_field: [(facet_field_value, count), ...], ...}
-        field_counts1 = facet_counts1.get('fields', [])
-        field_counts2 = facet_counts2.get('fields', [])
+        field_counts1 = facet_counts1.get('fields', {})
+        field_counts2 = facet_counts2.get('fields', {})
 
         for facet_field in field_counts2:
             # field_dict = {facet_field_value: count, ...}
@@ -54,7 +53,8 @@ class DESearchQuerySet(SearchQuerySet):
             field_counts1[facet_field] = field_dict.items()
             # Sort the list of field count tuples by count
             # (2nd value in each tuple)
-            field_counts1[facet_field].sort(key=lambda tup: tup[1], reverse=True)
+            field_counts1[facet_field].sort(key=lambda tup: tup[1],
+                                            reverse=True)
 
         facet_counts1['fields'] = field_counts1
         return facet_counts1

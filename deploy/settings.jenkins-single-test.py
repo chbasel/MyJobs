@@ -29,11 +29,6 @@ DATABASES = {
     }, **REDIRECT_QC)
 }
 
-SOLR = {
-    'all': 'http://127.0.0.1:8983/solr/myjobs_test/',
-    'current': 'http://127.0.0.1:8983/solr/myjobs_test_current/',
-}
-
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -44,7 +39,6 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 
 JENKINS_TEST_RUNNER = 'silent_testrunner.SilentTestRunner'
-TEST_SOLR_INSTANCE = SOLR
 CELERY_ALWAYS_EAGER = True
 
 CC_AUTH = TESTING_CC_AUTH

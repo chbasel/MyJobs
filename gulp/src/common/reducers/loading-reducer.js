@@ -1,5 +1,11 @@
 import {handleActions} from 'redux-actions';
 
+export const initialLoading = {
+  mainPage: true,
+  fields: {},
+  other: {},
+};
+
 
 /**
  * format for loading indicators
@@ -47,8 +53,4 @@ export default handleActions({
       },
     };
   },
-}, {
-  mainPage: true,
-  fields: {},
-  other: {},
-});
+}, initialLoading);

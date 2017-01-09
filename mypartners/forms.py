@@ -2,14 +2,14 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.forms.util import ErrorList
 from django.utils.timezone import get_current_timezone_name
+from django.utils.datastructures import SortedDict
 
-from collections import OrderedDict
 import pytz
 
 from postajob.location_data import states
 from myprofile.forms import generate_custom_widgets
 from mypartners.models import (Contact, Partner, ContactRecord, PRMAttachment,
-                               Status, Tag, Location,
+                               Status, Tag, Location, OutreachRecord,
                                ADDITION, CHANGE, MAX_ATTACHMENT_MB)
 from mypartners.helpers import (log_change, get_attachment_link,
                                 prm_worthy, tag_get_or_create)
@@ -160,7 +160,7 @@ class NewPartnerForm(NormalizedModelForm):
         for field in self.fields.itervalues():
             # primary contact information isn't required to create a partner
             field.required = False
-        model_fields = OrderedDict(self.fields)
+        model_fields = SortedDict(self.fields)
 
         new_fields = {
             'partnername': forms.CharField(
@@ -187,7 +187,7 @@ class NewPartnerForm(NormalizedModelForm):
                                               'placeholder': 'Tags'}))
         }
 
-        ordered_fields = OrderedDict(new_fields)
+        ordered_fields = SortedDict(new_fields)
         ordered_fields.update(model_fields)
         self.fields = ordered_fields
         autofocus_input(self, 'partnername')
@@ -205,21 +205,16 @@ class NewPartnerForm(NormalizedModelForm):
     def save(self, commit=True):
         # self.instance is a Contact instance
         company_id = self.data['company_id']
-        partner_url = self.data.get('partnerurl', '')
-        partner_source = self.data.get('partnersource', '')
+        partner_url = self.cleaned_data.get('partnerurl', '')
+        partner_source = self.cleaned_data.get('partnersource', '')
 
         status = Status.objects.create(approved_by=self.user)
-        partner = Partner.objects.create(name=self.data['partnername'],
+        partner = Partner.objects.create(name=self.cleaned_data['partnername'],
                                          uri=partner_url, owner_id=company_id,
                                          data_source=partner_source,
                                          approval_status=status)
         log_change(partner, self, self.user, partner, partner.name,
                    action_type=ADDITION)
-
-        self.data = remove_partner_data(self.data,
-                                        ['partnername', 'partnerurl',
-                                         'csrfmiddlewaretoken', 'company',
-                                         'company_id', 'ct'])
 
         create_contact = any(self.cleaned_data.get(field)
                              for field in self.__CONTACT_FIELDS
@@ -259,7 +254,7 @@ class NewPartnerForm(NormalizedModelForm):
     def get_field_sets(self):
         """
         NewPartnerForm is a combination Partner and Contact form. As
-        self.fields has already been turned into an OrderedDict in __init__,
+        self.fields has already been turned into an SortedDict in __init__,
         we can easily segment our form into fieldsets.
         """
         sections = self.fields.keys()[:4], self.fields.keys()[4:]
@@ -354,12 +349,18 @@ class ContactRecordForm(NormalizedModelForm):
                   'tags', 'notes', 'attachment')
 
     def __init__(self, *args, **kwargs):
-        partner = kwargs.pop('partner')
+        partner = None
+        if 'partner' in kwargs:
+            partner = kwargs.pop('partner')
         super(ContactRecordForm, self).__init__(*args, **kwargs)
+        self.fields['contact'].required = True
+        if not hasattr(self.instance, 'contact'):
+            self.fields['contact'].required = False
 
         instance = kwargs.get('instance')
-        self.fields["contact"].queryset = Contact.objects.filter(
-            partner=partner, archived_on__isnull=True)
+        if partner:
+            self.fields["contact"].queryset = Contact.objects.filter(
+                partner=partner, archived_on__isnull=True)
 
         if not instance or instance.contact_type != 'pssemail':
             # Remove Partner Saved Search from the list of valid
@@ -371,7 +372,7 @@ class ContactRecordForm(NormalizedModelForm):
                 self.fields["contact_type"].choices = contact_type_choices
 
         # If there are attachments create a checkbox option to delete them.
-        if instance:
+        if instance and partner:
             attachments = PRMAttachment.objects.filter(contact_record=instance)
             if attachments:
                 choices = [(a.pk, get_attachment_link(partner.id, a.id,
@@ -441,7 +442,12 @@ class ContactRecordForm(NormalizedModelForm):
         PRMAttachment.objects.filter(
             pk__in=self.cleaned_data.get('attach_delete', [])).delete()
 
-        identifier = instance.contact.name
+        if instance.contact:
+            identifier = instance.contact.name
+        else:
+            identifier = {'email': instance.contact_email,
+                          'phone': instance.contact_phone}.get(
+                              instance.contact_type, 'unknown contact')
         log_change(instance, self, request.user, partner, identifier,
                    action_type=new_or_change,
                    impersonator=request.impersonator)
@@ -500,3 +506,110 @@ class LocationForm(NormalizedModelForm):
                    action_type=new_or_change)
 
         return instance
+
+
+def set_tag_choices(field, company):
+    field.choices = [
+        (t.pk, t.name)
+        for t in company.tag_set.all()
+    ]
+    field.widget.attrs.update({
+        'tag_colors': {
+            t.pk: {'hex_color': t.hex_color}
+            for t in company.tag_set.all()
+        }
+    })
+
+
+class NuoPartnerForm(NormalizedModelForm):
+    """
+    Form for adding partners via NUO.
+    """
+    class Meta:
+        form_name = "Partner"
+        model = Partner
+        fields = ['name', 'data_source', 'uri', 'tags']
+    tags = forms.MultipleChoiceField(required=False, label='Tags')
+
+    def __init__(self, *args, **kwargs):
+        company = kwargs.pop('company')
+        super(NuoPartnerForm, self).__init__(*args, **kwargs)
+        set_tag_choices(self.fields['tags'], company)
+
+
+class NuoContactForm(NormalizedModelForm):
+    """
+    Form for adding contacts via NUO.
+    """
+    class Meta:
+        form_name = "Contact"
+        model = Contact
+        fields = ['name', 'email', 'phone', 'tags', 'notes']
+    tags = forms.MultipleChoiceField(required=False, label='Tags')
+
+    def __init__(self, *args, **kwargs):
+        company = kwargs.pop('company')
+        super(NuoContactForm, self).__init__(*args, **kwargs)
+        set_tag_choices(self.fields['tags'], company)
+
+
+class NuoContactAppendNotesForm(NormalizedModelForm):
+    """
+    Form for appending notes to contacts via NUO.
+    """
+    class Meta:
+        form_name = "Contact"
+        model = Contact
+        fields = ['notes']
+    notes = forms.Textarea(
+        attrs={
+            'rows': 5,
+            'cols': 24,
+            'placeholder': 'Notes About This Contact'})
+
+
+class NuoLocationForm(NormalizedModelForm):
+    """
+    Form for adding locations via NUO.
+    """
+    class Meta:
+        form_name = "Location"
+        model = Location
+        fields = [
+            'address_line_one',
+            'address_line_two',
+            'city',
+            'state',
+            'postal_code',
+            'label',
+        ]
+
+
+class NuoCommunicationRecordForm(NormalizedModelForm):
+    """
+    Form for adding communication records via NUO.
+    """
+    class Meta:
+        form_name = "Communication Record"
+        model = ContactRecord
+        fields = ('contact_type',
+                  'contact_email', 'contact_phone', 'location',
+                  'length', 'subject', 'date_time', 'job_id',
+                  'job_applications', 'job_interviews', 'job_hires',
+                  'tags', 'notes')
+    tags = forms.MultipleChoiceField(required=False, label='Tags')
+
+    def __init__(self, *args, **kwargs):
+        company = kwargs.pop('company')
+        super(NuoCommunicationRecordForm, self).__init__(*args, **kwargs)
+        set_tag_choices(self.fields['tags'], company)
+
+
+class NuoOutreachRecordForm(NormalizedModelForm):
+    """
+    Form for editing outreach records via NUO.
+    """
+    class Meta:
+        form_name = "Outreach Record"
+        model = OutreachRecord
+        fields = ('current_workflow_state',)

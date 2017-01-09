@@ -1,4 +1,5 @@
 import base64
+from collections import defaultdict
 import datetime
 import json
 import logging
@@ -20,6 +21,7 @@ from django.shortcuts import render_to_response, redirect, render, Http404
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
+from django.views.decorators.http import require_http_methods
 
 from captcha.fields import ReCaptchaField
 from impersonate.decorators import allowed_user_required
@@ -523,6 +525,7 @@ def cas(request):
 
 def topbar(request):
     callback = request.REQUEST.get('callback')
+    use_v2 = request.REQUEST.get('v2', 0)
     user = request.user
     impersonating = request.REQUEST.get('impersonating')
 
@@ -555,8 +558,13 @@ def topbar(request):
                             domain='.my.jobs')
         ctx['current_microsite_name'] = last_name
         ctx['current_microsite_url'] = caller
+        # Switch between version 1 and 2 topbar template
+    if use_v2:
+        template_string = 'includes/topbar_v2.html'
+    else:
+        template_string = 'includes/topbar.html'
 
-    html = render_to_response('includes/topbar.html', ctx,
+    html = render_to_response(template_string, ctx,
                               RequestContext(request))
     response.content = "%s(%s)" % (callback, json.dumps(html.content))
 
@@ -579,6 +587,7 @@ def manage_users(request):
                               RequestContext(request))
 
 
+@require_http_methods(['GET'])
 @requires("read role")
 def api_get_activities(request):
     """
@@ -588,24 +597,42 @@ def api_get_activities(request):
 
     company = get_company_or_404(request)
 
-    activities = (Activity
-                 .objects
-                 .select_related('app_access')
-                 .filter(app_access__in = company.app_access.all()))
+    # group activities by their app access
+    activities = defaultdict(list)
+    for activity in company.activities.order_by('app_access__pk'):
+        activities[activity.app_access.name].append({
+            'id': activity.pk,
+            'name': unicode(activity),
+            'description': activity.description})
 
-    json_res = []
-    for activity in activities:
-        json_obj = dict(
-            activity_id = activity.id,
-            activity_name = unicode(activity),
-            activity_description = activity.description,
-            app_access_id = activity.app_access.id,
-            app_access_name = activity.app_access.name,
-        )
-        json_res.append(json_obj)
+    return HttpResponse(json.dumps(activities), mimetype='application/json')
 
-    return HttpResponse(json.dumps(json_res),
-                        mimetype='application/json')
+
+# TODO: rename this to api_get_roles once the roles page is converted
+@require_http_methods(['GET'])
+@requires("read role")
+def api_get_all_roles(request):
+    """
+    GET /manage-users/api/roles/all/
+    Retrieves all roles associated with a company
+
+    """
+    company = get_company_or_404(request)
+
+    ctx = {
+        role.id: {
+            'name': role.name,
+            'activities': [{
+                'id': activity.pk,
+                'name': activity.name,
+                'appAccess': activity.app_access.name,
+                'description': activity.description
+            } for activity in role.activities.all()]
+        }
+        for role in company.role_set.select_related('activities').all()
+    }
+
+    return HttpResponse(json.dumps(ctx), mimetype='application/json')
 
 
 @requires("read role")
@@ -699,6 +726,7 @@ def api_get_roles(request):
                         mimetype='application/json')
 
 
+@require_http_methods(['GET'])
 @requires('read role')
 def api_get_specific_role(request, role_id=0):
     """
@@ -1001,306 +1029,130 @@ def api_delete_role(request, role_id=0):
                             content_type="application/json")
 
 
+@require_http_methods(['GET'])
 @requires('read user')
 def api_get_users(request):
     """
     GET /manage-users/api/users/
     Retrieves all users associated with a company
+
     """
-    ctx = {}
-
     company = get_company_or_404(request)
-
-    # Pass back the id of the user making this request
-    ctx['id'] = request.user.id
-
-    # Retrieve users already assigned to roles associated with this company
-    users_available = []
-    roles = Role.objects.filter(company=company)
-    for role in roles:
-        role_id_temp = role.id
-        users = User.objects.filter(roles__id=role_id_temp)
-        for user in users:
-            if user not in users_available:
-                users_available.append(user)
-
-    # Build JSON response
-    for user in users_available:
-
-        ctx[user.id] = {}
-
-        # Email
-        ctx[user.id]["email"] = user.email
-
-        # Roles
-        roles_assigned_to_user = user.roles.filter(company=company)
-        ctx[user.id]["roles"] = serializers.serialize("json",
-                                                      roles_assigned_to_user,
-                                                      fields=('name'))
-
-        # Status
-        ctx[user.id]["status"] = user.is_verified
-
-        # Calculate pending since date
-        # Didn't use user.last_response because that 'denotes the last time
-        # they interacted with any email, not just invitations.' -Troy 1/13/16
-        # Instead 1) Find all invitations for this user
-        # 2) get the latest such invitation and 3) use that date
-        if user.is_verified == True:
-            lastInvitation = ''
-        else:
-            invitations = (Invitation
-                           .objects
-                           .filter(invitee_email=user.email)
-                           .order_by('-invited'))
+    users = User.objects.select_related('roles').filter(roles__company=company)
+    ctx = {}
+    for user in users:
+        last_invitation = ""
+        if not user.is_verified:
+            invitations = Invitation.objects.filter(
+                invitee_email=user.email).order_by("-invited")
             if invitations:
-                lastInvitation = invitations[0].invited.strftime('%Y-%m-%d')
-            else:
-                lastInvitation = ''
-        ctx[user.id]["lastInvitation"] = lastInvitation
+                last_invitation = invitations.first().invited.strftime(
+                    "%Y-%m-%d")
 
-    return HttpResponse(json.dumps(ctx),
-                        content_type="application/json")
+        ctx[user.pk] = {
+            'email': user.email,
+            'isVerified': user.is_verified,
+            'lastInvitation': last_invitation,
+            'roles': list(user.roles.filter(company=company).values_list(
+                'name', flat=True))
+        }
 
-
-def api_get_current_user(request):
-
-    ctx = {}
-    ctx['id'] = request.user.id
-
-    return HttpResponse(json.dumps(ctx),
-                        content_type="application/json")
+    return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 
-@requires('read user')
-def api_get_specific_user(request, user_id=0):
-    """
-    GET /manage-users/api/users/NUMBER
-    Retrieves specific user
-    """
-    ctx = {}
-
-    company = get_company_or_404(request)
-    user = User.objects.select_related('roles').filter(id=user_id)
-
-    # Check if user exists
-    if user.exists() is False:
-        ctx["success"] = "false"
-        ctx["message"] = "User does not exist."
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
-
-    # Check if the editor has the right to edit this user (i.e. is the user
-    # affiliated with any of the current company's roles?)
-    # 1. List current company's roles
-    current_companys_roles = Role.objects.filter(company=company)
-    # 2. List user's roles
-    roles_assigned_to_user = user[0].roles.all()
-    # 3. Overlap?
-    if bool(set(current_companys_roles)
-            & set(roles_assigned_to_user)) is "False":
-        ctx["success"] = "false"
-        ctx["message"] = "You do not have permission to view this user"
-        return HttpResponse(json.dumps(ctx),
-                            content_type="application/json")
-
-    # Return user
-    user_id = user[0].id
-
-    ctx[user_id] = {}
-
-    # Email
-    ctx[user_id]["email"] = user[0].email
-
-    # Available Roles (constrained by company)
-    ctx[user_id]["roles"] = {}
-
-    available_roles = current_companys_roles
-
-    ctx[user_id]["roles"]["available"] = serializers.serialize(
-        "json",
-        available_roles)
-
-    # Assigned Roles
-    roles_assigned_to_user = user[0].roles.filter(company=company)
-    ctx[user_id]["roles"]["assigned"] = serializers.serialize(
-        "json",
-        roles_assigned_to_user,
-        fields=('name'))
-
-    # Status
-    ctx[user_id]["status"] = user[0].is_verified
-
-    return HttpResponse(json.dumps(ctx),
-                        content_type="application/json")
-
-
-@requires('create user')
-def api_create_user(request):
-    """
-    POST /manage-users/api/user/create
-    Creates a new user
-
-    Inputs:
-    :user_email:                user email
-    :assigned_roles:            roles assigned to this user
-
-    Returns:
-    :success:                   boolean
-
-    """
-    ctx = {'success': 'true'}
-
-    if request.method != "POST":
-        ctx["success"] = "false"
-        ctx["message"] = "POST method required."
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
-    else:
-        company = get_company_or_404(request)
-        existing_roles = set()
-
-        if request.POST.get("user_email", ""):
-            user_email = request.POST['user_email']
-
-        assigned_roles = request.POST.getlist("assigned_roles[]", [])
-        new_roles = Role.objects.filter(company=company,
-                                        name__in=assigned_roles)
-        if not new_roles:
-            ctx["success"] = "false"
-            ctx["message"] = "Each user must be assigned to at least one role."
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-
-        user = User.objects.get_email_owner(email=user_email)
-        # Does user already exist?
-        if user:
-            existing_roles = set(user.roles.filter(company=company))
-            user.roles.add(*new_roles)
-
-            ctx["message"] = "User already exists. Role invitation email sent."
-        else:
-            ctx["message"] = "User created. Invitation email sent."
-
-        # Send one invitation per new role. This will handle creating the user
-        # if one doesn't exist.
-        for role in set(new_roles).difference(existing_roles):
-            request.user.send_invite(user_email, company, role.name)
-
-        return HttpResponse(json.dumps(ctx),
-                            content_type="application/json")
-
-
+@require_http_methods(['POST'])
 @requires('update user')
 def api_edit_user(request, user_id=0):
     """
-    POST /manage-users/api/users/edit
-    Edits an existing user
+    GET /manage-users/api/users/NUMBER
+    Retrieves specific user
+
+    """
+    company = get_company_or_404(request)
+    user = User.objects.filter(pk=user_id).first()
+    add = request.POST.getlist('add')
+    remove = request.POST.getlist('remove')
+    new_roles = []
+    is_last_admin = False
+
+    ctx = {'errors': []}
+
+    if user:
+        current_roles = list(user.roles.values_list('name', flat=True))
+        new_roles = set(current_roles + add) - set(remove)
+        is_last_admin = list(company.admins) == [user]
+    else:
+        ctx['errors'].append('User does not exist.')
+
+    if not ctx['errors'] and not new_roles:
+        # Somehow, the API caused all roles to be removed from a user, which in
+        # effect removes that user from the company
+        ctx['errors'].append('Operation failed, as completing it would have '
+                             'removed the user from the company. Is another '
+                             'Admin also editing users?')
+
+    # Since new_roles is empty, if there is only one admin, we'd be
+    # removing them from the company, which would prevent anyone from
+    # modifying users for the company
+    if is_last_admin and 'Admin' not in new_roles:
+        ctx['errors'].append('Operation failed, as completing it would have '
+                             'removed the last Admin from the company. Is '
+                             'another Admin also editing users?')
+
+    if user and not ctx['errors']:
+        ctx['added'] = add
+        ctx['removed'] = remove
+
+        user.roles = Role.objects.filter(
+            company=company, name__in=new_roles)
+
+    return HttpResponse(json.dumps(ctx), content_type="application/json")
+
+
+@require_http_methods(['POST'])
+@requires('create user')
+def api_add_user(request):
+    """
+    POST /manage-users/api/user/add/
+    Creates a new user
 
     Inputs:
-    :user_id:                   unique id of user
-    :assigned_roles:            roles assigned to this role
+        :email: user email
+        :roles: roles assigned to this user
 
-    Returns:
-    :success:                   boolean
     """
-    ctx = {}
+    company = get_company_or_404(request)
+    email = request.POST.get('email')
+    roles = request.POST.getlist('roles')
+    user = User.objects.get_email_owner(email=email)
+    ctx = {'errors': []}
 
-    if request.method != "POST":
-        ctx["success"] = "false"
-        ctx["message"] = "POST method required."
-        return HttpResponse(json.dumps(ctx),
-                            content_type="application/json")
+    if roles:
+        if user:
+            new_roles = set(roles) - set(user.roles.filter(
+                company=company).values_list('name', flat=True))
+
+            user.roles.add(*Role.objects.filter(
+                company=company, name__in=new_roles))
+        else:
+            new_roles = roles
+
+        for role in new_roles:
+            request.user.send_invite(email, company, role)
+
+        ctx['roles'] = list(new_roles)
+        ctx['invited'] = bool(new_roles)
     else:
-        company = get_company_or_404(request)
+        ctx['invited'] = False
+        ctx['errors'].append(
+            "Each user must be assigned to at least one role.")
 
-        try:
-            user = User.objects.select_related('roles').get(pk=user_id)
-        except User.DoesNotExist:
-            ctx["success"] = "false"
-            ctx["message"] = "User does not exist."
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-
-        # Check if the editor has the right to edit this user (i.e. is the user
-        # affiliated with any of the current company's roles?)
-        # 1. List current company's roles
-        company_roles = Role.objects.filter(company=company)
-        # 2. List user's roles
-        roles_assigned_to_user = user.roles.all()
-        # 3. Overlap?
-        if set(company_roles).isdisjoint(roles_assigned_to_user):
-            ctx["success"] = "false"
-            ctx["message"] = "You do not have permission to edit this user"
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-
-        # INPUT - assigned_roles
-        assigned_roles = request.POST.getlist("assigned_roles[]", "")
-
-        # Check that at least one role is selected
-        if assigned_roles == "" or assigned_roles[0] == "":
-            ctx["success"] = "false"
-            ctx["message"] = "A user must be assigned to at least one role."
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-
-        # Companies must have at least one user assigned to an Admin role.
-        # Check that -- if this user is edited -- this will be the case.
-        # 1. Is Admin not in assigned_roles?
-        if "Admin" not in assigned_roles:
-            # 2. Does this company only have one user assigned to Admin role?
-            admin_role = (Role
-                          .objects
-                          .filter(company=company)
-                          .filter(name="Admin"))
-            users_with_admin = User.objects.filter(roles__id=admin_role[0].id)
-
-            if len(users_with_admin) <= 1:
-                # 3. Is that one user this user?
-                if unicode(users_with_admin[0].id) == user_id:
-                    ctx["success"] = "false"
-                    ctx["message"] = ("To remove the Admin role from this "
-                                      "user you must first assign the role to "
-                                      "another user. That is, every company "
-                                      "must have at least one user assigned "
-                                      "to the Admin role.")
-                    return HttpResponse(json.dumps(ctx),
-                                        content_type="application/json")
-
-        # Update the user
-
-        # Create list of assigned_roles_ids from role names
-        assigned_roles_ids = []
-        for i, role in enumerate(assigned_roles):
-            role_object = Role.objects.filter(company=company).filter(name=role)
-            role_id = role_object[0].id
-            assigned_roles_ids.append(role_id)
-
-        existing_roles = set(user.roles.filter(company=company))
-
-        # Add new roles to user
-        for assigned_role in assigned_roles_ids:
-            user.roles.add(assigned_role)
-
-        # Remove roles from user if not in new list
-        for currently_assigned_role in user.roles.filter(company=company):
-            if currently_assigned_role.id not in assigned_roles_ids:
-                user.roles.remove(currently_assigned_role.id)
-
-        # Notify the user
-        new_roles = set(Role.objects.filter(company=company,
-                                            name__in=assigned_roles))
-        for role in set(new_roles).difference(existing_roles):
-            request.user.send_invite(user.email, company, role.name)
-
-        # # RETURN - boolean
-        ctx["success"] = "true"
-
-        return HttpResponse(json.dumps(ctx),
-                            content_type="application/json")
+    return HttpResponse(json.dumps(ctx), mimetype='application/json')
 
 
+@require_http_methods(['DELETE'])
 @requires('delete user')
-def api_delete_user(request, user_id=0):
+def api_remove_user(request, user_id=0):
     """
     DELETE /manage-users/api/users/delete/NUMBER
     Removes user from roles managed by current company
@@ -1308,35 +1160,21 @@ def api_delete_user(request, user_id=0):
     Inputs:
     :user_id:                   id of user
 
-    Returns:
-    :success:                   boolean
     """
-    ctx = {}
+    company = get_company_or_404(request)
+    user = User.objects.filter(pk=user_id).first()
+    ctx = {'errors': []}
 
-    if request.method != "DELETE":
-        ctx["success"] = "false"
-        ctx["message"] = "DELETE method required."
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
+    if list(company.admins) == [user]:
+        ctx['errors'].append('Operation failed, as completing it would '
+                             'have removed the last Admin from the '
+                             'company. Is another Admin also editing '
+                             'users?')
     else:
-        company = get_company_or_404(request)
+        user.roles.remove(*user.roles.filter(company=company))
 
-        user = User.objects.filter(id=user_id)
+    return HttpResponse(json.dumps(ctx), mimetype='application/json')
 
-        # Check if user exists
-        if user.exists() is False:
-            ctx["success"] = "false"
-            ctx["message"] = "User does not exist."
-            return HttpResponse(json.dumps(ctx),
-                                content_type="application/json")
-
-        roles = Role.objects.filter(company=company)
-        for role in roles:
-            user[0].roles.remove(role.id)
-
-        ctx["success"] = "true"
-        ctx["message"] = "User deleted."
-
-        return HttpResponse(json.dumps(ctx), content_type="application/json")
 
 def request_company_access(request):
     """

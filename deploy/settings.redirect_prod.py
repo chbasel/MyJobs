@@ -36,8 +36,10 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': [
-            'dseo-mc-cluster.qksjst.0003.use1.cache.amazonaws.com:11211',
-            'dseo-mc-cluster.qksjst.0004.use1.cache.amazonaws.com:11211'
+            'prod-microsites.qksjst.0001.use1.cache.amazonaws.com:11211',
+            'prod-microsites.qksjst.0002.use1.cache.amazonaws.com:11211',
+            'prod-microsites.qksjst.0003.use1.cache.amazonaws.com:11211',
+            'prod-microsites.qksjst.0004.use1.cache.amazonaws.com:11211'
         ]
     }
 }

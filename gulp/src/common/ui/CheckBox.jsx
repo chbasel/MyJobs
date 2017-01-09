@@ -8,7 +8,16 @@ import React from 'react';
  */
 
 function CheckBox(props) {
-  const {name, onChange, required, initial, isHidden, autoFocus} = props;
+  const {
+    name,
+    onChange,
+    required,
+    initial,
+    isHidden,
+    autoFocus,
+    disable,
+  } = props;
+
   return (
     <input
       type="checkbox"
@@ -19,6 +28,7 @@ function CheckBox(props) {
       hidden={isHidden}
       defaultChecked={initial}
       onChange={onChange}
+      disabled={disable}
       autoFocus={autoFocus}
       />
   );
@@ -48,6 +58,10 @@ CheckBox.propTypes = {
    * Must this field have a value before submitting form?
    */
   required: React.PropTypes.bool,
+  /**
+   * Disable this control
+   */
+  disable: React.PropTypes.bool,
   /**
    * Should this bad boy focus, all auto like?
    */

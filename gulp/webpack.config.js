@@ -1,5 +1,6 @@
 var webpack = require('webpack');
 var path = require('path');
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
   devServer: {
@@ -7,12 +8,19 @@ module.exports = {
     port: process.env.DEVSERVER_PORT || "8080",
     config: "webpack.dev.config.js",
     https: process.env.DEVSERVER_HTTPS ? true : false,
+    stats: 'minimal',
   },
   entry: {
     reporting: './src/reporting/main',
     manageusers: './src/manageusers/main',
     nonuseroutreach: './src/nonuseroutreach/main',
     myprofile: './src/myprofile/main',
+    analytics: './src/analytics/main',
+    custom: './src/sass/custom.scss',
+    customanalytics: './src/sass/analytics.scss',
+    bootstrapdaterange: './src/sass/vendor/bootstrap-daterange.scss',
+    seo_base_styles: './src/sass/seo_base_styles.scss',
+    seo_base_scripts: './src/v2/seo-base-scripts',
   },
   resolve: {
     root: path.resolve('src'),
@@ -37,14 +45,14 @@ module.exports = {
         exclude: /node_modules/,
         loader: 'eslint-loader',
       },
-    ],
-    // ie8 catchall. Some imported react components need this.
-    postLoaders: [
       {
-        test: /\.js$/,
-        loaders: ['es3ify'],
-      },
+        test: /\.scss$/,
+        loader: ExtractTextPlugin.extract('css!sass')
+      }
     ],
+    sassLoader: {
+      includePaths: [path.resolve(__dirname, "../static")]
+    },
   },
   eslint: {
     failOnWarning: true,
@@ -56,14 +64,6 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': '"production"',
     }),
-    // Factor common code in to vendor.js.
-    // This also establishes the parent relationship between the vendor
-    // and app chunks.
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      filename: 'vendor.js',
-      minChunks: 2,
-    }),
     // Dedupe slightly decreases output size.
     new webpack.optimize.DedupePlugin(),
     // Webpack docs recommend using this plugin.
@@ -74,5 +74,6 @@ module.exports = {
     // In development it can be useful to see this output to verify that
     // dead code removal is doing something sane.
     new webpack.optimize.UglifyJsPlugin({compress: {warnings: false}}),
+    new ExtractTextPlugin('[name].css'),
   ],
 };

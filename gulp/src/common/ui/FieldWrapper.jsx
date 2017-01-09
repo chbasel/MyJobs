@@ -25,7 +25,7 @@ class FieldWrapper extends React.Component {
     return (
       <div className={rowClasses}>
         <div className="col-xs-12 col-md-4">
-          <label>{label}{requiredIndicator}:</label>
+          <label>{label}{requiredIndicator}{label ? ':' : ''}</label>
         </div>
         <div className="col-xs-12 col-md-8">
           {children}

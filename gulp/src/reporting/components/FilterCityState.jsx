@@ -16,7 +16,14 @@ export default class FilterCityState extends Component {
   }
 
   render() {
-    const {id, getHints, hints, values} = this.props;
+    const {
+      id,
+      getHints,
+      hints,
+      values,
+      stateLoading,
+      cityLoading,
+    } = this.props;
     const stateValue = values.state || '';
 
     const stateHints = hints.state || [];
@@ -38,6 +45,7 @@ export default class FilterCityState extends Component {
           name=""
           value={getDisplayForValue(regionsWithBlank, stateValue)}
           choices={regionsWithBlank}
+          disable={stateLoading}
         />
         <SearchInput
           id={id + '-city'}
@@ -48,6 +56,7 @@ export default class FilterCityState extends Component {
             this.updateField('city', v.value)}
           getHints={v =>
             getHints('city', v)}
+          loading={cityLoading}
           hints={hints.city}
         />
       </span>
@@ -68,4 +77,6 @@ FilterCityState.propTypes = {
   getHints: PropTypes.func.isRequired,
   // known hints
   hints: PropTypes.object,
+  stateLoading: PropTypes.bool,
+  cityLoading: PropTypes.bool,
 };

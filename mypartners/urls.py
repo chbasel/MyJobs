@@ -1,18 +1,44 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import patterns, url, include
 from django.views.generic import RedirectView
+
+nuo_api = patterns('mypartners.views',
+    url(r'^inbox/list$', 'api_get_nuo_inbox_list', name='api_get_nuo_inbox_list'),
+    url(r'^records/list$', 'api_get_nuo_records_list', name='api_get_nuo_records_list'),
+    url(r'^records/(?P<record_id>\d+)',
+        'api_get_individual_nuo_record',
+        name='api_get_individual_nuo_record'),
+    url(r'^records/convert', 'api_convert_outreach_record', name='api_convert_outreach_record'),
+    url(r'^inbox/add', 'api_add_nuo_inbox',
+        name='api_add_nuo_inbox'),
+    url(r'^inbox/delete', 'api_delete_nuo_inbox',
+        name='api_delete_nuo_inbox'),
+    url(r'^inbox/update', 'api_update_nuo_inbox',
+        name='api_update_nuo_inbox'),
+    url(r'^workflowstate$', 'api_get_workflow_states',
+        name='api_get_workflow_states'),
+    url(r'^forms$', 'api_get_nuo_forms',
+        name='api_get_nuo_forms'),
+)
+
+api = patterns('mypartners.views',
+    url(r'^nonuseroutreach/', include(nuo_api)),
+
+    # Partner API
+    url(r'^partner$', 'api_get_partners', name='api_get_partners'),
+    url(r'^partner/(?P<partner_id>\d+)$', 'api_get_partner',
+        name='api_get_partner'),
+    url(r'^partner/create$', 'api_create_partner', name='api_create_partner'),
+
+    # Contact API
+    url(r'^contact$', 'api_get_contacts', name='api_get_contacts'),
+    url(r'^contact/(?P<contact_id>\d+)$', 'api_get_contact',
+        name='api_get_contact'),
+    url(r'^contact/create$', 'api_create_contact', name='api_create_contact'),
+)
 
 urlpatterns = patterns('mypartners.views',
     url(r'^$', RedirectView.as_view(url='/prm/view/')),
-    url(r'^api/nonuseroutreach/inbox/list$', 'api_get_nuo_inbox_list', name='api_get_nuo_inbox_list'),
-    url(r'^api/nonuseroutreach/records/list$', 'api_get_nuo_records_list', name='api_get_nuo_records_list'),
-    url(r'^api/nonuseroutreach/records/record', 'api_get_individual_nuo_record', name='api_get_individual_nuo_record'),
-    url(r'^api/nonuseroutreach/records/convert', 'api_convert_outreach_record', name='api_convert_outreach_record'),
-    url(r'^api/nonuseroutreach/inbox/add', 'api_add_nuo_inbox',
-        name='api_add_nuo_inbox'),
-    url(r'^api/nonuseroutreach/inbox/delete', 'api_delete_nuo_inbox',
-        name='api_delete_nuo_inbox'),
-    url(r'^api/nonuseroutreach/inbox/update', 'api_update_nuo_inbox',
-        name='api_update_nuo_inbox'),
+    url('api/', include(api)),
     url(r'^view/$', 'prm', name='prm'),
     url(r'^view$', 'prm', name='prm'),
     url(r'^view/partner-library/add/$', 'create_partner_from_library',
@@ -24,7 +50,7 @@ urlpatterns = patterns('mypartners.views',
     url(r'^view/tagging/edit$', 'edit_partner_tag', name='edit_partner_tag'),
     url(r'^view/tagging/delete$', 'delete_partner_tag', name='delete_partner_tag'),
     url(r'^view/records$', 'prm_records', name='partner_records'),
-    url(r'^view/records/get-tags', 'tag_names', name="tag_names"),
+    url(r'^view/records/get-tags$', 'tag_names', name="tag_names"),
     url(r'^view/records/get-tag-color', 'tag_color', name="tag_color"),
     url(r'^view/records/edit$', 'prm_edit_records', name='partner_edit_record'),
     url(r'^view/records/retrieve_records', 'partner_get_records',

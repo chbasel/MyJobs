@@ -296,7 +296,7 @@ def job_breadcrumbs(job, company=False):
         # template; if not, the city value -- ordinarily JUST the cityname --
         # will be set to the "City, ST" location field on the job document.
         if display != "None":
-            up_slug = "/".join([attrs[k]['path'] for k in dropmap[f]])
+            up_slug = "/".join([attrs.get(k, {}).get('path', '') for k in dropmap[f]])
             breadcrumbs[f] = {'path': "/" + up_slug + "/",
                               'display': display or getattr(job, f)}
     return breadcrumbs
@@ -310,9 +310,9 @@ def _page_title(crumbs):
     loc_part = ", ".join(filter(lambda x: x, displays))
     if crumbs.get("company"):
         info_part = " ".join([crumbs['company']['display'],
-                              crumbs['title']['display']])
+                              crumbs.get('title', {}).get('display', '')])
     else:
-        info_part = crumbs['title']['display']
+        info_part = crumbs.get('title', {}).get('display', '')
 
     return " in ".join([info_part, loc_part])
 
@@ -772,7 +772,7 @@ def get_widgets(request, site_config, facet_counts, custom_facets,
 
     """
     filters = filters or {}
-
+    # facet_counts is occasionally an empty list. do not allow this.
     moc_field = 'mapped_moc' if settings.SITE_BUIDS else 'moc'
     if featured:
         types = [('featured', 1),
@@ -792,11 +792,11 @@ def get_widgets(request, site_config, facet_counts, custom_facets,
 
     num_items = site_config.num_filter_items_to_show
     widgets = []
-
     for _type in types:
         w = FacetListWidget(request, site_config, _type[0],
-                            facet_counts['%s_slab' % _type[0]][0:num_items*2],
-                            filters)
+                            facet_counts.get('%s_slab' % _type[0],
+                                             [])[0:num_items*2],
+                            filters, version=site_config.template_version)
         w.precedence = _type[1]
         widgets.append(w)
     if custom_facets:
@@ -1142,6 +1142,7 @@ def determine_redirect(request, filters):
     query_loc = request.GET.get('location', None)
     filter_moc = filters.get('moc_slug', None)
     query_moc = request.GET.get('moc', None)
+    filter_company = filters.get('company_slug', None)
 
     if request.path.startswith('/search'):
         needs_redirect = True
@@ -1186,6 +1187,10 @@ def determine_redirect(request, filters):
     if query_loc and filter_loc and not referer:
         filters['location_slug'] = None
         needs_redirect = True
+
+    if filter_company and any(x.isupper() for x in filter_company):
+        needs_redirect = True
+        filters['company_slug'] = filter_company.lower()
 
     new_filters = [''.join([filters[key], value]) for key, value in
                    settings.SLUG_TAGS.items() if filters[key]]

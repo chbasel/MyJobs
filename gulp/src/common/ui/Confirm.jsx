@@ -49,7 +49,7 @@ Confirm.defaultProps = {
 };
 
 export default connect(s => ({
-  show: s.confirm.data.show,
-  message: s.confirm.data.message,
-  onConfirm: s.confirm.resolve,
+  show: s.confirmation.data.show,
+  message: s.confirmation.data.message,
+  onConfirm: s.confirmation.resolve,
 }))(Confirm);

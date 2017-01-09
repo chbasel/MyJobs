@@ -6,7 +6,7 @@ import TagSelect from './TagSelect';
  * Control for and/or groups of tags.
  */
 export default function TagAnd(props) {
-  const {selected, available, onChoose, onRemove} = props;
+  const {selected, available, onChoose, onRemove, placeholder} = props;
 
   const selectedPlusBlank = [...selected, []];
   return (
@@ -20,7 +20,8 @@ export default function TagAnd(props) {
             selected={ts}
             available={available}
             onChoose={v => onChoose(i, v)}
-            onRemove={v => onRemove(i, v)}/>
+            onRemove={v => onRemove(i, v)}
+            placeholder={placeholder}/>
         </div>
       ))}
     </div>
@@ -58,4 +59,13 @@ TagAnd.propTypes = {
    * Function called when a selected tag is removed.
    */
   onRemove: PropTypes.func.isRequired,
+  /**
+   * Show this text in blank tag selects
+   */
+  placeholder: PropTypes.string,
+};
+
+
+TagAnd.defaultProps = {
+  placeholder: 'Not specified',
 };

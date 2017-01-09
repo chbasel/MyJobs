@@ -1,10 +1,12 @@
+import json
+
 from django.core import mail
 from django.core.urlresolvers import reverse
-from myjobs.models import User
-from myjobs.tests.factories import RoleFactory
+
+from myjobs.tests.factories import RoleFactory, UserFactory
+from myjobs.models import AppAccess
 from seo.tests.factories import CompanyFactory
 from setup import MyJobsBase
-import json
 
 
 class ManageUsersTests(MyJobsBase):
@@ -24,27 +26,21 @@ class ManageUsersTests(MyJobsBase):
     def test_activities(self):
         """
         Tests that the Activities API returns the proper data in the
-        proper form
+        proper form.
+
         """
         response = self.client.get(reverse('api_get_activities'))
+        results = json.loads(response.content)
 
-        output = json.loads(response.content)
-        first_result = output[0]
+        # ensure we have a key for each app level access
+        apps = list(AppAccess.objects.values_list('name', flat=True))
+        self.assertEqual(apps, results.keys())
 
-        activity_name = first_result['activity_name']
-        self.assertIsInstance(activity_name, unicode)
-
-        app_access_name = first_result['app_access_name']
-        self.assertIsInstance(app_access_name, unicode)
-
-        activity_description = first_result['activity_description']
-        self.assertIsInstance(activity_description, unicode)
-
-        activity_id = first_result['activity_id']
-        self.assertIsInstance(activity_id, int)
-
-        app_access_id = first_result['app_access_id']
-        self.assertIsInstance(app_access_id, int)
+        # ensure that activities are of the correct shape
+        activity = results[apps[0]][0]
+        expected_shape = {'id': int, 'name': unicode, 'description': unicode}
+        actual_shape = {key: type(value) for key, value in activity.items()}
+        self.assertEqual(expected_shape, actual_shape)
 
     def test_create_role_require_post(self):
         """
@@ -179,6 +175,34 @@ class ManageUsersTests(MyJobsBase):
                                               args=[expected_role_pk]))
         output = json.loads(response.content)
         self.assertEqual(output["success"], "true")
+
+    def test_get_all_roles(self):
+        """
+        Tests that api_get_all_roles returns data of the correct shape.
+
+        """
+        response = self.client.get(reverse('api_get_all_roles'))
+        output = json.loads(response.content)
+
+        role_shape = {
+            'name': unicode,
+            'activities': list,
+        }
+        for role in output.values():
+            for key, value in role.items():
+                self.assertEqual(type(value), role_shape[key])
+
+                activity_shape = {
+                    'id': int,
+                    'name': unicode,
+                    'appAccess': unicode,
+                    'description': unicode
+                }
+
+                if key == 'activities':
+                    for activity in value:
+                        for k, v in activity.items():
+                            self.assertEqual(type(v), activity_shape[k])
 
     def test_get_roles_contain_roles(self):
         """
@@ -346,56 +370,6 @@ class ManageUsersTests(MyJobsBase):
         first_available_user_name = first_available_user['name']
         self.assertIsInstance(first_available_user_name, unicode)
 
-    def test_get_specific_user(self):
-        """
-        Tests that the Users API returns the proper (specific user) data in the
-        proper form
-        """
-        expected_user_pk = self.user.pk
-
-        response = self.client.get(reverse('api_get_specific_user',
-                                           args=[expected_user_pk]))
-        output = json.loads(response.content)
-        first_result = output[str(expected_user_pk)]
-
-        status = first_result['status']
-        self.assertIsInstance(status, bool)
-
-        email = first_result['email']
-        self.assertIsInstance(email, unicode)
-
-        roles_available = json.loads(first_result['roles']['available'])
-        roles_available_id = roles_available[0]['pk']
-        self.assertIsInstance(roles_available_id, int)
-
-        roles_available_name = roles_available[0]['fields']['name']
-        self.assertIsInstance(roles_available_name, unicode)
-
-    def test_get_specific_user_with_unique_roles_list(self):
-        """
-        Given a user who has roles assigned through multiple companies, test
-        that getting a specific user will return a unique list of roles (i.e.
-        roles for that company)
-        """
-        expected_user_pk = self.user.pk
-
-        # self.company is being used for self.client.get (not self.otherCompany)
-        response = self.client.get(reverse('api_get_specific_user',
-                                           args=[expected_user_pk]))
-
-        output = json.loads(response.content)
-        first_result = output[str(expected_user_pk)]
-        roles_assigned = json.loads(first_result['roles']['assigned'])
-
-        # This user is assigned to the following roles:
-        #   role
-        #   otherRole
-        #   otherRoleAtOtherCompany
-        # But role and otherRole are associated with the company self.client.get
-        # uses to make the request. Therefore, the API should only return two
-        # roles
-        self.assertEqual(len(roles_assigned),2)
-
     def test_get_users(self):
         """
         Tests that the Users API returns the proper data in the proper form
@@ -404,87 +378,56 @@ class ManageUsersTests(MyJobsBase):
 
         response = self.client.get(reverse('api_get_users'))
         output = json.loads(response.content)
-        first_result = output[str(expected_user_pk)]
 
-        status = first_result['status']
-        self.assertIsInstance(status, bool)
+        # keys should be user ids associated with the company
+        user_ids = list(self.company.role_set.filter(
+            user__isnull=False).distinct().values_list('user__pk', flat=True))
+        output_keys = [long(key) for key in output.keys()]
+        self.assertEqual(output_keys, user_ids)
 
-        email = first_result['email']
-        self.assertIsInstance(email, unicode)
+        # each entry should take a specific shape
+        shape = {
+            'email': unicode,
+            'isVerified': bool,
+            'lastInvitation': unicode,
+            'roles': list,
+        }
 
-        id_returned = output['id']
-        self.assertEqual(id_returned, expected_user_pk)
-
-        lastInvitation = first_result['lastInvitation']
-        self.assertIsInstance(lastInvitation, unicode)
-
-        roles = json.loads(first_result['roles'])
-        role_id = roles[0]['pk']
-        self.assertIsInstance(role_id, int)
-
-        role_name = roles[0]['fields']['name']
-        self.assertIsInstance(role_name, unicode)
-
-
-    def test_get_users_with_unique_roles_list(self):
-        """
-        Given a user who has roles assigned through multiple companies, test
-        that getting a list of users will only return a unique list of roles
-        (i.e. roles for the current company)
-        """
-        expected_user_pk = self.user.pk
-
-        response = self.client.get(reverse('api_get_users'))
-        output = json.loads(response.content)
-        first_result = output[str(expected_user_pk)]
-
-        roles = json.loads(first_result['roles'])
-
-        # This user is assigned to the following roles:
-        #   role
-        #   otherRole
-        #   otherRoleAtOtherCompany
-        # But role and otherRole are associated with the company self.client.get
-        # uses to make the request. Therefore, the API should only return two
-        # roles
-        self.assertEqual(len(roles),2)
+        for user in output.values():
+            for key, value in user.items():
+                self.assertTrue(type(value), shape[key])
 
     def test_create_user_require_post(self):
         """
         Tests creating a user
         Require POST
         """
-        response = self.client.get(reverse('api_create_user'))
-        output = json.loads(response.content)
-        self.assertEqual(output["success"], "false")
-        self.assertEqual(output["message"], "POST method required.")
+        response = self.client.get(reverse('api_add_user'))
+        self.assertEqual(response.status_code, 405)
 
     def test_create_user_user_must_have_role(self):
         """
         Tests creating a user
         Users must be assigned to at least one role
         """
-        data_to_post = {}
-        data_to_post['user_email'] = "andy@kaufman.com"
-        response = self.client.post(reverse('api_create_user'), data_to_post)
+        response = self.client.post(reverse('api_add_user'), {
+            'email': 'andy@kaufman.com'
+        })
         output = json.loads(response.content)
-        self.assertEqual(output["success"], "false")
-        self.assertEqual(output["message"],
-                         "Each user must be assigned to at least one role.")
+        self.assertIn(
+            "Each user must be assigned to at least one role.",
+            output["errors"])
 
     def test_create_user(self):
         """
         Tests creating a user
         """
-        data_to_post = {}
-        data_to_post['user_email'] = "andy@kaufman.com"
-        data_to_post['assigned_roles[]'] = [self.role.name]
-
-        response = self.client.post(reverse('api_create_user'), data_to_post)
+        response = self.client.post(reverse('api_add_user'), {
+            'email': 'andy@kaufman.com',
+            'roles': [self.role.name]
+        })
         output = json.loads(response.content)
-        self.assertEqual(output["success"], "true")
-        self.assertEqual(output["message"],
-                         "User created. Invitation email sent.")
+        self.assertTrue(output['invited'])
 
     def test_create_user_keeps_roles(self):
         """
@@ -496,27 +439,23 @@ class ManageUsersTests(MyJobsBase):
         self.user.roles = [self.role]
         self.assertItemsEqual(self.user.roles.all(), [self.role])
         role = RoleFactory(name='Test Role', company=self.company)
-        data = {
-            'user_email': self.user.email,
-            'assigned_roles[]': [role.name]
-        }
-        self.client.post(reverse('api_create_user'), data)
+
+        self.client.post(reverse('api_add_user'), {
+            'email': self.user.email,
+            'roles': [role.name]
+        })
         self.assertItemsEqual(self.user.roles.all(), [self.role, role])
 
     def test_add_role_to_existing_user(self):
         """
         Tests adding a role to an existing user
         """
-        data_to_post = {
-            'user_email': self.user.email,
-            'assigned_roles[]': [self.role.name]
-        }
-
-        response = self.client.post(reverse('api_create_user'), data_to_post)
+        response = self.client.post(reverse('api_add_user'), data={
+            'email': self.user.email,
+            'roles': [self.role.name]
+        })
         output = json.loads(response.content)
-        self.assertEqual(output["success"], "true")
-        self.assertEqual(output["message"],
-                         "User already exists. Role invitation email sent.")
+        self.assertFalse(output['invited'])
 
     def test_number_of_invitations_sent_on_role_addition(self):
         """
@@ -527,17 +466,17 @@ class ManageUsersTests(MyJobsBase):
 
         mail.outbox = []
         to_post = {
-            'user_email': 'andy@kaufman.com',
-            'assigned_roles[]': [self.role.name, new_role.name]
+            'email': 'andy@kaufman.com',
+            'roles': [self.role.name, new_role.name]
         }
-        self.client.post(reverse('api_create_user'), to_post)
+        self.client.post(reverse('api_add_user'), to_post)
         message = "Expected {} invitations, found {}"
         self.assertEqual(len(mail.outbox), 2,
                          message.format(2, len(mail.outbox)))
 
-        to_post['assigned_roles[]'].append(
+        to_post['roles'].append(
             RoleFactory(company=self.company).name)
-        self.client.post(reverse('api_create_user'), to_post)
+        self.client.post(reverse('api_add_user'), to_post)
         self.assertEqual(len(mail.outbox), 3,
                          message.format(3, len(mail.outbox)))
 
@@ -546,80 +485,42 @@ class ManageUsersTests(MyJobsBase):
         Tests deleting a user
         Require DELETE
         """
-        expected_user_pk = self.user.pk
-
-        response = self.client.get(reverse('api_delete_user',
-                                           args=[expected_user_pk]))
-        output = json.loads(response.content)
-        self.assertEqual(output["success"], "false")
-        self.assertEqual(output["message"], "DELETE method required.")
+        response = self.client.get(reverse('api_remove_user',
+                                           args=[self.user.pk]))
+        self.assertEqual(response.status_code, 405)
 
     def test_delete_user(self):
         """
         Tests deleting a user
-        """
-        expected_user_pk = self.user.pk
 
-        response = self.client.delete(reverse('api_delete_user',
-                                              args=[expected_user_pk]))
+        """
+        new_user = UserFactory(email='newuser@example.com',
+                               roles=self.user.roles.all())
+
+        response = self.client.delete(reverse('api_remove_user',
+                                              args=[self.user.pk]))
         output = json.loads(response.content)
-        self.assertEqual(output["success"], "true")
-        self.assertEqual(output["message"], "User deleted.")
+        self.assertEqual(output['errors'], [])
 
     def test_edit_user_require_post(self):
         """
         Tests editing a user
         Require POST
         """
-        expected_user_pk = self.user.pk
-
         response = self.client.get(reverse('api_edit_user',
-                                           args=[expected_user_pk]))
-        output = json.loads(response.content)
-        self.assertEqual(output["success"], "false")
-        self.assertEqual(output["message"], "POST method required.")
+                                           args=[self.user.pk]))
+        self.assertEqual(response.status_code, 405)
 
     def test_edit_user_user_must_exist(self):
         """
         Tests editing a user
         User must exist
-        """
-        expected_user_pk = self.user.pk
 
-        response = self.client.post(reverse('api_edit_user',
-                                            args=[expected_user_pk + 1]))
+        """
+        # there weill never be a user with an ID of 0
+        response = self.client.post(reverse('api_edit_user', args=[0]))
         output = json.loads(response.content)
-        self.assertEqual(output["success"], "false")
-        self.assertEqual(output["message"], "User does not exist.")
-
-    def test_edit_user_user_must_have_role(self):
-        """
-        Tests editing a user
-        User must have role
-        """
-        expected_user_pk = self.user.pk
-
-        response = self.client.post(reverse('api_edit_user',
-                                            args=[expected_user_pk]))
-        output = json.loads(response.content)
-        self.assertEqual(output["success"], "false")
-        self.assertEqual(output["message"],
-                         "A user must be assigned to at least one role.")
-
-    def test_edit_user_one_user_per_company_must_be_admin(self):
-        """
-        Tests editing a user, every company must have one user assigned to admin
-        Edit user
-        """
-        expected_user_pk = self.user.pk
-
-        data_to_post = {}
-        data_to_post['assigned_roles[]'] = [self.otherRole.name]
-        response = self.client.post(reverse('api_edit_user',
-                                            args=[expected_user_pk]),
-                                    data_to_post)
-        output = json.loads(response.content)
-        self.assertEqual(output["success"], "false")
+        self.assertIn(u'User does not exist.', output['errors'])
 
     def test_edit_user(self):
         """
@@ -628,11 +529,13 @@ class ManageUsersTests(MyJobsBase):
         """
         expected_user_pk = self.user.pk
 
-        data_to_post = {}
-        data_to_post['assigned_roles[]'] = [self.role.name]
+        role = RoleFactory(company=self.company, name='Test')
 
-        response = self.client.post(reverse('api_edit_user',
-                                            args=[expected_user_pk]),
-                                    data_to_post)
+        response = self.client.post(
+            reverse('api_edit_user', args=[self.user.pk]), {
+                'add': [role.name],
+            }
+        )
         output = json.loads(response.content)
-        self.assertEqual(output["success"], "true")
+        self.assertEqual(
+            output['errors'], [],"Editing a user shouldn't result in errors")

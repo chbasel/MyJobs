@@ -148,13 +148,13 @@ class LoadETLTestCase(DirectSEOBase):
         super(LoadETLTestCase, self).setUp()
         self.zipfile = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                     'data',
-                                    'ActiveDirectory_ce2ca701-eeca-4c13-96ba-e6bde9cb7060.zip')
+                                    '0812fe95-e7cb-4eb5-813c-55c9180f6bd7.zip')
         with open(self.zipfile) as zf:
-            self.jobs = list(get_jobs_from_zipfile(zf, "ce2ca701-eeca-4c13-96ba-e6bde9cb7060"))
+            self.jobs = list(get_jobs_from_zipfile(zf, "0812fe95-e7cb-4eb5-813c-55c9180f6bd7"))
 
         self.businessunit = BusinessUnitFactory(id=0)
         self.buid = self.businessunit.id
-        self.guid = 'ce2ca701-eeca-4c13-96ba-e6bde9cb7060'
+        self.guid = '0812fe95-e7cb-4eb5-813c-55c9180f6bd7'
         self.name = "Test"
 
     def tearDown(self):
@@ -173,8 +173,8 @@ class LoadETLTestCase(DirectSEOBase):
 
         count = self.conn.search('buid:%s' % self.buid).hits
         # Note the job count being one low here is due to one job being filtered out due to include_in_index_bit
-        self.assertEqual(count, 38, "38 Jobs not in solr after call to update job source. Found %s" % count)
-        self.assertEqual(BusinessUnit.objects.get(id=self.buid).associated_jobs, 38,
+        self.assertEqual(count, 27, "38 Jobs not in solr after call to update job source. Found %s" % count)
+        self.assertEqual(BusinessUnit.objects.get(id=self.buid).associated_jobs, 27,
                          "Job Count not updated after imports: Should be 38 was %s" % self.businessunit.associated_jobs)
 
     def test_salted_date_is_based_on_date_new(self):
@@ -183,7 +183,7 @@ class LoadETLTestCase(DirectSEOBase):
         transformed_job = hr_xml_to_json(self.jobs[0], self.businessunit)
         print "\nTRANSFORMED: %s\n" %  transformed_job['guid']
 
-        expected = datetime.datetime.strptime("2015-01-19", "%Y-%m-%d").date()
+        expected = datetime.datetime.strptime("2016-07-02", "%Y-%m-%d").date()
         actual = transformed_job['salted_date'].date()
 
         self.assertEqual(expected, actual,
@@ -194,14 +194,14 @@ class LoadETLTestCase(DirectSEOBase):
         """Test that filtering on the include_in_index bit works"""
 
         # Prove we have the expected number of jobs in the zipfile itself.
-        self.assertEqual(len(self.jobs), 39,
-                         "Expected to find 0 jobs in the test zipfile, instead found %s" % len(self.jobs))
+        self.assertEqual(len(self.jobs), 28,
+                         "Expected to find 28 jobs in the test zipfile, instead found %s" % len(self.jobs))
 
         # Prove that filtering works.
         filtered_jobs = list(filter_current_jobs(self.jobs, self.businessunit))
-        self.assertEqual(len(filtered_jobs), 38,
+        self.assertEqual(len(filtered_jobs), 27,
                          "filter_current_jobs should rmeove jobs with the includeinindex bit set, "
-                         "it's expected to return %s.  Instead it returned %s" % (38, len(filtered_jobs)))
+                         "it's expected to return %s.  Instead it returned %s" % (27, len(filtered_jobs)))
 
 
     def test_businessunit_ignore_includeinindex(self):
@@ -211,11 +211,11 @@ class LoadETLTestCase(DirectSEOBase):
         self.businessunit.save()
 
         # Prove we have the expected number of jobs in the zipfile itself.
-        self.assertEqual(len(self.jobs), 39,
+        self.assertEqual(len(self.jobs), 28,
                          "Expected to find 0 jobs in the test zipfile, instead found %s" % len(self.jobs))
 
         # Prove that filtering works.
         filtered_jobs = list(filter_current_jobs(self.jobs, self.businessunit))
-        self.assertEqual(len(filtered_jobs), 39,
+        self.assertEqual(len(filtered_jobs), 28,
                          "filter_current_jobs should ignore the includeinindex bit, returning 39 jobs.  "
                          "Instead returned %s." % len(filtered_jobs))

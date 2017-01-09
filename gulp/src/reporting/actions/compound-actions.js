@@ -21,6 +21,7 @@ import {
   removeFromOrFilterAction,
   resetCurrentFilterDirty,
   setValidAction,
+  updateRecordCount,
 } from './report-state-actions';
 import {
   replaceDataSetMenu,
@@ -49,8 +50,10 @@ export function getFilterValuesOnly(currentFilter) {
   // TODO: add filterType to specify the type of filter data required
   //  i.e. "date_range", "or", "and_or", "string", etc.
   //  This will make this function need to do less guessing.
-  const result = mapValues(currentFilter, item => {
-    if (isString(item) || isPlainObject(item)) {
+  const result = mapValues(currentFilter, (item, key) => {
+    if (isString(item) ||
+        isPlainObject(item) ||
+        (isArray(item) && !item.length)) {
       return item;
     } else if (isArray(item) && isPlainObject(item[0])) {
       return map(item, o => o.value);
@@ -61,10 +64,25 @@ export function getFilterValuesOnly(currentFilter) {
         typeof(item[0]) === 'string' && typeof(item[1]) === 'string') {
       return item;
     }
-    warning(false, 'Unrecognized filter type: ' + JSON.stringify(item));
+    warning(false,
+      'Unrecognized filter type: ' + JSON.stringify(item) + ' at ' + key);
   });
   return result;
 }
+
+
+/**
+ * Run a trial report and return a promise of the report result.
+ *
+ * api: an api object
+ * filter: the current (adorned) filter
+ * values: the values to query
+ */
+export async function runTrialReport(api, reportDataId, filter, values) {
+  return await api.runTrialReport(
+    reportDataId, getFilterValuesOnly(filter), values);
+}
+
 
 /**
  * Do the initial setup for the app.
@@ -267,6 +285,11 @@ export function doLoadReportSetUp(reportDataId, reportFilter, reportName) {
         name: finalReportName,
       }));
 
+      const trialReport = await runTrialReport(
+        api, reportDataId, finalDefaultFilter, ['']);
+      const recordCount = trialReport.length;
+      dispatch(updateRecordCount(recordCount));
+
       // Ugly hack.
       // Preload hints for interface types that need it.
       await Promise.all(map(filterInfo.filters, async f => {
@@ -351,7 +374,7 @@ export function doRefreshReport(reportId) {
  * filterInterface: interface used at filter time
  */
 export function doUpdateFilterWithDependencies(filterInterface, reportDataId) {
-  return async (dispatch, getState) => {
+  return async (dispatch, getState, {api}) => {
     function latestFilter() {
       return getState().reportState.currentFilter;
     }
@@ -360,6 +383,11 @@ export function doUpdateFilterWithDependencies(filterInterface, reportDataId) {
     if (!getState().reportState.currentFilterDirty) {
       return;
     }
+
+    const trialReport = await runTrialReport(
+      api, reportDataId, latestFilter(), ['']);
+    const recordCount = trialReport.length;
+    dispatch(updateRecordCount(recordCount));
 
     // TODO: declare all of this in the database somehow.
     if (find(filterInterface, i => i.filter === 'partner')) {

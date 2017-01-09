@@ -1,8 +1,8 @@
 from default_settings import *
 from redirect_settings import *
 
-from secrets import REDIRECT_STAGING, ARCHIVE_STAGING
-
+from secrets import REDIRECT_STAGING, REDIRECT_QC, ARCHIVE_STAGING
+import secrets
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
@@ -47,3 +47,7 @@ SOLR = {
 
 EMAIL_HOST_USER = STAGING_EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = STAGING_EMAIL_HOST_PASSWORD
+
+setattr(secrets, 'MONGO_HOST', secrets.STAGING_MONGO_HOST)
+setattr(secrets, 'MONGO_DBNAME', secrets.STAGING_MONGO_DBNAME)
+setattr(secrets, 'MONGO_SSL', secrets.STAGING_MONGO_SSL)

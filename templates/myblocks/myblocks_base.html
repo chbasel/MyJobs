@@ -12,7 +12,7 @@
         <script type="text/javascript" src="//d2e48ltfsb5exy.cloudfront.net/framework/v2/js/code/jquery-ui-1.8.17.custom.min.js"></script>
         <script type="text/javascript">var pager_num_items = {% if site_config.num_subnav_items_to_show %}{{ site_config.num_subnav_items_to_show }}{% else %}0{% endif %};</script>
 
-        {% if num_filters > max_filter_settings %}
+        {% if num_filters >= max_filter_settings %}
             <meta name="robots" content="nofollow">
         {% endif %}
 

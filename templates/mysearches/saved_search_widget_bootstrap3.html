@@ -1,0 +1,33 @@
+<script>
+    var user_email = {% if user %} '{{ user.email }}' {% else %} 'None' {% endif %};
+</script>
+
+<form class="enter_email">
+{% if success %}
+    <em class="success">Success</em>{% if not user %}<p>Your search was successfully saved. Results will be sent to {{ success }}.</p>{% endif %}
+{% endif %}
+{% if not search and not success %}
+    <p class="get-title">Get new jobs sent directly to your inbox!</p>
+    <div class="form-group">
+      <input class="form-control enter-email" id="saved-search-email" type="text" placeholder="Your email address " name="saved-search-email" {% if user.email %}value="{{ user.email }}"{% endif %}/>
+    </div>
+    <div class="form-group">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-lg-8">
+          <select class="email-frequency form-control">
+            <option>Daily</option>
+            <option>Weekly</option>
+          </select>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-lg-4">
+          <input id="saved-search-btn"  class="btn btn-default save-email" type="submit" onclick="save_search();" value="Save" />
+        </div>
+      </div>
+    </div>
+{% elif search %}
+            {% if not success %}
+                <p class="search-sent-text"><b>This search is being sent to {{ search.email }}.</b></p>
+            {% endif %}
+            <div class="direct-action-btn" id="saved-search-edit-btn"><a href="https://secure.my.jobs/saved-search/view/edit?id={{ search.id }}{% if is_pss %}&pss=True{% endif %}" target="_blank">Edit Search on My.jobs</a></div>
+{% endif %}
+</form>

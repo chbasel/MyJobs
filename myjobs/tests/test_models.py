@@ -1,13 +1,17 @@
 import datetime
+import pytz
 import urllib
+from django.test import TestCase
 from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Q
 from django.http import Http404
 from django.utils.http import urlquote
+from django.utils import timezone
 
 import pytz
 
@@ -174,6 +178,141 @@ class UserManagerTests(MyJobsBase):
         user.delete()
         self.assertIn(pss, PartnerSavedSearch.objects.all())
         self.assertIn(report, Report.objects.all())
+
+
+class TestPasswordExpiration(TestCase):
+    """Test password expiration"""
+
+    def setUp(self):
+        super(TestPasswordExpiration, self).setUp()
+
+        (self.user, _) = User.objects.create_user(
+            password='somepass',
+            email='someuser@example.com')
+        self.strict = CompanyFactory(password_expiration=True, name='strict')
+        self.strict_role = RoleFactory(company=self.strict, name="Admin")
+        self.loose = CompanyFactory(password_expiration=False, name='loose')
+        self.loose_role = RoleFactory(company=self.loose, name="Admin")
+        self.user.roles.add(self.strict_role)
+        self.user.roles.add(self.loose_role)
+
+        # Reload from db to get correct password state.
+        self.user = User.objects.get(pk=self.user.pk)
+
+    def test_no_company(self):
+        """Users with no company should not have password expiration"""
+        self.user.roles.clear()
+        self.assertEqual(
+            False,
+            self.user.has_password_expiration())
+        self.assertEqual(
+            False,
+            self.user.is_password_expired())
+
+        self.user.password = 'somepass2'
+        self.user.save()
+        self.assertEqual(None, self.user.password_last_modified)
+        self.assertEqual(0, self.user.userpasswordhistory_set.count())
+
+    def test_use_loose_companies_only(self):
+        """Making the strict company loose should disable expiration."""
+        self.strict.password_expiration = False
+        self.strict.save()
+        self.assertEqual(False, self.user.has_password_expiration())
+
+    def test_use_stricter_company(self):
+        """Users with any strict company should have password expiration"""
+        self.assertEqual(True, self.user.has_password_expiration())
+
+    def test_first_expirable_login(self):
+        """is_password_expired is True when the user has never logged in."""
+        self.assertEqual(True, self.user.is_password_expired())
+
+    def test_login_within_expire_window(self):
+        """is_password_expired is False when in the expiration window."""
+        self.user.password_last_modified = (
+            timezone.now() - datetime.timedelta(days=1))
+        self.user.save()
+        self.assertEqual(False, self.user.is_password_expired())
+
+    def test_login_out_of_expire_window(self):
+        """is_password_expired is True when past the expiration window."""
+        days = settings.PASSWORD_EXPIRATION_DAYS
+        self.user.password_last_modified = (
+            timezone.now() - datetime.timedelta(days))
+        self.user.save()
+        self.assertEqual(True, self.user.is_password_expired())
+
+    def test_change_password(self):
+        """
+        Changing password for a user in a company does sets pasword last
+        modified time.
+        """
+        before_password_set = timezone.now()
+        self.user.set_password('somepass2')
+        self.user.save()
+        self.assertGreater(
+            self.user.password_last_modified, before_password_set)
+        self.assertEqual(1, self.user.userpasswordhistory_set.count())
+
+    def test_history_limit(self):
+        """
+        Adding to the password history should exceed the history limit.
+        """
+        limit = settings.PASSWORD_HISTORY_ENTRIES
+        for i in range(0, limit + 2):
+            date = (
+                datetime.datetime(2016, 1, 1, tzinfo=pytz.UTC) +
+                datetime.timedelta(days=i))
+            self.user.add_password_to_history('entry-%d' % i, date)
+            self.assertLess(0, self.user.userpasswordhistory_set.count())
+            self.assertLessEqual(
+                self.user.userpasswordhistory_set.count(),
+                limit)
+        hashes = set(
+            h.password_hash
+            for h in self.user.userpasswordhistory_set.all())
+        self.assertNotIn('entry-0', hashes)
+        self.assertEquals(limit, len(hashes))
+
+    def test_is_password_in_history(self):
+        """
+        Don't let the user reuse a password they used recently.
+        """
+        limit = settings.PASSWORD_HISTORY_ENTRIES
+        for i in range(0, limit + 1):
+            self.user.set_password('entry-%d' % i)
+            self.user.save()
+        self.assertFalse(self.user.is_password_in_history('entry-0'))
+        for i in range(1, limit + 1):
+            entry = 'entry-%d' % i
+            self.assertTrue(self.user.is_password_in_history(entry), entry)
+
+    def test_is_password_in_history_disabled(self):
+        """
+        Disable history checking if password expiration is off.
+        """
+        limit = settings.PASSWORD_HISTORY_ENTRIES
+        for i in range(0, limit):
+            self.user.set_password('entry-%d' % i)
+            self.user.save()
+        self.strict.password_expiration = False
+        self.strict.save()
+        for i in range(0, limit):
+            entry = 'entry-%d' % i
+            self.assertFalse(self.user.is_password_in_history(entry), entry)
+
+    def test_lockout_counter(self):
+        """
+        Keep track of failed login attempts.
+        """
+        limit = settings.PASSWORD_ATTEMPT_LOCKOUT
+        for i in range(0, limit):
+            self.assertFalse(self.user.is_locked_out(), 'iteration %d' % i)
+            self.user.note_failed_login()
+        self.assertTrue(self.user.is_locked_out())
+        self.user.reset_lockout()
+        self.assertFalse(self.user.is_locked_out())
 
 
 class TestActivities(MyJobsBase):

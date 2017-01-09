@@ -11,6 +11,8 @@ from django.contrib.sessions.models import Session
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.template import Context, Template
+
+from freezegun import freeze_time
 from jira.client import JIRA
 from mock import Mock
 
@@ -25,8 +27,8 @@ from mymessages.tests.factories import MessageInfoFactory
 from mypartners.tests.factories import PartnerFactory
 from myprofile.models import Name, Education
 from myprofile.tests.factories import SecondaryEmailFactory
-from mysearches.models import PartnerSavedSearch
 from mysearches.models import SavedSearch, SavedSearchLog
+from mysearches.tests.factories import PartnerSavedSearchFactory
 from registration import signals as custom_signals
 from registration.models import ActivationProfile
 from secrets import options, my_agent_auth
@@ -36,6 +38,7 @@ import tasks
 from tasks import process_batch_events
 
 
+@freeze_time("2016-10-01 10:00:00")
 class MyJobsViewsTests(MyJobsBase):
     def setUp(self):
         super(MyJobsViewsTests, self).setUp()
@@ -718,6 +721,13 @@ class MyJobsViewsTests(MyJobsBase):
 
             self.client.get(reverse('auth_logout'))
 
+    def test_log_into_nonexistent_account(self):
+        response = self.client.post(reverse('home'),
+                                    data={'username': 'fake@fake.fake',
+                                          'password': self.password,
+                                          'action': 'login'})
+        self.assertEqual(response.status_code, 200)
+
     def test_guid_cookies_login_and_off(self):
         """
         Tests logging in and recieving a guid cookie. Logging out deletes guid
@@ -791,9 +801,9 @@ class MyJobsViewsTests(MyJobsBase):
         # should not have any messages
         self.assertFalse(creator.message_set.all())
 
-        PartnerSavedSearch.objects.create(user=self.user, provider=company,
-                                          created_by=creator,
-                                          partner=partner)
+        PartnerSavedSearchFactory(user=self.user, provider=company,
+                                  created_by=creator,
+                                  partner=partner)
 
         # simulate a user opting out
         self.user.opt_in_myjobs = False
@@ -826,9 +836,9 @@ class MyJobsViewsTests(MyJobsBase):
         # should not have any messages
         self.assertFalse(creator.message_set.all())
 
-        PartnerSavedSearch.objects.create(user=self.user, provider=company,
-                                          created_by=creator,
-                                          partner=partner)
+        PartnerSavedSearchFactory(user=self.user, provider=company,
+                                  created_by=creator,
+                                  partner=partner)
 
         self.client.get(reverse('unsubscribe_all'))
 

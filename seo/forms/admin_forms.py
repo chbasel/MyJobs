@@ -103,10 +103,10 @@ class TableWidget(forms.Widget):
 
     def make_row(self, values, cell_tag='td'):
         text_values = [smart_text(value) for value in values]
-        cells = ''
+        cells = u''
         for cell in text_values:
-            cells += "<{tag}>{value}</{tag}>".format(tag=cell_tag, value=cell)
-        return '<tr class="form-row {0}">{1}</tr>'.format(self.row_class.next(), cells)
+            cells += u"<{tag}>{value}</{tag}>".format(tag=cell_tag, value=cell)
+        return u'<tr class="form-row {0}">{1}</tr>'.format(self.row_class.next(), cells)
 
     def render(self, value, name, attrs=None):
         table = '<table>'

@@ -23,6 +23,7 @@ static/redirect.css
 gulp/node_modules/
 gulp/profile.json
 static/bundle/
+static/custom.css
 
 # Editor artifacts
 *~

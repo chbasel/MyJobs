@@ -17,9 +17,11 @@ from django.http import Http404
 from django.test import RequestFactory
 from django.template import Context, Template
 from django.utils.timezone import utc
+
+from freezegun import freeze_time
+
 from myprofile.tests.factories import SecondaryEmailFactory
 from seo.models import SeoSite
-
 from myjobs.tests.setup import MyJobsBase
 from myjobs.tests.test_views import TestClient
 from myjobs.tests.factories import UserFactory, RoleFactory
@@ -812,6 +814,7 @@ class SearchesOverviewTests(MyPartnersTestCase):
         self.assertEqual(len(searches('div', class_='product-card')), 10)
 
 
+@freeze_time("2016-10-01 10:00:00")
 class SearchFeedTests(MyPartnersTestCase):
     """Tests relating to the search feed page, /prm/view/searches/feed"""
     def setUp(self):
@@ -855,6 +858,7 @@ class SearchFeedTests(MyPartnersTestCase):
             self.assertIn(text, details[i].get_text().strip())
 
 
+@freeze_time("2016-10-01 10:00:00")
 class SearchEditTests(MyPartnersTestCase):
     """Tests relating to the edit search page /prm/view/searches/edit"""
     def setUp(self):
@@ -1206,13 +1210,22 @@ class EmailTests(MyPartnersTestCase):
             self.assert_contact_info_in_email(email)
 
     def test_outreach_record_and_log_creation(self):
+        """
+        Outreach records don't require existing contacts (or even the ability
+        for contacts to be automatically created). Ideally the message body
+        will contain adequate information for a MyJobs user to create one.
+
+        If multiple potential existing contacts are found, link them to the
+        generated record.
+        """
         new_contact = ContactFactory(partner=self.partner,
                                      user=UserFactory(email='new@user.com'),
                                      email='new@user.com')
         OutreachEmailDomain.objects.create(company=self.company,
                                            domain='good.com')
         self.data['to'] = ', '.join([self.full_outreach_address,
-                                     self.contact.email])
+                                     self.contact.email,
+                                     'new2@user.com'])
         self.data['from'] = 'non-user@good.com'
         self.data['cc'] = new_contact.email
         response = self.client.post(reverse('process_email'), self.data)
@@ -1232,20 +1245,16 @@ class EmailTests(MyPartnersTestCase):
         self.assertEqual(record.email_body, self.data['text'])
         self.assertEqual(self.data['subject'], self.data['subject'])
 
-        record = OutreachRecord.objects.get(contacts__email=new_contact.email)
-        self.assertEqual(record.email_body, self.data['text'])
-        self.assertEqual(self.data['subject'], self.data['subject'])
+        self.assertEqual(record.contacts.count(), 2)
+        self.assertTrue('new2@user.com' in record.to_emails)
 
     def test_outreach_record_with_wrong_email_domain(self):
-        new_contact = ContactFactory(partner=self.partner,
-                                     user=UserFactory(email='new@user.com'),
-                                     email='new@user.com')
         OutreachEmailDomain.objects.create(company=self.company,
                                            domain='good.com')
         self.data['to'] = ', '.join([self.full_outreach_address,
                                      self.contact.email])
         self.data['from'] = 'non-user@bad.com'
-        self.data['cc'] = new_contact.email
+        self.data['cc'] = 'new@user.com'
 
         response = self.client.post(reverse('process_email'), self.data)
 
@@ -1253,20 +1262,19 @@ class EmailTests(MyPartnersTestCase):
         self.assertEqual(len(mail.outbox), 0)
 
     def test_outreach_record_can_be_bcc(self):
-        new_contact = ContactFactory(partner=self.partner,
-                                     user=UserFactory(email='new@user.com'),
-                                     email='new@user.com')
+        record_count = OutreachRecord.objects.count()
         OutreachEmailDomain.objects.create(company=self.company,
                                            domain='good.com')
         self.data['to'] = self.contact.email
         self.data['from'] = 'non-user@good.com'
-        self.data['cc'] = new_contact.email
+        self.data['cc'] = 'new@user.com'
         self.data['envelope'] = json.dumps(
             {'to': [self.full_outreach_address]})
         response = self.client.post(reverse('process_email'), self.data)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(OutreachRecord.objects.count(), record_count + 1)
 
     def test_contact_record_and_log_creation(self):
         new_contact = ContactFactory(partner=self.partner,
@@ -1641,6 +1649,7 @@ class PartnerLibraryViewTests(PartnerLibraryTestCase):
                           partner.tags.values_list('name', flat=True))
 
 
+@freeze_time("2016-10-01 10:00:00")
 class ContactLogEntryTests(MyPartnersTestCase):
     def test_impersonation_session_logged(self):
         """

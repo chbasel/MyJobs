@@ -1,0 +1,19 @@
+<section id="save_email_search">
+  <div class="email-box">
+    <h3 class="get-email-title">Save &amp; Email this search</h3>
+  {% if company %}
+    <div id="direct_companyModule" role="menu">
+      {% include 'v2/includes/company_module.html'%}
+    </div>
+  {% endif %}
+  {% if default_jobs or featured_jobs %}
+    {% if "network" in site_tags or site_config.show_saved_search_widget %}
+        {% if site_config.use_secure_blocks %}
+            <div data-secure_block_id="saved_search"></div>
+        {% else %}
+            <div id="de-myjobs-widget"></div>
+        {% endif %}
+    {% endif %}
+  {% endif %}
+  </div><!-- email-box -->
+</section>

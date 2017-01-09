@@ -1,30 +1,23 @@
-import boto
 from datetime import date, timedelta, datetime
 from itertools import chain, izip_longest
 import json
 import logging
 import newrelic.agent
 import os
-import pysolr
 import sys
 import traceback
-from urllib2 import HTTPError, URLError
-import urlparse
-import uuid
 
 from celery import group
 from celery.task import task
 
 from django.conf import settings
 from secrets import options, housekeeping_auth
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.sitemaps import ping_google
-from django.core import mail
 from django.core.urlresolvers import reverse_lazy
 from django.template.loader import render_to_string
 from django.db.models import Q
 
-from seo.models import Company, SeoSite, BusinessUnit
+from seo.models import SeoSite, BusinessUnit
 from myjobs.models import EmailLog, User, STOP_SENDING, BAD_EMAIL
 from jira import JIRA
 from myjobs.helpers import log_to_jira
@@ -35,14 +28,11 @@ from mypartners.models import PartnerLibrary, PartnerLibrarySource
 from mypartners.helpers import get_library_partners
 import import_jobs
 from import_jobs.models import ImportRecord
+from import_jobs.mongo import jobsfs_to_mongo, seoxml_to_mongo
 from postajob.models import Job
 from registration.models import ActivationProfile
-from solr import helpers
-from solr.models import Update
-from solr.signals import object_to_dict, profileunits_to_dict
 from djcelery.models import TaskState
 import ast
-from pysolr import Solr
 from django.core.mail import send_mail
 
 
@@ -54,6 +44,14 @@ sys.path.insert(0, os.path.join(BASE_DIR))
 sys.path.insert(0, os.path.join(BASE_DIR, '../'))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 FEED_FILE_PREFIX = "dseo_feed_"
+
+MIN_EXPECTED_THROUGHPUT = 1000
+MAX_FAILURES = 15
+SOLR_TASKS = ['tasks.etl_to_solr', 'tasks.priority_etl_to_solr',
+              'tasks.task_update_solr']
+CELERY_FAILURE_STATES = ['FAILURE', 'STARTED', 'RETRY']
+TASK_ISSUES_RECIPIENTS = ["matt@apps.directemployers.org", ]
+
 
 @task(name='tasks.create_jira_ticket')
 def create_jira_ticket(summary, description, **kwargs):
@@ -166,7 +164,8 @@ def assign_ticket_to_request(key, access_request):
 
 
 @task(name='tasks.send_search_digest', ignore_result=True,
-      default_retry_delay=180, max_retries=2, bind=True)
+      default_retry_delay=180, max_retries=2, bind=True,
+      time_limit=30)
 def send_search_digest(self, search):
     """
     Task used by send_send_search_digests to send individual digest or search
@@ -179,8 +178,11 @@ def send_search_digest(self, search):
     :search: SavedSearch or SavedSearchDigest instance to be mailed
     """
     try:
+        newrelic.agent.add_custom_parameter("search", search)
         search.send_email()
-    except (ValueError, URLError, HTTPError) as e:
+    except Exception as e:
+        logger.error("Unable to send saved search for Saved Search ID: %s", search.pk)
+        logger.exception(e)
         if self.request.retries < 2:  # retry sending email twice
             raise send_search_digest.retry(arg=[search], exc=e)
 
@@ -413,7 +415,7 @@ def process_user_events(email):
     newest_log = logs[0]
 
     filter_by_event = lambda x, num = None: [log for log in logs[:num]
-                                           if log.event in x]
+                                             if log.event in x]
 
     max_errors = 3
     # The presence (and number of events) of deactivate or stop_sending
@@ -505,63 +507,6 @@ def process_batch_events():
     users.update(opt_in_myjobs=False)
 
 
-@task(name="tasks.update_solr_from_model", ignore_result=True)
-def update_solr_task(solr_location=None):
-    """
-    Deletes all items scheduled for deletion, and then adds all items
-    scheduled to be added to solr.
-
-    Inputs:
-    :solr_location: Dict of separate cores to be updated
-    """
-    if hasattr(mail, 'outbox'):
-        solr_location = settings.TEST_SOLR_INSTANCE
-    elif solr_location is None:
-        solr_location = settings.SOLR
-    objs = Update.objects.filter(delete=True).values_list('uid', flat=True)
-
-    if objs:
-        objs = split_list(objs, 1000)
-        for obj_list in objs:
-            obj_list = filter(None, list(obj_list))
-            uid_list = " OR ".join(obj_list)
-            for location in solr_location.values():
-                solr = pysolr.Solr(location)
-                solr.delete(q="uid:(%s)" % uid_list)
-        Update.objects.filter(delete=True).delete()
-
-    objs = Update.objects.filter(delete=False)
-    updates = []
-
-    for obj in objs:
-        content_type, key = obj.uid.split("##")
-        model = ContentType.objects.get_for_id(content_type).model_class()
-        if model == SavedSearch:
-            search = model.objects.get(pk=key)
-            # Saved search recipients can currently be null; Displaying these
-            # searches may be implemented in the future but will likely require
-            # some template work.
-            if search.user:
-                updates.append(object_to_dict(model, search))
-        # If the user is being updated, because the user is stored on the
-        # SavedSearch document, every SavedSearch belonging to that user
-        # also has to be updated.
-        elif model == User:
-            searches = SavedSearch.objects.filter(user_id=key)
-            [updates.append(object_to_dict(SavedSearch, s)) for s in searches]
-            updates.append(object_to_dict(model, model.objects.get(pk=key)))
-        else:
-            updates.append(profileunits_to_dict(key))
-
-    updates = split_list(updates, 1000)
-    for location in solr_location.values():
-        solr = pysolr.Solr(location)
-        for update_subset in updates:
-            update_subset = filter(None, list(update_subset))
-            solr.add(list(update_subset))
-    objs.delete()
-
-
 def split_list(l, list_len, fill_val=None):
     """
     Splits a list into sublists.
@@ -578,300 +523,6 @@ def split_list(l, list_len, fill_val=None):
     """
     args = [iter(l)] * list_len
     return izip_longest(fillvalue=fill_val, *args)
-
-
-@task(name="tasks.reindex_solr", ignore_result=True)
-def task_reindex_solr(solr_location=None):
-    """
-    Adds all ProfileUnits, Users, and SavedSearches to solr.
-
-    Inputs:
-    :solr_location: Dict of separate cores to be updated (Optional);
-        defaults to the default instance from settings
-    """
-    if solr_location is None:
-        solr_location = settings.SOLR
-    l = []
-
-    u = User.objects.all().values_list('id', flat=True)
-    for x in u:
-        l.append(profileunits_to_dict(x))
-
-    s = SavedSearch.objects.filter(user__isnull=False)
-    for x in s:
-        saved_search_dict = object_to_dict(SavedSearch, x)
-        saved_search_dict['doc_type'] = 'savedsearch'
-        l.append(saved_search_dict)
-
-    u = User.objects.all()
-    for x in u:
-        l.append(object_to_dict(User, x))
-
-    l = split_list(l, 1000)
-
-    for location in solr_location.values():
-        solr = pysolr.Solr(location)
-        for x in l:
-            x = filter(None, list(x))
-            solr.add(x)
-
-
-def parse_log(logs, solr_location):
-    """
-    Turns a list of boto keys into a list of dicts, with each dict representing
-    a line from the keys
-
-    Inputs:
-    :logs: List of logs generated by boto that reference files on s3
-        Lines in analytics logs are formatted as follows:
-            %{%Y-%m-%d %H:%M:%S}t %a %m %U %q %H %s %{Referer}i %{aguid}C
-                %{myguid}C %{user-agent}i
-        Lines in redirect logs are formatted slightly differently:
-            %{%Y-%m-%d %H:%M:%S}t %a %m %U %{X-REDIRECT}o %p %u %{X-Real-IP}i
-                %H "%{User-agent}i" %{r.my.jobs}C %{Referer}i %V %>s %O %I %D
-
-    :solr_location: Dict of separate cores to be updated (Optional);
-        defaults to the default instance from settings
-    """
-    # Logs are potentially very large. If we are going to look up the company
-    # associated with each hit, we should memoize the ids.
-    log_memo = {}
-
-    for log in logs:
-        to_solr = []
-        path = '/tmp/parse_log'
-        # Ensure local temp storage for log files exists
-        try:
-            os.mkdir(path)
-        except OSError:
-            if not os.path.isdir(path):
-                raise
-        f = open('%s/%s' % (path, uuid.uuid4().hex), 'w+')
-        try:
-            log.get_contents_to_file(f)
-            f.seek(0)
-
-            for line in f:
-                if line[0] == '#':
-                    # Logs contain a header that LogParser uses to determine
-                    # the log format; if we see this, ignore it
-                    continue
-
-                # line in f does not strip newlines if they exist
-                line = line.rstrip('\n')
-                line = line.split(' ')
-
-                # reconstruct date and time
-                line[0] = '%s %s' % (line[0], line[1])
-                # turn date and time into a datetime object
-                line[0] = datetime.strptime(line[0], '%Y-%m-%d %H:%M:%S')
-                # remove the time portion, which is now merged with the date
-                del line[1]
-
-                # reconstruct user agent
-                # and remove it from the line
-                if 'redirect' in log.key:
-                    ua = ' '.join(line[9:-7])
-                    del line[9:-7]
-                else:
-                    ua = line[8]
-                    del line[8]
-
-                if not helpers.is_bot(ua):
-                    # Only track hits that come from actual users
-                    update_dict = {
-                        'view_date': line[0],
-                        'doc_type': 'analytics',
-                    }
-
-                    # Make sure the value for a given key is only a list if
-                    # there are multiple elements
-                    qs = dict((k, v if len(v) > 1 else v[0])
-                              for k, v in urlparse.parse_qs(
-                                  line[4]).iteritems())
-
-                    if 'redirect' in log.key:
-                        aguid = qs.get('jcnlx.aguid', '')
-                        myguid = qs.get('jcnlx.myguid', '')
-                        update_dict['view_source'] = qs.get('jcnlx.vsid', 0)
-                        update_dict['job_view_buid'] = qs.get('jcnlx.buid', '0')
-
-                        # GUID is the path portion of this line, which starts
-                        # with a '/'; Remove it
-                        update_dict['job_view_guid'] = line[3][1:]
-                        update_dict['page_category'] = 'redirect'
-                        domain = qs.get('jcnlx.ref', '')
-                        domain = urlparse.urlparse(domain).netloc
-                        update_dict['domain'] = domain
-                    else:
-                        aguid = qs.get('aguid', '')
-                        myguid = qs.get('myguid', '')
-                        update_dict['view_source'] = qs.get('jvs', 0)
-                        update_dict['job_view_buid'] = qs.get('jvb', '0')
-                        update_dict['job_view_guid'] = qs.get('jvg', '')
-                        update_dict['page_category'] = qs.get('pc', '')
-
-                        # These fields are only set in analytics logs
-                        update_dict['domain'] = qs.get('d', '')
-                        update_dict['facets'] = qs.get('f', '')
-                        update_dict['job_view_title_exact'] = qs.get('jvt', '')
-                        update_dict['job_view_company_exact'] = qs.get('jvc', '')
-                        update_dict['job_view_location_exact'] = qs.get('jvl', '')
-                        update_dict['job_view_canonical_domain'] = qs.get('jvcd', '')
-                        update_dict['search_location'] = qs.get('sl', '')
-                        update_dict['search_query'] = qs.get('sq', '')
-                        update_dict['site_tag'] = qs.get('st', '')
-                        update_dict['special_commitment'] = qs.get('sc', '')
-
-                    # Handle logs containing the old aguid/myguid formats
-                    aguid = aguid.replace('{', '').replace('}', '').replace('-', '')
-                    update_dict['aguid'] = aguid
-
-                    myguid = myguid.replace('-', '')
-
-                    if myguid:
-                        try:
-                            user = User.objects.get(user_guid=myguid)
-                        except User.DoesNotExist:
-                            update_dict['User_user_guid'] = ''
-                        else:
-                            update_dict.update(object_to_dict(User, user))
-
-                    buid = update_dict['job_view_buid']
-                    domain = update_dict.get('domain', None)
-                    if not (buid in log_memo or domain in log_memo):
-                        # We haven't seen this buid or domain before
-                        if buid == '0' and domain is not None:
-                            # Retrieve company id via domain
-                            try:
-                                site = SeoSite.objects.get(domain=domain)
-                                company_id = site.business_units.values_list(
-                                    'company__pk', flat=True)[0]
-                            except (SeoSite.DoesNotExist,
-                                    IndexError):
-                                # SeoSite.DoesNotExist: Site does not exist
-                                #   with the given domain
-                                # IndexError: SeoSite exists, but is not
-                                #   associated with business units or companies
-                                company_id = 999999
-                            key = domain
-                        else:
-                            # Retrieve company id via buid
-                            try:
-                                # See if there is a company associated with it
-                                company_id = Company.objects.filter(
-                                    job_source_ids=buid)[0].pk
-                            except IndexError:
-                                # There is not; default to DirectEmployers
-                                # Association
-                                company_id = 999999
-                            key = buid
-
-                        # The defining feature of a given document will either
-                        # be the domain or the buid.
-                        # Our memoization dict will have the following structure
-                        # {str(buid): int(company_id),
-                        #  str(domain): int(company_id)}
-                        log_memo[key] = company_id
-
-                    # By this point, we are guaranteed that the correct key is
-                    # in log_memo; pull the company id from the memo dict.
-                    if domain is not None and domain in log_memo:
-                        update_dict['company_id'] = log_memo[domain]
-                    else:
-                        update_dict['company_id'] = log_memo[buid]
-
-                    update_dict['uid'] = 'analytics##%s#%s' % \
-                                         (update_dict['view_date'], aguid)
-                    to_solr.append(update_dict)
-        except Exception:
-            # There may be more logs to process, don't propagate the exception
-            pass
-        finally:
-            # remove the file from the filesystem to ensure we don't fill the
-            # drive (again)
-            f.close()
-            os.remove(f.name)
-
-        # Ensure all hits get recorded by breaking a potentially massive list
-        # down into something that solr can manage
-        subsets = split_list(to_solr, 500)
-        for location in solr_location.values():
-            solr = pysolr.Solr(location)
-            for subset in subsets:
-                try:
-                    subset = filter(None, subset)
-                    solr.add(subset)
-                except pysolr.SolrError:
-                    # There is something wrong with this chunk of data. It's
-                    # better to lose 500 documents than the entire file
-                    pass
-
-
-@task(name="tasks.delete_old_analytics_docs", ignore_result=True)
-def delete_old_analytics_docs():
-    """
-    Deletes all analytics docs from the "current" collection that are older
-    than 30 days
-    """
-    if hasattr(mail, 'outbox'):
-        solr_location = settings.TEST_SOLR_INSTANCE['current']
-    else:
-        solr_location = settings.SOLR['current']
-
-    pysolr.Solr(solr_location).delete(
-        q="doc_type:analytics AND view_date:[* TO NOW/DAY-30DAYS]")
-
-
-@task(name="tasks.update_solr_from_log", ignore_result=True)
-def read_new_logs(solr_location=None):
-    """
-    Reads new logs and stores their contents in solr
-
-    Inputs:
-    :solr_location: Dict of separate cores to be updated (Optional);
-        defaults to the default instance from settings
-    """
-    # If running tests, use test instance of local solr
-    if hasattr(mail, 'outbox'):
-        solr_location = settings.TEST_SOLR_INSTANCE
-    elif solr_location is None:
-        solr_location = settings.SOLR
-
-    conn = boto.connect_s3(aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                           aws_secret_access_key=settings.AWS_SECRET_KEY)
-    # https://github.com/boto/boto/issues/2078
-    # validate=True costs 13.5x validate=False; Skip validation if we are
-    # reasonably certain that the bucket exists.
-    log_bucket = conn.get_bucket('my-jobs-logs', validate=False)
-
-    # Sort logs into groups based on server
-    all_logs = log_bucket.list()
-    logs_by_host = {}
-    for log in all_logs:
-        # Logs are being stored with a key of host/log_type/file.log
-        key_parts = log.key.split('/')
-
-        # Since we are also storing redirect error logs, we should ensure
-        # we are only processing the logs we care about
-        if key_parts[1] in ['analytics', 'redirect']:
-            logs_by_host.setdefault(key_parts[0], []).append(log)
-
-    logs_to_process = []
-    for key in logs_by_host.keys():
-        # Files are named by date and time; the last log for each host is the
-        # last log uploaded by that host
-        logs_to_process += logs_by_host[key][-1:]
-
-    # Ensure we only process each['href'] file once
-    processed = getattr(settings, 'PROCESSED_LOGS', set())
-    unprocessed = [log for log in logs_to_process if log.key not in processed]
-
-    parse_log(unprocessed, solr_location)
-
-    settings.PROCESSED_LOGS = set([log.key for log in logs_to_process])
-
-    delete_old_analytics_docs.delay()
 
 
 @task(name='tasks.expire_jobs', ignore_result=True)
@@ -891,7 +542,7 @@ def expire_jobs():
         job.save()
 
 
-@task(name="tasks.task_clear_bu_cache", acks_late=True, ignore_results=True)
+@task(name="tasks.task_clear_bu_cache", acks_late=True, ignore_result=True)
 def task_clear_bu_cache(buid, **kwargs):
     try:
         BusinessUnit.clear_cache(buid)
@@ -925,6 +576,26 @@ def task_etl_to_solr(guid, buid, name):
         raise task_etl_to_solr.retry(exc=e)
 
 
+@task(name='tasks.jobsfs_to_mongo', ignore_result=True, send_error_emails=False)
+def task_jobsfs_to_mongo(guid, buid, name):
+    try:
+        jobsfs_to_mongo(guid, buid, name)
+    except Exception as e:
+        logging.error("Error loading mongo from jobsfs for guid: %s", guid)
+        logging.exception(e)
+        raise task_jobsfs_to_mongo.retry(exc=e)
+
+
+@task(name='tasks.seoxml_to_mongo', ignore_result=True, send_error_emails=False)
+def task_seoxml_to_mongo(buid, **kwargs):
+    try:
+        seoxml_to_mongo(buid)
+    except Exception as e:
+        logging.error("Error loading mongo from seoxml for buid: %s", buid)
+        logging.exception(e)
+        raise task_seoxml_to_mongo.retry(exc=e)
+
+
 @task(name='tasks.priority_etl_to_solr', ignore_result=True, soft_time_limit=3600)
 def task_priority_etl_to_solr(guid, buid, name):
     try:
@@ -936,21 +607,6 @@ def task_priority_etl_to_solr(guid, buid, name):
         logging.exception(e)
         ImportRecord(buid=int(buid), success=False).save()
         raise task_priority_etl_to_solr.retry(exc=e)
-
-
-@task(name="tasks.check_solr_count", send_error_emails=True)
-def task_check_solr_count(buid, count):
-    buid = int(buid)
-    conn = Solr(settings.HAYSTACK_CONNECTIONS['default']['URL'])
-    hits = conn.search(q="buid:%s" % buid, rows=1, mlt="false", facet="false").hits
-    if int(count) != int(hits):
-        logger.warn("For BUID: %s, we expected %s jobs, but have %s jobs", buid, count, hits)
-        send_mail(recipient_list=["matt@apps.directemployers.org"],
-                  from_email="solr_count_monitoring@apps.directemployers.org",
-                  subject="Buid Count for %s is incorrect." % buid,
-                  message="For BUID: %s, we expected %s jobs, but have %s jobs.  Check imports for this buid." %
-                        (buid, count, hits),
-                  fail_silently=False)
 
 
 @task(name="tasks.task_clear_solr", ignore_result=True)
@@ -1129,17 +785,64 @@ def send_event_email(email_task):
 
 
 @task(name="tasks.requeue_failures", ignore_result=True)
-def requeue_failures(hours=8):
-    period = datetime.datetime.now() - datetime.timedelta(hours=hours)
+def requeue_failures():
+    midnight = datetime.combine(date.today(), datetime.min.time())
+    five_pm = midnight - timedelta(hours=7)
 
-    failed_tasks = TaskState.objects.filter(state__in=['FAILURE', 'STARTED', 'RETRY'],
-                                            tstamp__gt=period,
-                                            name__in=['tasks.etl_to_solr',
-                                                      'tasks.priority_etl_to_solr'])
+    failed_tasks = TaskState.objects.filter(
+        state__in=CELERY_FAILURE_STATES,
+        tstamp__gt=five_pm,
+        name__in=SOLR_TASKS
+    )
+
+    failed_task_count = failed_tasks.count()
+    if failed_task_count > MAX_FAILURES:
+        send_mail(
+            recipient_list=TASK_ISSUES_RECIPIENTS,
+            from_email="solr_count_monitoring@apps.directemployers.org",
+            subject="More than %s tasks failed last night." % MAX_FAILURES,
+            message="We had %s tasks fail last night. "
+                    "Check imports and requeue as needed." % failed_task_count,
+            fail_silently=False
+        )
 
     for task in failed_tasks:
-        task_etl_to_solr.delay(*ast.literal_eval(task.args))
+        if task.name in ['tasks.etl_to_solr', 'tasks.priority_etl_to_solr']:
+            task_etl_to_solr.delay(*ast.literal_eval(task.args))
+        elif task.name in ['tasks.task_update_solr']:
+            task_update_solr.delay(*ast.literal_eval(task.args))
         print "Requeuing task with args %s" % task.args
+
+
+@task(name="tasks.check_total_throughput", ignore_result=True)
+def check_total_throughput():
+    """
+    Checks the total number of solr-related tasks successfully ran last night.
+    If the number is not greater than MIN_EXPECTED_THROUGHPUT,
+    sends an email to someone capable of looking into why the minimum number
+    of expected tasks were not processed.
+
+    """
+    midnight = datetime.combine(date.today(), datetime.min.time())
+    five_pm = midnight - timedelta(hours=7)
+
+    successful_tasks = TaskState.objects.filter(
+        tstamp__gt=five_pm,
+        name__in=SOLR_TASKS
+    ).exclude(state__in=CELERY_FAILURE_STATES)
+
+    successful_tasks_count = successful_tasks.count()
+    if successful_tasks_count <= MIN_EXPECTED_THROUGHPUT:
+        send_mail(
+            recipient_list=TASK_ISSUES_RECIPIENTS,
+            from_email="solr_count_monitoring@apps.directemployers.org",
+            subject=("Fewer than %s tasks were run last night."
+                     % MIN_EXPECTED_THROUGHPUT),
+            message=("We only ran %s tasks last night. "
+                     "Check imports and requeue as needed."
+                     % successful_tasks_count),
+            fail_silently=False
+        )
 
 
 @task(name='clean_import_records', ignore_result=True)

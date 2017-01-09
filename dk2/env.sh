@@ -11,7 +11,6 @@ dkr() {
 }
 
 dkg() {
-    echo "$@"
     dk doruncd gulp "$@"
 }
 

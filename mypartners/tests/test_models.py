@@ -8,7 +8,7 @@ from django.db import IntegrityError
 from myjobs.tests.setup import MyJobsBase
 from myjobs.models import User
 from myjobs.tests.factories import UserFactory
-from mydashboard.tests.factories import CompanyFactory
+from seo.tests.factories import CompanyFactory
 from mypartners.tests.factories import (ContactFactory, ContactRecordFactory,
                                         LocationFactory, PartnerFactory,
                                         TagFactory, PRMAttachmentFactory)

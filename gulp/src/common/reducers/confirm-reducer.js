@@ -1,5 +1,11 @@
 import {handleActions} from 'redux-actions';
 
+export const initialConfirmation = {
+  data: {
+    show: false,
+  },
+};
+
 /**
  * -This reducer is ONLY intended for use with the runConfirmInPlace method.--
  *
@@ -42,8 +48,4 @@ export default handleActions({
       },
     };
   },
-}, {
-  data: {
-    show: false,
-  },
-});
+}, initialConfirmation);

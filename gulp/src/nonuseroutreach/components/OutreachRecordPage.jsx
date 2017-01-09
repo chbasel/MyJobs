@@ -2,9 +2,6 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {Col, Row} from 'react-bootstrap';
 import OutreachRecordTable from './OutreachRecordTable';
-import {markPageLoadingAction} from '../../common/actions/loading-actions';
-import {doGetRecords} from '../actions/record-actions';
-import {setPageAction} from '../actions/navigation-actions';
 
 /* OutreachRecordPage
  * Component which encapsulates the OutreachRecordTable.
@@ -12,22 +9,14 @@ import {setPageAction} from '../actions/navigation-actions';
  * interface will grow to be something more elaborate - Edwin, 6/17/2016
  */
 class OutreachRecordPage extends React.Component {
-  componentDidMount() {
-    // update the application's state with the current page and refresh the
-    // list of outreach records
-    const {dispatch} = this.props;
-    dispatch(setPageAction('records'));
-    dispatch(markPageLoadingAction(true));
-    dispatch(doGetRecords());
-    dispatch(markPageLoadingAction(false));
-  }
-
   render() {
-    const {records} = this.props;
+    const {records, filteredRecords, filtersActive} = this.props;
     return (
       <Row>
         <Col xs={12}>
-          <OutreachRecordTable records={records} />
+          <OutreachRecordTable records={records}
+                               filteredRecords={filteredRecords}
+                               filtersActive={filtersActive} />
         </Col>
       </Row>
     );
@@ -40,8 +29,14 @@ OutreachRecordPage.propTypes = {
   records: React.PropTypes.arrayOf(
     React.PropTypes.object.isRequired,
   ).isRequired,
+  filteredRecords: React.PropTypes.arrayOf(
+    React.PropTypes.object.isRequired,
+  ),
+  filtersActive: React.PropTypes.bool.isRequired,
 };
 
 export default connect(state => ({
   records: state.records,
+  filteredRecords: state.navigation.filteredRecords,
+  filtersActive: state.navigation.filtersActive,
 }))(OutreachRecordPage);

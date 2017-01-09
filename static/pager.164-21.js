@@ -300,12 +300,12 @@ $(document).ready(function(){
 	$('div.direct_offsiteHoverDiv').each(function(){
 		$(this).attr('style', 'margin-top: -'+($(this).height()+2)+'px;');
 	});
-	
+
 	$('.direct_deBadgeLink').click(function(){
-		goalClick('/G/de-click', this.href); 
+		goalClick('/G/de-click', this.href);
 		return false;
 	});
-	
+
 	$('.direct_companyLink').click(function(){
 		goalClick('/G/career-site-click', this.href);
 		return false;

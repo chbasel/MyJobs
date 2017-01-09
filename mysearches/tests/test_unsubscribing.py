@@ -4,6 +4,8 @@ import re
 from django.core import mail
 from django.core.urlresolvers import reverse
 
+from freezegun import freeze_time
+
 from myjobs.tests.factories import UserFactory
 from myjobs.tests.setup import MyJobsBase
 from mypartners.tests.factories import PartnerFactory, ContactFactory
@@ -12,6 +14,7 @@ from mysearches.tests.factories import (
 from seo.tests.factories import CompanyFactory
 
 
+@freeze_time("2016-10-01 10:00:00")
 class UnsubscribingTests(MyJobsBase):
     def setUp(self):
         super(UnsubscribingTests, self).setUp()

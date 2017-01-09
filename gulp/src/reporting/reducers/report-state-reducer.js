@@ -113,12 +113,19 @@ export default handleActions({
 
   'SET_SIMPLE_FILTER': (state, action) => {
     const {field, item} = action.payload;
-    return withFilterDirtied(state, {
-      ...state,
-      currentFilter: {
+    let newFilter;
+    if (typeof item === 'undefined') {
+      newFilter = omit(state.currentFilter, field);
+    } else {
+      newFilter = {
         ...state.currentFilter,
         [field]: item,
-      },
+      };
+    }
+
+    return withFilterDirtied(state, {
+      ...state,
+      currentFilter: newFilter,
     });
   },
 
@@ -149,11 +156,10 @@ export default handleActions({
     const newOrFilter = lodashFilter(orFilter,
       i => !contains(removeValues, i.value));
 
-    // If the group is empty, return the filter without this key.
-    const newFilter = newOrFilter.length ? {
+    const newFilter = {
       ...currentFilter,
       [field]: newOrFilter,
-    } : omit(currentFilter, (_, k) => k === field);
+    };
 
     return withFilterDirtied(state, {
       ...state,
@@ -206,15 +212,50 @@ export default handleActions({
     }
 
     // If the group is empty, return the filter without this key.
-    const newFilter = andGroup.length > 0 ? {
+    const newFilter = {
       ...currentFilter,
       [field]: andGroup,
-    } : omit(currentFilter, (_, k) => k === field);
+    };
 
     return withFilterDirtied(state, {
       ...state,
       currentFilter: newFilter,
     });
+  },
+
+  'EMPTY_FILTER': (state, action) => {
+    const {field} = action.payload;
+    return {
+      ...state,
+      currentFilterDirty: true,
+      currentFilter: {
+        ...state.currentFilter,
+        [field]: [],
+      },
+    };
+  },
+
+  'UNLINK_FILTER': (state, action) => {
+    const {field} = action.payload;
+    return {
+      ...state,
+      currentFilterDirty: true,
+      currentFilter: {
+        ...state.currentFilter,
+        [field]: {nolink: true},
+      },
+    };
+  },
+
+  'DELETE_FILTER': (state, action) => {
+    const {field} = action.payload;
+    return {
+      ...state,
+      currentFilterDirty: true,
+      currentFilter: {
+        ...omit(state.currentFilter, field),
+      },
+    };
   },
 
   'SET_REPORT_NAME': (state, action) => {
@@ -248,7 +289,17 @@ export default handleActions({
       currentFilterDirty: false,
     };
   },
+
   'SET_VALID': (state, action) => ({...state, isValid: action.payload}),
+
+  'UPDATE_RECORD_COUNT': (state, action) => {
+    const recordCount = action.payload;
+
+    return {
+      ...state,
+      recordCount,
+    };
+  },
 }, {
   currentFilter: {},
   filterInterface: [],

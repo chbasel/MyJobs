@@ -165,8 +165,11 @@ class DateField extends React.Component {
       isHidden,
       value,
       placeholder,
+      disable,
       error,
     } = this.props;
+
+    const filteredOnChange = disable ? () => {} : onChange;
 
     let momentObject = moment(value, 'MM/DD/YYYY');
     let day;
@@ -229,7 +232,7 @@ class DateField extends React.Component {
             hidden={isHidden}
             value={value}
             placeholder={placeholder}
-            onChange={onChange}
+            onChange={filteredOnChange}
             onFocus={e => this.toggleCalendar(e, this)}
             onBlur={e => this.onInputBlur(e)}
           />
@@ -291,6 +294,10 @@ DateField.propTypes = {
   * half of them will fall after it.
   */
   pastOnly: React.PropTypes.bool,
+  /**
+   * Disable this control
+   */
+  disable: React.PropTypes.bool,
 };
 
 DateField.defaultProps = {

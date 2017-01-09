@@ -1,4 +1,6 @@
-class Api {
+import {map} from 'lodash-compat';
+
+export default class Api {
   constructor(api) {
     this.api = api;
   }
@@ -9,6 +11,10 @@ class Api {
 
   async getExistingOutreachRecords() {
     return await this.api.get('/prm/api/nonuseroutreach/records/list');
+  }
+
+  async getWorkflowStates() {
+    return await this.api.get('/prm/api/nonuseroutreach/workflowstate');
   }
 
   async createNewInbox(email) {
@@ -34,6 +40,49 @@ class Api {
     );
     return (await promise);
   }
-}
 
-export {Api as default};
+  search(instance, searchString, extraParams) {
+    return {
+      PARTNER: (s, e) => this.searchPartner(s, e),
+      CONTACT: (s, e) => this.searchContact(s, e),
+    }[instance](searchString, extraParams);
+  }
+
+  async searchPartner(searchString) {
+    const results =
+      await this.api.post('/prm/api/partner', {'q': searchString});
+    return map(results, r => ({value: r.id, display: r.name, count: r.contact_count}));
+  }
+
+  async searchContact(searchString, extraParams) {
+    const results =
+      await this.api.post('/prm/api/contact', {
+        ...extraParams,
+        'q': searchString,
+      });
+    return map(results, r => ({
+      value: r.id,
+      display: r.name,
+      partner: r.partner,
+    }));
+  }
+
+  async getOutreach(outreachId) {
+    return await this.api.get(
+      '/prm/api/nonuseroutreach/records/' + outreachId);
+  }
+
+  async getPartner(partnerId) {
+    return await this.api.get('/prm/api/partner/' + partnerId);
+  }
+
+  async getForms(outreachId) {
+    return await this.api.get('/prm/api/nonuseroutreach/forms?outreachId=' + outreachId);
+  }
+
+  async submitContactRecord(request, validateOnly) {
+    const uri = '/prm/api/nonuseroutreach/records/convert';
+    const fullUri = validateOnly ? uri + '?validate_only=1' : uri;
+    return await this.api.post(fullUri, {request: JSON.stringify(request)});
+  }
+}

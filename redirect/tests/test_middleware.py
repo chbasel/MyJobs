@@ -20,4 +20,4 @@ class MyJobsMiddlewareTests(RedirectBase):
             request = self.factory.get(path,
                                        HTTP_HOST='jcnlx.com')
             response = self.middleware.process_request(request)
-            self.assertEqual(response['Location'], 'http://my.jobs' + path)
+            self.assertEqual(response['Location'], 'https://my.jobs' + path)

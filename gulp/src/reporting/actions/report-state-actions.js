@@ -111,9 +111,41 @@ export const resetCurrentFilterDirty =
   createAction('RESET_CURRENT_FILTER_DIRTY');
 
 /**
+ * Delete an "or" or "and/or" filter.
+ *
+ * field: which filter field to operate on.
+ */
+export const deleteFilterAction = createAction('DELETE_FILTER',
+  (field) => ({field}));
+
+/**
+ * Empty an "or" or "and/or" filter.
+ *
+ * field: which filter field to operate on.
+ */
+export const emptyFilterAction = createAction('EMPTY_FILTER',
+  (field) => ({field}));
+
+
+/**
+ * Mark a filter as unlinked. i.e. untagged
+ *
+ * field: which filter field to operate on.
+ */
+export const unlinkFilterAction = createAction('UNLINK_FILTER',
+  (field) => ({field}));
+
+/**
  * Mark the report as valid or invalid, which corresponds to an
  * enabled/disabled run button, respectively.
  *
  * payload: bool, whether or not the report is valid
  */
 export const setValidAction = createAction('SET_VALID');
+
+/**
+ * Update the known record count for this report.
+ *
+ * payload: number, the new record count
+ */
+export const updateRecordCount = createAction('UPDATE_RECORD_COUNT');

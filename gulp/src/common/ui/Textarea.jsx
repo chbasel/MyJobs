@@ -4,7 +4,17 @@ import React from 'react';
  * Simple Textarea element with onChange handler
  */
 function Textarea(props) {
-  const {name, onChange, required, initial, isHidden, placeholder, autoFocus} = props;
+  const {
+    name,
+    onChange,
+    required,
+    initial,
+    isHidden,
+    placeholder,
+    autoFocus,
+    disable,
+  } = props;
+
   return (
     <textarea
       defaultValue={initial}
@@ -14,6 +24,7 @@ function Textarea(props) {
       hidden={isHidden}
       placeholder={placeholder}
       onChange={onChange}
+      disabled={disable}
       autoFocus={autoFocus}
       />
   );
@@ -47,6 +58,10 @@ Textarea.propTypes = {
    * Must this field have a value before submitting form?
    */
   required: React.PropTypes.bool,
+  /**
+   * Disable this control
+   */
+  disable: React.PropTypes.bool,
   /**
    * Should this bad boy focus, all auto like?
    */

@@ -3,6 +3,21 @@ import {pairs, merge} from 'lodash-compat/object';
 import {chunk, zipObject, zipWith} from 'lodash-compat/array';
 import {map} from 'lodash-compat/collection';
 
+export const monthsArray = [
+  {value: '1', display: 'January'},
+  {value: '2', display: 'February'},
+  {value: '3', display: 'March'},
+  {value: '4', display: 'April'},
+  {value: '5', display: 'May'},
+  {value: '6', display: 'June'},
+  {value: '7', display: 'July'},
+  {value: '8', display: 'August'},
+  {value: '9', display: 'September'},
+  {value: '10', display: 'October'},
+  {value: '11', display: 'November'},
+  {value: '12', display: 'December'},
+];
+
 function changeKey(obj, from, to) {
   return zipObject(map(pairs(obj), p => {
     const key = p[0];

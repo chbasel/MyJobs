@@ -125,7 +125,7 @@ class SiteTestCase(DirectSEOBase):
             resp = self.client.get(job['url'], HTTP_HOST=self.site.domain,
                                    follow=False)
             self.assertEqual(resp.status_code, 302)
-            expected = 'http://my.jobs/%s%d?my.jobs.site.id=%s' %\
+            expected = 'https://my.jobs/%s%d?my.jobs.site.id=%s' %\
                        (job['guid'],
                         settings.FEED_VIEW_SOURCES['json'],
                         str(self.site.pk))

@@ -4,6 +4,7 @@ import datetime
 import os
 
 from secrets import REDIRECT_STAGING, REDIRECT_QC, ARCHIVE_STAGING
+import secrets
 
 DEBUG = True
 
@@ -65,11 +66,6 @@ CACHES = {
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
-SOLR = {
-    'all': 'http://ec2-50-17-106-23.compute-1.amazonaws.com:8080/solr/profiles/',
-    'current': 'http://ec2-50-17-106-23.compute-1.amazonaws.com:8080/solr/profiles_current/',
-}
-
 AWS_STORAGE_BUCKET_NAME = 'my-jobs'
 AWS_CALLING_FORMAT = CallingFormat.SUBDOMAIN
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
@@ -108,3 +104,7 @@ EMAIL_HOST_USER = STAGING_EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = STAGING_EMAIL_HOST_PASSWORD
 
 CELERY_ALWAYS_EAGER = True
+
+setattr(secrets, 'MONGO_HOST', secrets.STAGING_MONGO_HOST)
+setattr(secrets, 'MONGO_DBNAME', secrets.STAGING_MONGO_DBNAME)
+setattr(secrets, 'MONGO_SSL', secrets.STAGING_MONGO_SSL)

@@ -9,8 +9,10 @@ from tastypie.api import Api
 from myjobs.api import UserResource, SavedSearchResource
 from seo.views.search_views import BusinessUnitAdminFilter, SeoSiteAdminFilter
 from ajax_select import urls as ajax_select_urls
+from myjobs.forms import MyJobsAdminAuthenticationForm
 
 admin.autodiscover()
+admin.site.login_form = MyJobsAdminAuthenticationForm
 
 # API Resources
 v1_api = Api(api_name='v1')
@@ -24,7 +26,6 @@ urlpatterns = patterns(
     '',
     url(r'^ajax/', include('automation.urls')),
     url('', include('myjobs.urls')),
-    url(r'^candidates/', include('mydashboard.urls')),
     url(r'^profile/', include('myprofile.urls')),
     url(r'^saved-search/', include('mysearches.urls')),
     url(r'^api/', include(v1_api.urls)),
@@ -36,6 +37,7 @@ urlpatterns = patterns(
     url(r'^posting/', include('postajob.urls')),
     url(r'^reports/', include('myreports.urls')),
     url(r'^emails/', include('myemails.urls')),
+    url(r'^analytics/', include('analytics.urls')),
 )
 
 urlpatterns += patterns(

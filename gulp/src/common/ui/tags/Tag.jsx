@@ -21,9 +21,9 @@ export function Tag(props) {
   let borderColor;
   if (highlight) {
     backgroundColor = tinycolor(hexColor)
-      .lighten(20).toHexString();
+      .lighten(10).toHexString();
     borderColor = tinycolor(hexColor)
-      .lighten(20).toHexString();
+      .lighten(5).toHexString();
   } else {
     backgroundColor = '#' + hexColor;
     borderColor = tinycolor(hexColor)

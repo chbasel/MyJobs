@@ -1,0 +1,192 @@
+{{ site_config.doc_type|safe }}
+{% load seo_extras %}
+{% load compress %}
+{% load staticfiles %}
+
+{% flatpage_site_title as site_title %}
+{% flatpage_site_description as site_description %}
+{% flatpage_site_tags as site_tags %}
+{% if flatpage %}
+    {% get_custom_page flatpage as custom_page %}
+{% endif %}
+
+<!DOCTYPE html>
+<html lang="en" prefix="fb: http://www.facebook.com/2008/fbml">
+<head>
+    <title>{% block directseo_title %}{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="msvalidate.01" content="B9E4E5CC00BB58B097061E7DBFC6FA6B" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+
+    <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
+    {% if wp_base_url %}
+    <link rel="stylesheet" href="{{wp_base_url}}/seo_base_styles.css" rel="stylesheet" type="text/css">
+    {% else %}
+        {% compress css %}
+            <link rel="stylesheet" href="{% static "bundle/seo_base_styles.css" %}" rel="stylesheet" type="text/css">
+        {% endcompress %}
+    {% endif %}
+    <link href="{{ STATIC_URL }}dotjobs/favicon.ico" rel="shortcut icon">
+
+    {% newrelic_browser_monitoring %}
+
+    {% block meta_title %}
+        <meta name="title" content="{% build_title site_title title_term location_term breadbox.company_breadcrumb.display_title results_heading %}">
+    {% endblock %}
+
+    {% block seo_description %}
+        {% if site_description %}
+            <meta name="description" content='{{site_description}} {{ site_title }}'>
+        {% else %}
+            <meta name="description" content='"Real jobs from real companies. Updated daily. Only verified, open positions at top companies. " {{ site_title }}'>
+        {% endif %}
+    {% endblock seo_description %}
+
+    {% if num_filters >= max_filter_settings %}
+        <meta name="robots" content="nofollow">
+    {% endif %}
+
+    {% block rss_feed %}{% endblock %}
+
+    {# publisher should be included on home pages only #}
+    {% block publisher %}{% endblock %}
+
+    {% block flatpage_meta %}{% endblock flatpage_meta %}
+
+    {% if site_config.meta %} {{site_config.meta|safe}} {% endif %}
+
+    {% block direct_extraMetaOpenGraph %}{% endblock %}
+
+    {% block meta_serp_schema %}{% endblock meta_serp_schema %}
+</head>
+<body {% block directseo_bodySchema %}{% endblock directseo_bodySchema %}>
+<main id="page_content">
+  <section id="main_nav" class="text-center direct_dotjobsWideHeader">
+   {% comment - need this for the topbar %} {% endcomment %}
+  </section>
+
+{% block directseo_outer_container %}
+  <section id="direct_container">
+    <div id="direct_innerContainer">
+      <section id="main_content">
+        <div class="row">
+            <article class="col-xs-12 col-md-3 col-md-offset-1">
+                <section id="brand_logo">
+                    <figure class="location-logo">
+                    {% with site_heading|cut:".jobs" as site_heading_base %}
+                      {%if site_heading_base == site_heading %}
+                        {% with site_heading|case_insensitive_cut:" Jobs" as site_heading_base2 %}
+                          {%if site_heading_base2 == site_heading %}
+                            <figcaption class="logo-text noDotJobs">
+                              <img class="logo" src="{{ STATIC_URL }}svg/dotjobs-logo.svg" id="page_logo" alt="dot jobs logo">
+                              <span class="site-name">{{site_heading}}</span>
+                            </figcaption>
+                          {% else %}
+                            <figcaption class="logo-text">
+                              <a class="location-logo-text"  href="/">
+                                <img class="logo" src="{{ STATIC_URL }}svg/dotjobs-logo.svg" id="page_logo" alt="dot jobs logo">
+                                {%if site_heading_base2 == "My"%}
+                                  <span class="site-name">Network</span>
+                                {%else%}
+                                  <span class="site-name">{{site_heading_base2}}</span>
+                                {% endif %}
+                              </a>
+                            </figcaption>
+                          {% endif %}
+                        {% endwith %}
+                      {% else %}
+                        <figcaption class="logo-text">
+                          <a class="location-logo-text"  href="/">
+                            <img class="logo" src="{{ STATIC_URL }}svg/dotjobs-logo.svg" id="page_logo" alt="dot jobs logo">
+                            <span class="site-name">{{site_heading_base}}</span>
+                          </a>
+                        </figcaption>
+                      {% endif %}
+                    {% endwith %}
+                    </figure>
+                </section>
+            </article>
+            <article class="col-xs-12 col-md-8">
+                {% if site_config.browse_moc_show %}
+                  {% include "v2/includes/search_box_vets_widget.html" %}
+                {% else %}
+                  {% include 'v2/includes/search_box_widget.html' %}
+                {% endif %}
+            </article>
+        </div>
+        <div class="row">
+            <article class="col-xs-12 col-md-3 col-md-offset-1">
+                {% block directseo_right_hand_column %}{% endblock directseo_right_hand_column %}
+            </article>
+            <article class="col-xs-12 col-md-8">
+                <section class="right-content">
+                    {% block directseo_main_content %}{% endblock %}
+                    <div id="mobile_social_media">
+                      {% include 'v2/includes/add_this.html' %}
+                    </div>
+                </section>
+            </article>
+        </div>
+    </section><!-- main_content -->
+ {% endblock directseo_outer_container %}
+
+    </div><!-- direct_innerContainer -->
+  </section><!-- direct_container -->
+<div class="clearfooter"></div>
+<div class="overlay"></div>
+</main><!-- page_content -->
+
+<section id="footer"><!--FOOTER START -->
+  <div class="container-fluid f-padding">
+    <footer class="footer text-center">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12">
+          <div class="footer-container">
+            <ul class="footer-content">
+              <li><a href="https://secure.my.jobs/about/">About</a></li>
+              <li><a href="https://secure.my.jobs/terms/">Terms</a></li>
+              <li><a href="https://secure.my.jobs/privacy/">Privacy</a></li>
+              <li><a href="https://secure.my.jobs/contact-faq/">Contact</a></li>
+              <li><a href="http://directemployers.org">Powered by Direct Employers</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</section><!--FOOTER END-->
+
+<script src="{{ STATIC_URL }}jquery-2.2.4.min.js"></script>
+<script src="{{ STATIC_URL }}jquery-ui-1.12.1.custom.min.js"></script>
+
+{% if wp_base_url %}
+  <script src="{{wp_base_url}}/seo_base_scripts.js"></script>
+{% else %}
+  {% compress js %}
+      <script src="{% static "bundle/seo_base_scripts.js" %}"></script>
+  {% endcompress %}
+{% endif %}
+
+{% if site_config.use_secure_blocks %}
+    <script>
+      var pager_num_items = {{ site_config.num_subnav_items_to_show }};
+      var parent_site_url = "{% if testing_host_prefix %}http://{% else %}https://{% endif %}{{ secure_blocks_domain.domain }}";
+      $(document).on("ready", function() {
+        load_secure_blocks(parent_site_url + '/secure-blocks/');
+      });
+    </script>
+{% endif %}
+
+{% if "network" in site_tags %}
+    <script>
+        var site_name = "{{ site_name }}";
+        var ABSOLUTE_URL = "{{ ABSOLUTE_URL }}",
+            impersonating = {% if request.impersonator %}true{% else %}false{% endif %};
+    </script>
+{% endif %}
+
+{% block ga_js %}{% include "ga.html"%}{% endblock %}
+{% block scrollJS %}{% endblock %}
+</body>
+</html>

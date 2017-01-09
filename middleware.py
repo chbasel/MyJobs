@@ -137,8 +137,16 @@ class MultiHostMiddleware:
 
         """
         host = None
+
+        # Allow for specifying a domain to use as the current site rather
+        # than using the site that matches the current domain.
+        # Intended use is for testing specific Sites/Configurations
+        # in QC/Staging.
         if request.user.is_authenticated() and request.user.is_staff:
             host = request.REQUEST.get('domain')
+            # If a user is domain switching, assume they really do know
+            # where they want to go.
+            setattr(settings, 'WILDCARD_REDIRECT', False)
 
         if host is None:
             host = request.get_host()
@@ -338,3 +346,24 @@ class ImpersonateTimeoutMiddleware(ImpersonateMiddleware):
                              self).process_request(request)
             else:
                 return redirect(reverse('impersonate-stop'))
+
+
+class SessionTimeMiddleware(object):
+    """
+    Adds a cookie that tracks the amount of time remaining in a session.
+
+    This allows us to redirect a user to the login page via JavaScript
+    if their session expires.
+
+    """
+    def process_response(self, request, response):
+        session_expiry_age = 0
+
+        if hasattr(request, 'user') and request.user.is_authenticated():
+            session_expiry_age = request.session.get_expiry_age()
+
+        if session_expiry_age and session_expiry_age > 0:
+            response.set_cookie('exp', str(session_expiry_age),
+                                expires=session_expiry_age)
+
+        return response

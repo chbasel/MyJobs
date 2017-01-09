@@ -14,13 +14,13 @@
                         <span class="no-results-term">{{ title_term }}</span><br>
                     {% endif %}
                     {% if location_term != "\*" and title_term = "\*" %}
-                        <span class="no-results-term">{{ location_term }}</span><br>  
+                        <span class="no-results-term">{{ location_term }}</span><br>
                     {% elif location_term != "\*" %}
                         in<br>
                         <span class="no-results-term">{{ location_term }}</span><br>
                     {% endif %}
             {% else %}
-                    {% blocktrans %}No results found.{% endblocktrans %}   
+                    {% blocktrans %}No results found.{% endblocktrans %}
                 </p>
             {% endif %}
             <br>
@@ -42,7 +42,7 @@
         <div id="de-myjobs-widget"></div>
     </div>
 {% endif %}
-{% else %} 
+{% else %}
     {% arrange_jobs %}
     {% with fj_len=featured_jobs|length dj_len=default_jobs|length %}
         {% if fj_len|add:dj_len > site_config.num_job_items_to_show %}
@@ -53,4 +53,3 @@
     {% endwith %}
 </div>
 {% endif %}
-

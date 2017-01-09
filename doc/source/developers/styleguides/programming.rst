@@ -158,7 +158,7 @@ Java
 ====
 Except where it conflicts with the universal styling guides, follow the Google
 Java Style Guide:
-http://google-styleguide.googlecode.com/svn/trunk/javaguide.html
+https://google.github.io/styleguide/javaguide.html
 
 
 User Interface
@@ -215,7 +215,7 @@ External Standards
 ------------------
 
 Unless otherwise noted, follow the the Google Javascript style guide:
-https://google-styleguide.googlecode.com/svn/trunk/javascriptguide.xml
+https://google.github.io/styleguide/javascriptguide.xml
 
 Object Oriented
 ---------------
@@ -244,7 +244,7 @@ External Standards
 
 Unless otherwise noted, all front end markup and css should follow the Google
 Webmaster Format:
-http://google-styleguide.googlecode.com/svn/trunk/htmlcssguide.xml
+https://google.github.io/styleguide/htmlcssguide.xml
 
 Browser Support
 ---------------

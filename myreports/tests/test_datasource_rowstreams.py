@@ -85,6 +85,18 @@ class TestDjangoRowStream(TestCase):
         self.assertEqual(['a', 'b'], row_stream.fields)
         self.assertEqual([{'a': 'aa', 'b': 'aa'}], list(row_stream))
 
+    def test_row_stream_limit_fields(self):
+        row_builder = DjangoRowBuilder([
+            DjangoField('a'),
+            DjangoField('name'),
+            DjangoField('n')])
+        row_stream = from_django(
+            row_builder,
+            MockQuerySet(),
+            values=['a', 'name'])
+        self.assertEqual(['a', 'name'], row_stream.fields)
+        self.assertEqual([{'a': 'aa', 'name': 'somename'}], list(row_stream))
+
 
 class MockCursor(object):
     @property

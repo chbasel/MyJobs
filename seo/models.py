@@ -1,6 +1,7 @@
 import operator
 from DNS import DNSError
 from boto.route53.exception import DNSServerError
+import newrelic.agent
 from slugify import slugify
 import Queue
 
@@ -19,6 +20,7 @@ from django.db.models.signals import (post_delete, pre_delete, post_save,
                                       pre_save)
 from django.db.models.fields.related import ForeignKey
 from django.dispatch import Signal, receiver
+from django.template import loader
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
@@ -454,8 +456,8 @@ class SeoSite(Site):
                                           related_name='canonical_company_for')
 
     parent_site = NonChainedForeignKey('self', blank=True, null=True,
-                                     on_delete=models.SET_NULL,
-                                     related_name='child_sites')
+                                       on_delete=models.SET_NULL,
+                                       related_name='child_sites')
 
     email_domain = models.CharField(max_length=255, default='my.jobs')
 
@@ -687,13 +689,13 @@ class Company(models.Model):
 
     prm_saved_search_sites = models.ManyToManyField('SeoSite', null=True,
                                                     blank=True)
+    password_expiration = models.BooleanField(
+        'Enforce Password Expiration', default=False)
 
     # Permissions
     app_access = models.ManyToManyField(
         'myjobs.AppAccess',
         blank=True, verbose_name="App-Level Access")
-    product_access = models.BooleanField(default=False)
-    posting_access = models.BooleanField(default=False)
     user_created = models.BooleanField(default=False)
 
     def get_seo_sites(self):
@@ -739,6 +741,11 @@ class Company(models.Model):
         """Returns a list of app access names associated with this company."""
 
         return filter(bool, self.app_access.values_list('name', flat=True))
+
+    @property
+    def activities(self):
+        return Activity.objects.select_related('app_access').filter(
+            app_access__in=self.app_access.all())
 
 
 class FeaturedCompany(models.Model):
@@ -958,15 +965,28 @@ class Configuration(models.Model):
         (9, 9),
     )
 
-    STATUS_CHOICES = (
-        (1, 'Staging'),
-        (2, 'Production'),
+    STATUS_STAGING = 1
+    STATUS_PRODUCTION = 2
+    STATUSES = {
+        STATUS_STAGING: 'Staging',
+        STATUS_PRODUCTION: 'Production',
+    }
+    STATUS_CHOICES = STATUSES.items()
+
+    HOME_ICON_NONE = 1
+    HOME_ICON_BOTTOM = 2
+    HOME_ICON_TOP = 3
+    HOME_ICON_CHOICES = (
+        (HOME_ICON_NONE, 'None'),
+        (HOME_ICON_BOTTOM, 'Bottom'),
+        (HOME_ICON_TOP, 'Top')
     )
 
-    HOME_ICON_CHOICES = (
-        (1, 'None'),
-        (2, 'Bottom'),
-        (3, 'Top')
+    TEMPLATE_V1 = 'v1'
+    TEMPLATE_V2 = 'v2'
+    TEMPLATE_VERSION_CHOICES = (
+        (TEMPLATE_V1, 'Version 1'),
+        (TEMPLATE_V2, 'Version 2'),
     )
 
     def __init__(self, *args, **kwargs):
@@ -1002,13 +1022,7 @@ class Configuration(models.Model):
         self.clear_caches([self])
 
     def status_title(self):
-        if self.status == 1:
-            status_title = 'Staging'
-        elif self.status == 2:
-            status_title = 'Production'
-        else:
-            status_title = 'Pending'
-        return status_title
+        return self.STATUSES.get(self.status, 'Pending')
 
     def __unicode__(self):
         if self.title:
@@ -1020,6 +1034,32 @@ class Configuration(models.Model):
     def show_sites(self):
         return ", ".join(self.seosite_set.all().values_list("domain",
                                                             flat=True))
+
+    def get_template(self, template_string):
+        """
+        Determine if the current configuration is set to use v2 templates,
+        and if so, check whether or not the template provided in template_string
+        exists in the v2 directory.
+
+        :param template_string: Original path of desired template
+        :return: Original path or v2 path if exists and enabled
+
+        """
+        template_version = self.TEMPLATE_V1
+
+        if self.template_version not in (self.TEMPLATE_V1, None):
+            try:
+                version_string = '%s/%s' % (self.template_version, template_string)
+                loader.get_template(version_string)
+                template_string = version_string
+                template_version = self.template_version
+            except loader.TemplateDoesNotExist:
+                pass
+
+        param = "template_version"
+        newrelic.agent.add_custom_parameter(param, template_version)
+
+        return template_string
 
     title = models.CharField(max_length=50, null=True)
     # version control
@@ -1141,8 +1181,10 @@ class Configuration(models.Model):
     revision = models.IntegerField('Revision', default=1)
 
     # home page template settings
-    home_page_template = models.CharField('Home Page Template', max_length=200,
-                                          default='home_page/home_page_listing.html')
+    home_page_template = models.CharField(
+        'Home Page Template', max_length=200,
+        default='home_page/home_page_listing.html'
+    )
     show_home_microsite_carousel = models.BooleanField('Show Microsite Carousel'
                                                        ' on Home Page',
                                                        default=False)
@@ -1157,7 +1199,8 @@ class Configuration(models.Model):
     objects = models.Manager()
     this_site = ConfigBySiteManager()
 
-    # Value from 0 to 1 showing what percent of featured jobs to display per page
+    # Value from 0 to 1 showing what percent of featured jobs to display
+    # per page
     percent_featured = models.DecimalField(
         max_digits=3, decimal_places=2,
         default=decimal.Decimal('.5'),
@@ -1173,6 +1216,9 @@ class Configuration(models.Model):
     use_secure_blocks = models.BooleanField(default=False,
                                             help_text='Use secure blocks for '
                                                       'displaying widgets.')
+
+    template_version = models.CharField(max_length=5, default='v1',
+                                        choices=TEMPLATE_VERSION_CHOICES)
 
     moc_label = models.CharField(max_length=255, blank=True)
     what_label = models.CharField(max_length=255, blank=True)

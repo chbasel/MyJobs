@@ -28,7 +28,7 @@ class WildcardMiddleware:
         if not settings.WILDCARD_REDIRECT:
             return
 
-        host =  request.get_host()
+        host = request.get_host()
         # strip the port number if present (usually because of runserver)
         if ":" in host:
             host = host.split(":")[0]
@@ -51,5 +51,9 @@ class WildcardMiddleware:
             if root_domain in settings.NEVER_REDIRECT:
                 return
             tld = host_root[-1]
-            redirect_url = "http://%s.%s" % (root_domain, tld)
+            if request.is_secure():
+                protocol = 'https'
+            else:
+                protocol = 'http'
+            redirect_url = "%s://%s.%s" % (protocol, root_domain, tld)
             return redirect(redirect_url, permanent=True)

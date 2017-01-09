@@ -1,0 +1,12 @@
+{% load seo_extras %}
+{% load i18n %}
+<h3 class="filter-accordion">{% trans "Sorted by " %}<span class="direct_highlightedText">{{ sort_order|title }}</span></h3>
+<div class="filter-panel">
+  <ul id="direct_sortOptions">
+      {% for field in sort_fields %}
+          {% if field != sort_order %}
+              {% url_for_sort_field field%}
+          {% endif %}
+      {% endfor %}
+  </ul>
+</div>

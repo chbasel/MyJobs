@@ -9,10 +9,14 @@ import {
   removeFromOrFilterAction,
   addToAndOrFilterAction,
   removeFromAndOrFilterAction,
+  deleteFilterAction,
+  emptyFilterAction,
+  unlinkFilterAction,
   setReportNameAction,
   receiveHintsAction,
   clearHintsAction,
   resetCurrentFilterDirty,
+  updateRecordCount,
 } from '../actions/report-state-actions';
 
 describe('reportStateReducer', () => {
@@ -64,6 +68,26 @@ describe('reportStateReducer', () => {
       currentFilter: {
         city: {value: 2, display: "Clay"},
       },
+      currentFilterDirty: true,
+    });
+  });
+
+  it('can update the record count', () => {
+    const action = updateRecordCount(3);
+    const result = reportStateReducer({recordCount: 0}, action);
+    expect(result).toEqual({recordCount: 3});
+  });
+
+  it('deletes simple filters set to undefined', () => {
+    const action = setSimpleFilterAction("city", undefined);
+    const result = reportStateReducer({
+      currentFilter: {
+        city: "Heresville",
+      },
+      currentFilterDirty: false,
+    }, action);
+    expect(result).toEqual({
+      currentFilter: {},
       currentFilterDirty: true,
     });
   });
@@ -189,7 +213,7 @@ describe('reportStateReducer', () => {
     });
   });
 
-  it('automatically deletes an empty or filter after remove', () => {
+  it('leaves behind an empty or filter after remove', () => {
     const action = removeFromOrFilterAction(
       "contact", [{value: 3, display: "Bob"}]);
     const result = reportStateReducer({
@@ -200,9 +224,11 @@ describe('reportStateReducer', () => {
         ],
       },
     }, action);
-    expect(result).toEqual({
+    expect(result).toDiffEqual({
       currentFilterDirty: true,
-      currentFilter: {},
+      currentFilter: {
+        "contact": [],
+      },
     });
   });
 
@@ -382,7 +408,7 @@ describe('reportStateReducer', () => {
     });
   });
 
-  it('automatically deletes an empty and/or filter after remove', () => {
+  it('leaves behind an empty and/or filter after remove', () => {
     const action = removeFromAndOrFilterAction(
       "tags", 0, [{value: 3, display: "Test"}]);
     const result = reportStateReducer({
@@ -395,9 +421,53 @@ describe('reportStateReducer', () => {
         ],
       },
     }, action);
-    expect(result).toEqual({
+    expect(result).toDiffEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "tags": [],
+      },
+    });
+  });
+
+  it('clears a filter on demand', () => {
+    const action = deleteFilterAction("tags");
+    const result = reportStateReducer({
+      currentFilterDirty: false,
+      currentFilter: {
+        "tags": [],
+      },
+    }, action);
+    expect(result).toDiffEqual({
       currentFilterDirty: true,
       currentFilter: {},
+    });
+  });
+
+  it('empties a filter', () => {
+    const action = emptyFilterAction("tags");
+    const result = reportStateReducer({
+      currentFilterDirty: false,
+      currentFilter: {},
+    }, action);
+    expect(result).toDiffEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "tags": [],
+      },
+    });
+  });
+
+  it('unlinks a filter', () => {
+    const action = unlinkFilterAction("tags");
+    const result = reportStateReducer({
+      currentFilterDirty: false,
+      currentFilter: {},
+    }, action);
+    expect(result).toDiffEqual({
+      currentFilterDirty: true,
+      currentFilter: {
+        "tags": {nolink: true},
+      },
     });
   });
 

@@ -1,0 +1,12 @@
+{% load seo_extras %}
+{% load i18n %}
+
+<div class="company-box">
+  <h3>{{company.name}}</h3>
+  <div id="direct_CompanyInfo">
+    <a class="company-logo" href="{{company.url}}" target="_blank">
+      <img src="//d2e48ltfsb5exy.cloudfront.net/100x50/logo.gif" width="100" height="50" style="background-image: url('{{company.image}}'); background-repeat: no-repeat;" alt="{{company.name}} Careers"/>
+    </a>
+    <a class="company-title" href="{{company.url}}" target="_blank">{{company.name}} Jobs</a>
+  </div>
+</div>

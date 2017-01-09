@@ -27,7 +27,7 @@ from import_jobs.solr import add_jobs, chunk, delete_by_guid
 logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.normpath(os.path.join(BASE_DIR, '../../../data/'))
+DATA_DIR = os.path.normpath('/tmp/data')
 sys.path.insert(0, os.path.join(BASE_DIR))
 sys.path.insert(0, os.path.join(BASE_DIR, '../'))
 FEED_FILE_PREFIX = "dseo_feed_"
@@ -86,11 +86,11 @@ def filter_current_jobs(jobs, bu):
 
        Returns: a generator of jobs which pass validation for indexing."""
 
-    hr_xml_include_in_index = ".//*[@schemeName='dbextras.tempjobwrappingjobs.includeinindex']"
+    hr_xml_include_in_index = "./includeinindex"
     for job in jobs:
         # Written using continues to allow easily adding multiple conditions to
         # remove jobs.
-        if bu.ignore_includeinindex is False and job.find(hr_xml_include_in_index).text == '0':
+        if bu.ignore_includeinindex is False and job.find(hr_xml_include_in_index).text != 'true':
             logger.info("A job was filtered for %s" % bu)
             continue
         yield job
@@ -107,8 +107,7 @@ def get_jobsfs_zipfile(guid):
     :return: A urllib2 Response (A filelike object)
     """
     # Download the zipfile
-    url = 'http://jobsfs.directemployers.org/%s/ActiveDirectory_%s.zip' % (
-        guid, guid)
+    url = 'http://jobsfs2.directemployers.org/%s/%s.zip' % (guid, guid)
     req = urllib2.Request(url)
     authheader = "Basic %s" % base64.encodestring(
         '%s:%s' % (settings.JOBSFS_USERNAME, settings.JOBSFS_PASSWORD))
@@ -157,7 +156,7 @@ def get_jobs_from_zipfile(zipfileobject, guid):
         zf.close()
 
     # Process the files.
-    active_directory = os.path.join(directory, 'ActiveDirectory_%s' % guid)
+    active_directory = os.path.join(directory, '%s' % guid)
     files = sorted(os.listdir(active_directory))
     logger.info("Found %s jobs for guid %s", len(files), guid)
     for f in files:

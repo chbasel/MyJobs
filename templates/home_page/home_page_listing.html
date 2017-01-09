@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block directseo_title %}
-    {{site_title}} 
+    {{site_title}}
 {% endblock directseo_title %}
 
 {% block rss_feed %}
@@ -73,12 +73,12 @@
         {{ block.super }}
     </div>
     {% endif %}
-{% endblock directseo_micrositecarousel %}  
+{% endblock directseo_micrositecarousel %}
 {% block extra-js %}
     <script type="text/javascript">
         var analytics_info = {{ analytics_info|safe }};
     </script>
-    <script id="detrack" defer src="https://d2e48ltfsb5exy.cloudfront.net/t/t.js?i=0,3"></script>
+    <script id="detrack" defer src="https://d2e48ltfsb5exy.cloudfront.net/t/t.js?i=0,3,6"></script>
 {% endblock extra-js %}
 
 {% endcache %}

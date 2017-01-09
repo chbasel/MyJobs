@@ -3,8 +3,8 @@
     {% load seo_extras %}
     {% flatpage_site_heading as site_heading %}
 {% endif %}
-{% if site_config.wide_header %} 
-    {{site_config.wide_header|safe}} 
+{% if site_config.wide_header %}
+    {{site_config.wide_header|safe}}
 {% elif 'network' in site_tags %}
 {% load seo_extras %}
 {% if site_config.use_secure_blocks %}

@@ -674,7 +674,7 @@ class ContactRecord(ArchivedModel):
                               null=True)
     subject = models.CharField(verbose_name="Subject or Topic", max_length=255,
                                blank=True, default="")
-    date_time = models.DateTimeField(verbose_name="Date & Time", blank=True)
+    date_time = models.DateTimeField(verbose_name="Date & Time")
     notes = models.TextField(max_length=1000,
                              verbose_name='Details, Notes or Transcripts',
                              blank=True, default="")
@@ -702,6 +702,25 @@ class ContactRecord(ArchivedModel):
             self.contact_phone = self.contact_phone or self.contact.phone
 
         super(ContactRecord, self).save(*args, **kwargs)
+
+    def recreate(self):
+        """
+        Becomes a new copy of the original record.
+
+        returns a reference to the original record.
+        """
+        original_record = ContactRecord.objects.get(pk=self.pk)
+        self.pk = None
+
+        new_status = self.approval_status
+        new_status.pk = None
+        new_status.save()
+        self.approval_status = new_status
+
+        self.save()
+        self.tags.add(*original_record.tags.all())
+
+        return original_record
 
     def get_record_description(self):
         """
@@ -989,7 +1008,11 @@ class OutreachRecord(models.Model):
     from_email = models.EmailField(
         max_length=255, verbose_name="Email",
         help_text="Email outreach effort sent from.")
+    to_emails = models.TextField(verbose_name="To", blank=True)
+    cc_emails = models.TextField(verbose_name="CC", blank=True)
     email_body = models.TextField()
+    # RFC 5322: subjects don't have length restrictions
+    subject = models.TextField()
     current_workflow_state = models.ForeignKey("OutreachWorkflowState")
     partners = models.ManyToManyField("Partner")
     contacts = models.ManyToManyField("Contact")

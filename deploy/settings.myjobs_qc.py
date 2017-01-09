@@ -3,7 +3,8 @@ from default_settings import *
 import datetime
 import os
 
-from secrets import REDIRECT_QC, REDIRECT_STAGING, ARCHIVE_STAGING
+from secrets import REDIRECT_QC, ARCHIVE_STAGING, REDIRECT_STAGING
+import secrets
 
 DEBUG = True
 
@@ -63,11 +64,6 @@ CACHES = {
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
-SOLR = {
-    'all': 'http://ec2-50-17-106-23.compute-1.amazonaws.com:8080/solr/profiles/',
-    'current': 'http://ec2-50-17-106-23.compute-1.amazonaws.com:8080/solr/profiles_current/',
-}
-
 AWS_STORAGE_BUCKET_NAME = 'my-jobs'
 AWS_CALLING_FORMAT = CallingFormat.SUBDOMAIN
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
@@ -111,3 +107,7 @@ LOGGING['loggers']['mypartners.views']['level'] = 'INFO'
 
 # The email host used to parse communication records
 PRM_EMAIL_HOST = 'qc.my.jobs'
+
+setattr(secrets, 'MONGO_HOST', secrets.QC_MONGO_HOST)
+setattr(secrets, 'MONGO_DBNAME', secrets.QC_MONGO_DBNAME)
+setattr(secrets, 'MONGO_SSL', secrets.QC_MONGO_SSL)

@@ -11,7 +11,6 @@
         <div id="cta-saved-search-form">Get new jobs sent directly to your inbox!</div>
         <input placeholder="Your email address" type="text" id="saved-search-email" name="saved-search-email" {% if user.email %}value="{{ user.email }}"{% endif %}>
         <div class="direct-action-btn" id="saved-search-btn"><a href="#" onclick="save_search();">Save Search to My.jobs</a></div>
-        <em class="subtext">Cancel Anytime</em>
     {% elif search %}
                 {% if not success %}
                     <p><b>This search is being sent to {{ search.email }}.</b></p>

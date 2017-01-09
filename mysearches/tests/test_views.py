@@ -1,13 +1,15 @@
 import json
 import urllib2
+
 from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.core import mail
 from django.core.urlresolvers import reverse
 
+from freezegun import freeze_time
+
 from myjobs.tests.setup import MyJobsBase
-from mydashboard.tests.factories import CompanyFactory
-from myjobs.tests.test_views import TestClient
+from seo.tests.factories import CompanyFactory
 from myjobs.tests.factories import UserFactory
 from mypartners.tests.factories import PartnerFactory, ContactFactory
 
@@ -17,6 +19,7 @@ from mysearches.tests.factories import (SavedSearchDigestFactory,
                                         PartnerSavedSearchFactory)
 
 
+@freeze_time("2016-10-01 10:00:00")
 class MySearchViewTests(MyJobsBase):
     def setUp(self):
         super(MySearchViewTests, self).setUp()
@@ -331,6 +334,14 @@ class MySearchViewTests(MyJobsBase):
         edit_url = '\\"https://secure.my.jobs%s?id=%s\\"' % (
             reverse('edit_search'), search.pk)
         self.assertTrue(edit_url in response.content)
+
+    def test_widget_with_saved_search_v2(self):
+        search = SavedSearchFactory(user=self.user)
+        response = self.client.get(reverse('saved_search_widget') +
+                                   '?url=%s&v2=1&callback=callback' % (
+                                       search.url, ))
+        response_text = '<form class=\\"enter_email\\">'
+        self.assertTrue(response_text in response.content)
 
     def test_widget_with_partner_saved_search(self):
         company = CompanyFactory()

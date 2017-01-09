@@ -129,11 +129,7 @@ def get_json(json_url):
     Outputs:
                     List of one or more Python dictionaries
     """
-    json_feed = urllib2.urlopen(json_url).read()
-    try:
-        return json.loads(json_feed)
-    except ValueError:
-        return []
+    return json.loads(urllib2.urlopen(json_url).read())
 
 
 def parse_feed(feed_url, frequency='W', num_items=100, offset=0,
@@ -164,6 +160,10 @@ def parse_feed(feed_url, frequency='W', num_items=100, offset=0,
                     Second index is the total job count
     """
     return_items = return_items or num_items
+
+    # ensure we use https for any request to redirect
+    feed_url = feed_url.replace('http://my.jobs', 'https://my.jobs')
+
     if feed_url.find('?') > -1:
         separator = '&'
     else:

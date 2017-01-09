@@ -57,7 +57,8 @@ class FacetListWidget(object):
                   'featured': 5, 'mapped_moc': 3}
 
     def __init__(self, request, site_config, _type, items, filters,
-                 offset=None, query_string=None):
+                 offset=None, query_string=None, version='v1'):
+        self.version = version
         self.request = request
         self.site_config = site_config
 
@@ -163,13 +164,17 @@ class FacetListWidget(object):
 
         if not self.show_widget():
             return
-
-        output = [self._as_ul()]
+        #Code needed for V2
+        output = [self._render_header()]
+        if self.version == 'v2':
+            output.append('<div class="filter-panel">')
+        output.append(self._as_ul())
 
         if self._has_hidden_items or self._show_more(self.items):
             more_less = self._render_more_less()
             output.append(more_less)
-
+        if self.version == 'v2':
+            output.append('</div>')
         return mark_safe('\n'.join(output))
 
     def item_name(self, item):
@@ -221,16 +226,42 @@ class FacetListWidget(object):
             "item_name": item_name,
             "item_count": item_count,
         })
+        #Code needed for v2
+        if self.version == 'v2':
+            li_item = ('<li role="menuitem" '
+                       '{% if li_class %}class="{{li_class}}"{% endif %}>'
+                       '<a href="{{ item_url }}">'
+                       '{{ item_name }}{% if item_count %} ({{ item_count }})'
+                       '{% endif %}</a></li>')
+        else:
+            li_item = ('<li role="menuitem" '
+                       '{% if li_class %}class="{{li_class}}"{% endif %}>'
+                       '<a href="{{ item_url }}">'
+                       '{{ item_name }}{% if item_count %} ({{ item_count }})'
+                       '{% endif %}</a></li>')
 
-        li_item = ('<li role="menuitem" '
-                   '{% if li_class %}class="{{li_class}}"{% endif %}>'
-                   '<a href="{{ item_url }}">'
-                   '{{ item_name }}{% if item_count %} ({{ item_count }})'
-                   '{% endif %}</a></li>')
         item_template = Template(li_item)
         href = item_template.render(item_context)
 
         return href
+
+    def _render_header(self):
+        """
+        Add Headers to the output
+
+        """
+        accordion_class = '<h3>'
+        if self.version == 'v2':
+            accordion_class = '<h3 class="filter-accordion">'
+            column_header = (accordion_class +
+                             '<span class="direct_highlightedText">%s</span></h3>')
+            column_header = column_header % self.get_title()
+        else:
+            column_header = (accordion_class +
+                             '<span class="direct_filterLabel">%s</span> '
+                             '<span class="direct_highlightedText">%s</span></h3>')
+            column_header = column_header % (_("Filter by"), self.get_title())
+        return column_header
 
     def _render_lis(self):
         """
@@ -256,16 +287,12 @@ class FacetListWidget(object):
         :return: A string containing the rendered ul.
 
         """
-        column_header = ('<h3><span class="direct_filterLabel">%s</span> '
-                         '<span class="direct_highlightedText">%s</span></h3>')
-        column_header = column_header % (_("Filter by"), self.get_title())
-
         # Javascript in pager.js uses splits that assume there are no '_'
         # characters in the type
         ul_open = '<ul role="menu" id="direct_%sDisambig">'
         ul_open = ul_open % self.selector_type
 
-        output = [column_header, ul_open]
+        output = [ul_open]
 
         list_items = self._render_lis()
         output = output + list_items
@@ -279,27 +306,50 @@ class FacetListWidget(object):
                  "More" and "Less" buttons.
 
         """
-        more_less = ('<span id="direct_moreLessLinks_%(type)sDisambig" '
-                     'data-type="%(type)s" '
-                     'class="more_less_links_container" '
-                     'data-num-items="%(num_items)s" '
-                     'data-total-items="%(total_items)s" '
-                     'data-offset="%(offset)s">'
+        if self.version == 'v2':
+            more_less = ('<span id="direct_moreLessLinks_%(type)sDisambig" '
+                         'data-type="%(type)s" '
+                         'class="more_less_links_container" '
+                         'data-num-items="%(num_items)s" '
+                         'data-total-items="%(total_items)s" '
+                         'data-offset="%(offset)s">'
 
-                     '<a class="direct_optionsMore" '
-                     'href="#" rel="nofollow">%(more)s</a>'
+                         '<a class="show-more more-less-facet-filter direct_optionsMore" '
+                         'href="#" rel="nofollow">%(more)s</a>'
 
-                     '<a class="direct_optionsLess" href="#" '
-                     'rel="nofollow">%(less)s</a>'
+                         '<a class="show-less more-less-facet-filter direct_optionsLess" href="#" '
+                         'rel="nofollow">%(less)s</a>'
 
-                     '</span>')
+                         '</span>')
 
-        more_less = more_less % dict(num_items=self.num_to_show,
-                                     type=self.selector_type,
-                                     total_items=self._num_items_rendered,
-                                     more=_("More"),
-                                     less=_("Less"),
-                                     offset=self.offset)
+            more_less = more_less % dict(num_items=self.num_to_show,
+                                         type=self.selector_type,
+                                         total_items=self._num_items_rendered,
+                                         more=_("Show More +"),
+                                         less=_("Show Less -"),
+                                         offset=self.offset)
+        else:
+            more_less = ('<span id="direct_moreLessLinks_%(type)sDisambig" '
+                         'data-type="%(type)s" '
+                         'class="more_less_links_container" '
+                         'data-num-items="%(num_items)s" '
+                         'data-total-items="%(total_items)s" '
+                         'data-offset="%(offset)s">'
+
+                         '<a class="direct_optionsMore" '
+                         'href="#" rel="nofollow">%(more)s</a>'
+
+                         '<a class="direct_optionsLess" href="#" '
+                         'rel="nofollow">%(less)s</a>'
+
+                         '</span>')
+
+            more_less = more_less % dict(num_items=self.num_to_show,
+                                         type=self.selector_type,
+                                         total_items=self._num_items_rendered,
+                                         more=_("More"),
+                                         less=_("Less"),
+                                         offset=self.offset)
         return more_less
 
     def _show_more(self, items):

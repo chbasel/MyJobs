@@ -7,12 +7,18 @@
 
 {% block directseo_css %}
 {{ block.super }}
-{% compress css %}
-  <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="{% static "custom.css" %}" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="{% static "bootstrap/bootstrap-modal.css" %}" type="text/css">
-  <link rel="stylesheet" href="{% static "postajob.css" %}" rel="stylesheet" type="text/css">
-{% endcompress %}
+{% if wp_base_url %}
+    <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="{{wp_base_url}}custom.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="{% static "bootstrap/bootstrap-modal.css" %}" type="text/css">
+    <link rel="stylesheet" href="{% static "postajob.css" %}" rel="stylesheet" type="text/css">
+{% else %}
+    {% compress css %}
+        <link rel="stylesheet" href="{% static "bootstrap-3/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="{% static "bundle/custom.css" %}" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="{% static "bootstrap/bootstrap-modal.css" %}" type="text/css">
+        <link rel="stylesheet" href="{% static "postajob.css" %}" rel="stylesheet" type="text/css">    {% endcompress %}
+{% endif %}
 {% endblock directseo_css %}
 
 {% block directseo_main_content %}
@@ -50,10 +56,12 @@
         <h2 class="top">Product Details</h2>
         <label>Site(s):</label>
         <b>{{ product.seosite|join:', ' }}</b>
-        <label>Job Limit:</label>
+        <br /><label>Job Limit:</label>
         <b>{% if product.num_jobs_allowed == 0 %}Unlimited{%else%}{{ product.num_jobs_allowed }}{%endif%}</b>
-        <label>Expires:</label>
+        <br /><label>Expires:</label>
         <b>{{ product.expiration_date }}</b>
+        <br /><label>Price:</label>
+        <b>${{ product.cost }}</b>
         <br />
         <small>Based on today's date of {% now "M j\, Y" %}</small>
     </div>

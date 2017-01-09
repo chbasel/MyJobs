@@ -18,6 +18,7 @@ import pytz
 from django.utils.safestring import mark_safe
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         Group, PermissionsMixin)
+from django.contrib.auth.hashers import check_password
 from django.contrib.sites.models import Site
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
@@ -316,6 +317,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Password Settings
     password_change = models.BooleanField(_('Password must be changed on next '
                                             'login'), default=False)
+    password_last_modified = models.DateTimeField(
+        'Last modified time for the password.',
+        null=True, blank=True, default=None,
+        help_text=_(
+            'When was the password last changed? Only used if the user is ' +
+            'associated with a company which enforces password expiration.'))
+    failed_login_count = models.IntegerField(
+        _('Failed Login Count'),
+        default=0)
 
     user_guid = models.CharField(max_length=100, db_index=True, unique=True)
 
@@ -347,6 +357,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __unicode__(self):
         return self.email
 
+    def is_last_admin(self, company):
+        return list(company.role_set.filter(name="Admin").values_list(
+            'user', flat=True)) == [self.id]
+
     natural_key = __unicode__
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -373,6 +387,12 @@ class User(AbstractBaseUser, PermissionsMixin):
                 and self.__original_password and (self.password != '')):
             self.password_change = False
 
+            # If this user has password expiration, update their last modified
+            # password timestamp and password history.
+            if self.has_password_expiration():
+                self.password_last_modified = timezone.now()
+                self.add_password_to_history(self.password)
+
         if update_fields is not None and 'is_active' in update_fields:
             if self.is_active:
                 self.deactivate_type = DEACTIVE_TYPES_AND_NONE[0]
@@ -392,6 +412,86 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         return super(User, self).delete(*args, **kwargs)
 
+    def has_password_expiration(self):
+        """
+        Is the user affected by a password expiration policy?
+
+        """
+        Company = get_model('seo', 'Company')
+        user_companies = (
+            Company.objects.filter(role__user=self)
+            .filter(password_expiration=True))
+        return user_companies.count() > 0
+
+    def add_password_to_history(self, password_hash, changed_on=None):
+        """
+        Add this new password hash to the history of known passwords.
+
+        Remove any known passwords past the history limit.
+        """
+        limit = settings.PASSWORD_HISTORY_ENTRIES
+        if changed_on is None:
+            changed_on = timezone.now()
+        UserPasswordHistory.objects.create(
+            user=self,
+            changed_on=changed_on,
+            password_hash=password_hash)
+        ordering = ['-changed_on', '-pk']
+        history = self.userpasswordhistory_set.order_by(*ordering)
+        keep_ids = [i.pk for i in history[:limit]]
+        self.userpasswordhistory_set.exclude(pk__in=keep_ids).delete()
+
+    def is_password_in_history(self, cleartext_password):
+        """
+        Check to see if this cleartext password matches any historical hashes.
+        """
+        if self.has_password_expiration():
+            return any(
+                check_password(cleartext_password, entry.password_hash)
+                for entry in self.userpasswordhistory_set.all())
+        else:
+            return False
+
+    def is_password_expired(self):
+        """
+        Is the users's password still fresh enough to use?
+
+        """
+        if (not self.has_password_expiration()):
+            return False
+
+        if (not self.password_last_modified):
+            return True
+
+        expiration_cutoff = (
+            timezone.now() -
+            datetime.timedelta(days=settings.PASSWORD_EXPIRATION_DAYS))
+
+        if (self.password_last_modified > expiration_cutoff):
+            return False
+        else:
+            return True
+
+    def is_locked_out(self):
+        """
+        Is the user's account locked such that they require a password reset?
+        """
+        limit = settings.PASSWORD_ATTEMPT_LOCKOUT
+        return self.failed_login_count >= limit
+
+    def note_failed_login(self):
+        """
+        The user failed to login: good username, bad password.
+        """
+        self.failed_login_count += 1
+        self.save()
+
+    def reset_lockout(self):
+        """
+        Reset the lockout counter.
+        """
+        self.failed_login_count = 0
+        self.save()
 
     def get_activities(self, company):
         """Returns a list of activity names associated with this user."""
@@ -784,6 +884,24 @@ class User(AbstractBaseUser, PermissionsMixin):
         group, _ = Group.objects.get_or_create(name=self.ADMIN_GROUP_NAME)
         self.groups.add(group)
 
+
+def reset_lockout(sender, user, request, **kwargs):
+    """
+    If the user logs in successfully, clear the lockout count.
+    """
+    user.reset_lockout()
+
+user_logged_in.connect(reset_lockout)
+
+
+class UserPasswordHistory(models.Model):
+    """
+    Represents a previous password used by this user.
+    """
+    user = models.ForeignKey('User')
+    changed_on = models.DateTimeField("Password change on")
+    # Field type copied from AbstractBaseUser
+    password_hash = models.CharField('Password hash', max_length=128)
 
 
 @receiver(pre_delete, sender=User, dispatch_uid='pre_delete_user')
@@ -1244,3 +1362,100 @@ def end(sender, impersonator, impersonating, request, **kwargs):
         access_request.session_finished = datetime.datetime.now()
         access_request.save()
 session_end.connect(end)
+
+
+ACTIVITIES = {
+    'NUO': [
+        ("create outreach email address", "Create new outreach inboxes"),
+        ("read outreach email address", "View existing outreach inboxes"),
+        ("delete outreach email address", "Delete existing outreach inboxes"),
+        ("update outreach email address", "Edit existing outreach inboxes"),
+    ],
+    'Posting': [
+        ("create job", "Add new jobs."),
+        ("read job", "View existing jobs."),
+        ("update job", "Edit existing jobs."),
+    ],
+    'MarketPlace': [
+        ("create product", "Add new products"),
+        ("read product", "View existing products."),
+        ("update product", "Edit existing products."),
+
+        ("create grouping", "Add new product groupings."),
+        ("read grouping", "View existing product groupings."),
+        ("update grouping", "Edit existing product groupings."),
+        ("delete grouping", "Delete existing product groupings."),
+
+        ("create purchased product", "Create new purchased products."),
+        ("read purchased product", "View existing purchased products."),
+
+        ("create purchased job", "Create new purchased jobs."),
+        ("read purchased job", "View existing purchased jobs."),
+        ("update purchased job", "Edit existing purchased jobs."),
+
+        ("read request", "View existing requests."),
+        ("update request", "Edit existing request."),
+
+        ("create offline purchase", "Add new offline purchase"),
+        ("read offline purchase", "View existing offline purchase"),
+        ("update offline purchase", "Edit existing offline purchase"),
+        ("delete offline purchase", "Delete existing offlien purchase"),
+
+        ("read invoice", "View existing invoices"),
+    ],
+    'PRM': [
+        ("create tag", "Add new tags."),
+        ("read tag", "View existing tags."),
+        ("update tag", "Edit existing tags."),
+        ("delete tag", "Remove existing tags."),
+
+        ("create contact", "Add new contacts."),
+        ("read contact", "View existing contacts."),
+        ("update contact", "Edit existing contacts."),
+        ("delete contact", "Remove existing contacts."),
+
+        ("create partner", "Add new partners."),
+        ("read partner", "View existing partners."),
+        ("update partner", "Edit existing contacts."),
+        ("delete partner", "Remove existing contacts."),
+
+        ("create communication record", "Add new communication records."),
+        ("read communication record", "View existing communication records."),
+        ("update communication record", "Edit existing communication records."),
+        ("delete communication record",
+         "Remove existing communication records."),
+
+        ("create partner saved search", "Add new patner saved searches."),
+        ("read partner saved search", "View existing partner saved searches."),
+        ("update partner saved search",
+         "Edit existing partner saved searches."),
+        ("delete partner saved search",
+         "remove existing partner saved searches."),
+    ],
+    'User Management': [
+        ("create role", "Create new roles."),
+        ("read role", "View existing roles."),
+        ("update role", "Edit existing roles."),
+        ("delete role", "Remove existing roles."),
+        ("create user", "Create new users."),
+        ("read user", "View existing users."),
+        ("update user", "Edit existing users."),
+        ("delete user", "Remove existing users."),
+    ]
+}
+
+
+def update_activities():
+    """
+    Updates AppAccess and Activity tables using the app names and
+    activity names/descriptions in the ACTIVITIES dict.
+
+    """
+    for app_name, activities in ACTIVITIES.iteritems():
+        app_access, _ = AppAccess.objects.get_or_create(name=app_name)
+
+        for name, description in activities:
+            activity, _ = Activity.objects.get_or_create(app_access=app_access,
+                                                         name=name)
+            activity.description = description
+            activity.save()

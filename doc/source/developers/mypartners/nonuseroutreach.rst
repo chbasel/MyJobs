@@ -41,21 +41,26 @@ Sample API Data Object
 .. code:: python
 
     {
-        "outreachrecord":{"pk":"101", "current_workflow_state":"33"},
+        "outreachrecord":{"pk":"1", "current_workflow_state":"47"},
 
         "partner": {"pk":"", "name":"James B", "data_source":"email", "uri":"http://www.example.com",
-        "tags":["12", "68"], "approval_status": "3"},
+        "tags":["12", "68"]},
 
-        "contact": {"pk":"", "name":"Nicole J", "email":"nicolej@test.com", "phone":"7651234123",
-        "locations":[{"pk":"", "address_line_one":"", "address_line_two":"",
+        "contacts": [{"pk":"", "name":"Nicole J", "email":"nicolej@test.com", "phone":"7651234123",
+        "location":{"pk":"", "address_line_one":"", "address_line_two":"",
         "city":"Newtoneous", "state":"AZ", "country_code":"1",
-        "label":"new place"}, {"pk":"2"}], "tags":["54", "12"], "notes": "long note left here",
-        "approval_status":"3"},
+        "label":"new place"}, "tags":["54", "12", "newone"],
+        "notes": "long note left here"}, {"pk":"", "name":"Markus Johnson",
+        "email":"markiej@test.com", "phone":"1231231234",
+        "location":{"pk":"", "address_line_one":"boopie", "address_line_two":"",
+        "city":"Blampitity", "state":"NY", "country_code":"1",
+        "label":"newish place"}, "tags":["54", "12", "newone"],
+        "notes": "another long note left here"}],
 
         "contactrecord": {"contact_type":"phone", "location":"dining hall", "length":"10:30",
         "subject":"new job", "date_time":"2016-01-01 05:10", "notes":"dude was chill",
         "job_id":"10", "job_applications":"20", "job_interviews":"10", "job_hires":"0",
-        "tags":["10", "15", "3"], "approval_status":"1a"}
+        "tags":["10", "15", "3"]}
     }
 
 Sample API Error Return Object

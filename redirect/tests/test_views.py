@@ -462,6 +462,10 @@ class ViewSourceViewTests(RedirectBase):
                         in response['Location'])
 
     def test_expired_job(self):
+        """
+        Expired jobs normally redirect to an expired job page on my.jobs. Make
+        sure that happens.
+        """
         self.redirect.expired_date = datetime.datetime.now(tz=timezone.utc)
         self.redirect.save()
 
@@ -481,6 +485,19 @@ class ViewSourceViewTests(RedirectBase):
                          'Expected three search links, found %s' % count)
         self.assertTrue(self.redirect.url in response.content)
         self.assertTrue('google-analytics' in response.content)
+
+    def test_expired_vetcentral_job(self):
+        """
+        If we receive a request with a view source of 99 (Vet Central), we
+        should always direct the user to that job even if it's expired.
+        """
+        self.redirect.expired_date = datetime.datetime.now(tz=timezone.utc)
+        self.redirect.save()
+        response = self.client.get(
+            reverse('home', args=[self.redirect_guid,
+                                  99]))
+        self.assertEqual(response.status_code, 301)
+        self.assertEqual(response['Location'], self.redirect.url)
 
     def test_expired_job_with_unicode(self):
         self.redirect.expired_date = datetime.datetime.now(tz=timezone.utc)
@@ -1300,5 +1317,5 @@ class RedirectViewTests(RedirectBase):
         response = self.client.get(path,
                                    HTTP_HOST='my.jobs', follow=True)
         self.assertEqual(response['Location'],
-                         'http://my.jobs' + path.replace('%2B', '+'))
+                         'https://my.jobs' + path.replace('%2B', '+'))
         self.assertEqual(response.status_code, 301)

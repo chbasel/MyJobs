@@ -48,6 +48,7 @@ Redirects Integrity
 Search
 ------
 
+- The second keystroke should show the autocomplete drop down list
 - Searching for a keyword returns correct results
 - Searching for a location returns correct results
 - Searching for both keyword and location returns correct results
@@ -63,6 +64,7 @@ Navigation
 - Adding a filter in the side bar works
 - Removing a filter in the side bar works
 - Active filters and search terms both show in the sidebar correctly
+- "Show More" and "Show Less" buttons should work like they're supposed to
 
 
 Secure.my.jobs

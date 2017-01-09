@@ -14,7 +14,7 @@ class MyJobsRedirectMiddleware(object):
         if host and not any(domain in host
                             for domain in settings.ALLOWED_HOSTS):
             return HttpResponsePermanentRedirect(
-                'http://my.jobs' + request.get_full_path())
+                'https://my.jobs' + request.get_full_path())
 
 
 class ExcludedViewSourceMiddleware:

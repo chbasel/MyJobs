@@ -10,6 +10,7 @@ import reportStateReducer from '../reducers/report-state-reducer';
 
 import {
   startNewReportAction,
+  updateRecordCount,
 } from '../actions/report-state-actions';
 
 import {
@@ -32,6 +33,7 @@ import {
   doReportDataRedirect,
   doDataSetMenuFill,
   getFilterValuesOnly,
+  runTrialReport,
   doUpdateFilterWithDependencies,
   doSetUpForClone,
 } from '../actions/compound-actions';
@@ -79,6 +81,7 @@ const customMatchers = {
 class FakeApi {
   getSetUpMenuChoices() {}
   runReport() {}
+  runTrialReport() {}
   refreshReport() {}
   listReports() {}
   getHelp() {}
@@ -426,6 +429,7 @@ describe('doLoadReportSetUp', () => {
     spyOn(api, 'getDefaultReportName').and.returnValue(Promise.resolve({
       name: 'thereportname',
     }));
+    spyOn(api, 'runTrialReport').and.returnValue(Promise.resolve([{}, {}]));
     await doLoadReportSetUp(7)
       (dispatch, getState, {api});
     // leave functions out of the comparison.
@@ -447,6 +451,7 @@ describe('doLoadReportSetUp', () => {
         ],
         name: 'thereportname',
       }),
+      updateRecordCount(2),
       markPageLoadingAction(false),
     ]);
   }));
@@ -468,6 +473,7 @@ describe('doLoadReportSetUp', () => {
     spyOn(api, 'getDefaultReportName').and.returnValue(Promise.resolve({
       name: 'thereportname',
     }));
+    spyOn(api, 'runTrialReport').and.returnValue(Promise.resolve([{}, {}]));
     const givenFilter = {
       date_time: ["01/01/2014", "06/01/2016"],
     };
@@ -492,6 +498,7 @@ describe('doLoadReportSetUp', () => {
         ],
         name: 'thereportname',
       }),
+      updateRecordCount(2),
       markPageLoadingAction(false),
     ]);
   }));
@@ -701,6 +708,11 @@ describe('getFilterValuesOnly', () => {
     expect(getFilterValuesOnly(filter)).toEqual(filter);
   });
 
+  it('passes through empty arrays', () => {
+    const filter = {a: []};
+    expect(getFilterValuesOnly(filter)).toEqual(filter);
+  });
+
   it('returns or filters stripped down to their values', () => {
     const filter = {a: [{value: 1}]};
     expect(getFilterValuesOnly(filter)).toEqual({a: [1]});
@@ -741,6 +753,7 @@ describe('doUpdateFilterWithDependencies end to end', () => {
           {value: 6},
         ],
       },
+      recordCount: 0,
     },
   };
 
@@ -759,6 +772,7 @@ describe('doUpdateFilterWithDependencies end to end', () => {
           return Promise.resolve([{value: 3}]);
       }
     });
+    spyOn(api, 'runTrialReport').and.returnValue(Promise.resolve([{}, {}]));
 
     store = createReduxStore(
       combineReducers({reportState: reportStateReducer}),
@@ -796,6 +810,10 @@ describe('doUpdateFilterWithDependencies end to end', () => {
     });
     expect(newReportState.currentFilterDirty).toEqual(false);
   }));
+
+  it('has the expected recordCount', promiseTest(async () => {
+    expect(newReportState.recordCount).toEqual(2);
+  }));
 });
 
 describe('doUpdateFilterWithDependencies vs clean filter', () => {
@@ -818,7 +836,38 @@ describe('doUpdateFilterWithDependencies vs clean filter', () => {
   }
 
   it('does nothing', promiseTest(async () => {
-    await doUpdateFilterWithDependencies()(dispatch, getState);
+    const api = new FakeApi();
+    await doUpdateFilterWithDependencies()(dispatch, getState, {api});
     expect(actions).toEqual([]);
+  }));
+});
+
+describe('runTrialReport', () => {
+  const filter = {
+    'locations': {city: 'Indy', state: 'IN'},
+    'contact': [
+      {value: 3},
+      {value: 4},
+    ],
+    'partner': [
+      {value: 5},
+      {value: 6},
+    ],
+  };
+  let api;
+
+  beforeEach(() => {
+    api = new FakeApi();
+  });
+
+
+  it('has a working happy path', promiseTest(async () => {
+    spyOn(api, 'runTrialReport').and.returnValue(Promise.resolve([{}, {}]));
+    const result = await runTrialReport(api, 3, filter, []);
+    expect(api.runTrialReport).toHaveBeenCalledWith(
+      3,
+      getFilterValuesOnly(filter),
+      []);
+    expect(result).toEqual([{}, {}]);
   }));
 });

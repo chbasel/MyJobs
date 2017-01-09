@@ -1,0 +1,49 @@
+{% load i18n %}
+{% load humanize %}
+{% load seo_extras %}
+
+<section id="search">
+  {% if search_url %}
+      <form id="standardSearch" class="text-center" action="{{ search_url }}">
+    {% else %}
+      <form id="standardSearch" class="text-center" action="/jobs/">
+  {% endif %}
+        <div class="search-section">
+          <div class="row">
+            <div class="col-xs-12 col-sm-3 col-md-3">
+              <span class="what-section">
+                <input title="Search Phrase" type="text" name="q" id="q" class="micrositeTitleField what" {% if title_term != "\*" %}value="{{ title_term }}"{% endif %} {% if site_config.what_placeholder %}placeholder="{{ site_config.what_placeholder }}"{% endif %} placeholder="job title, keyword, company" />
+                <i class="glyphicon glyphicon-search" aria-hidden="true"></i>
+              </span>
+            </div>
+              <div class="col-xs-12 col-sm-3 col-md-3">
+                <span class="where-section">
+                  <input title="Search Location" type="text" name="location" id="location" class="micrositeLocationField where" {% if location_term != "\*" %}value="{{ location_term }}"{% endif %} {% if site_config.where_placeholder %}placeholder="{{ site_config.where_placeholder }}"{% endif %} placeholder="city, state, country" />
+                  <i class="glyphicon glyphicon-map-marker" aria-hidden="true"></i>
+                </span>
+              </div>
+              <div class="col-xs-12 col-sm-3 col-md-3">
+                <span class="moc-section">
+                  <input title="Search MOC" type="text" name="moc" id="moc" class="micrositeMOCField moc" {% if moc_term != "\*" %}value="{{ moc_term }}"{% endif %} {% if site_config.moc_placeholder %}placeholder="{{ site_config.moc_placeholder }}"{% endif %} placeholder="military job title or code"/>
+                  <i class="glyphicon glyphicon-search" aria-hidden="true"></i>
+                  <input type="hidden" name="moc_id" id="moc_id" {% if moc_id_term != "\*" %}value="{{ moc_id_term }}"{% endif %}/>
+                </span>
+              </div>
+              <div class="col-xs-12 col-sm-3 col-md-3 text-left">
+                <span class="submit-section">
+                  <input alt="Submit Search" class="search-submit-moc" type="submit" value="Search Jobs" />
+                </span>
+              </div>
+          </div>
+        </div>
+        <div class="row breadcrumb-row">
+          <div class="col-sm-12 col-md-12">
+            <div class="breadcrumb-tags">
+              {% if breadbox.clear_breadcrumb %}
+                  {% include 'v2/includes/breadbox.html' %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </form>
+</section>

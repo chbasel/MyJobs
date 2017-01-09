@@ -1,5 +1,6 @@
 from django import forms
 from django.conf import settings
+from django.core.validators import ValidationError
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import (AuthenticationForm, PasswordResetForm,
                                        SetPasswordForm)
@@ -43,6 +44,17 @@ class CustomSetPasswordForm(SetPasswordForm):
                                         'autocomplete': 'off'},
                                         render_value=False))
 
+    def clean_new_password1(self):
+        new_password = self.cleaned_data['new_password1']
+        if self.user.is_password_in_history(new_password):
+            limit = settings.PASSWORD_HISTORY_ENTRIES
+            raise ValidationError(
+                u'The new password must be different from the ' +
+                u'previous %(count)d passwords',
+                params={'count': limit})
+        else:
+            return self.cleaned_data['new_password1']
+
     def clean(self):
         """
         Verify that the values entered into the two password fields
@@ -73,6 +85,13 @@ class CustomSetPasswordForm(SetPasswordForm):
 
         return self.cleaned_data
 
+    def save(self):
+        """
+        Reset the user's failed password count.
+        """
+        self.user.failed_login_count = 0
+        super(CustomSetPasswordForm, self).save()
+
 
 class CustomAuthForm(AuthenticationForm):
     """
@@ -101,6 +120,16 @@ class CustomAuthForm(AuthenticationForm):
     def __init__(self, request=None, *args, **kwargs):
         super(CustomAuthForm, self).__init__(request, *args, **kwargs)
         autofocus_input(self, 'username')
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        user = User.objects.get_email_owner(email=username)
+        if user and user.is_locked_out():
+            raise ValidationError(
+                'This account has been locked due to repeated login ' +
+                'failures. Please use the "lost password" link below to ' +
+                'reset your password.')
+        return username
 
     def clean(self):
         username = self.cleaned_data.get('username')

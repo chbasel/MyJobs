@@ -4,8 +4,8 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core import mail
 
-from mydashboard.tests.factories import (BusinessUnitFactory, CompanyFactory,
-                                         SeoSiteFactory)
+from seo.tests.factories import (BusinessUnitFactory, CompanyFactory,
+                                 SeoSiteFactory)
 from myjobs.models import User
 from myblocks.models import LoginBlock, raw_base_template
 from postajob.helpers import (enable_posting, enable_marketplace,
@@ -35,7 +35,7 @@ class ModelTests(MyJobsBase):
         self.user = User.objects.create(email='user@test.email')
         self.company = CompanyFactory()
         CompanyProfile.objects.create(company=self.company)
-        self.site = SeoSiteFactory()
+        self.site = SeoSiteFactory()#domain='buckconsoltants.jobs')
         self.bu = BusinessUnitFactory()
         self.site.business_units.add(self.bu)
         self.site.save()
@@ -159,21 +159,25 @@ class ModelTests(MyJobsBase):
         package.delete()
 
         package = SitePackage.objects.create(**self.site_package_data)
+        first = []
         for x in range(1000, 1003):
             site = SeoSiteFactory(id=x, domain="%s.jobs" % x)
             package.sites.add(site)
+            first.append(site.pk)
         self.assertItemsEqual(package.sites.all().values_list('id', flat=True),
-                              [1000, 1001, 1002])
+                              first)
+        second = [self.site.pk]
         for x in range(100, 103):
             site = SeoSiteFactory(id=x, domain="%s.jobs" % x)
             site.business_units.add(self.bu)
             site.save()
+            second.append(site.pk)
         # Site packages with existing sites associated with it should
         # only end up with the sites for a company.
         package.make_unique_for_company(self.company)
         self.assertEqual(self.company.site_package, package)
         self.assertItemsEqual(package.sites.all().values_list('id', flat=True),
-                              [100, 101, 102, 2])
+                              second)
 
     def create_purchased_job(self, pk=None):
         if not hasattr(self, 'package'):

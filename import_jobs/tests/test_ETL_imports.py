@@ -14,19 +14,19 @@ import transform
 utc = pytz.UTC
 
 
-class HrXmlToJsonTest(DirectSEOBase):
+class JobsFStoJsonTest(DirectSEOBase):
     fixtures = ['import_jobs_testdata.json', 'countries.json']
 
     def setUp(self):
-        super(HrXmlToJsonTest, self).setUp()
-        self.HRXML_DOC = path.join(path.dirname(__file__), 'data/hr_xml.xml')
+        super(JobsFStoJsonTest, self).setUp()
+        self.document = path.join(path.dirname(__file__), 'data/789274C9-D0AA-49D6-8257-A8E977576183.xml')
         self.bu = BusinessUnitFactory()
         import_jobs.add_company(self.bu)
 
     def test_dates_have_timezones(self):
         """Assert that dates on imports can be resolved to specifc utc times"""
 
-        with open(self.HRXML_DOC) as f:
+        with open(self.document) as f:
             etree = lxml.etree.fromstring(f.read())
 
         result = transform.hr_xml_to_json(etree, self.bu)
@@ -41,7 +41,7 @@ class HrXmlToJsonTest(DirectSEOBase):
 
         # Assert the datetime is correct when converted to UTC.
         actual_utc = date_updated.astimezone(pytz.UTC)
-        expected = datetime.datetime(2015, 12, 23, 06, 48, 11, 533000, pytz.UTC)
+        expected = datetime.datetime(2016, 01, 27, 20, 57, 03, 997000, pytz.UTC)
         self.assertEqual(actual_utc, expected,
             msg="date_updated is '%s', it should equal '%s'" % (
                 date_updated.astimezone(pytz.UTC),
@@ -57,7 +57,7 @@ class HrXmlToJsonTest(DirectSEOBase):
 
         # Assert the datetime is correct when converted to UTC.
         actual_utc = date_new.astimezone(pytz.UTC)
-        expected = datetime.datetime(2015, 11, 01, 05, 48, 11, 0, pytz.UTC)
+        expected = datetime.datetime(2016, 01, 27, 20, 57, 03, 997000, pytz.UTC)
         self.assertEqual(actual_utc, expected,
             msg="date_new is '%s', it should equal '%s'" % (
                 date_new.astimezone(pytz.UTC),

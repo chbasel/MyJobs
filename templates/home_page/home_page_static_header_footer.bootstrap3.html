@@ -1,0 +1,5 @@
+{% extends "seo_base_bootstrap3.html" %}
+
+{% block directseo_main_content%}
+    {% if site_config.body %} {{site_config.body|safe}} {% endif %}
+{% endblock %}

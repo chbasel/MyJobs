@@ -1,2 +1,2 @@
-BUID,View Source,Action Type,Action,Value 1,Value 2
-1,1,1,switchlastinstance,/job,/apply
+BUID,View Source,View Source Name,Action Type,Action,Value 1,Value 2
+1,1,,1,switchlastinstance,/job,/apply

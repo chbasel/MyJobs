@@ -13,39 +13,43 @@ from validate_email import validate_email
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.contenttypes.models import ContentType
-from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.core.validators import EmailValidator
-from django.core.exceptions import ValidationError
+from django.db.models import Q, Count
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.http import (Http404, HttpResponse, HttpResponseRedirect,
-                        HttpResponseNotAllowed, HttpResponseBadRequest)
+                         HttpResponseNotAllowed)
 from django.core.urlresolvers import reverse
 from django.utils.html import strip_tags
 from django.utils.text import force_text
 from django.utils.timezone import localtime, now
 from django.utils.datastructures import SortedDict
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django_remote_forms.forms import RemoteForm
 from urllib2 import HTTPError
 
 from email_parser import build_email_dicts, get_datetime_from_str
 import newrelic.agent
 from universal.helpers import (get_company_or_404, get_int_or_none,
                                add_pagination, get_object_or_none)
-from universal.decorators import warn_when_inactive, restrict_to_staff
-from universal.api_validation import MultiFormApiValidator
+from universal.decorators import warn_when_inactive
+from universal.api_validation import FormsApiValidator
 from myjobs.models import User
 
 from myjobs.decorators import requires
+from myjobs.models import MissingActivity
 from mysearches.models import PartnerSavedSearch
 from mysearches.helpers import get_interval_from_frequency
 from mysearches.forms import PartnerSavedSearchForm
 from mypartners.forms import (PartnerForm, ContactForm,
                               NewPartnerForm, ContactRecordForm, TagForm,
-                              LocationForm)
+                              LocationForm, NuoPartnerForm, NuoContactForm,
+                              NuoLocationForm, NuoCommunicationRecordForm,
+                              NuoOutreachRecordForm, NuoContactAppendNotesForm)
 from mypartners.models import (Partner, Contact, ContactRecord,
                                PRMAttachment, ContactLogEntry, Tag,
                                CONTACT_TYPE_CHOICES, ADDITION, DELETION,
@@ -1244,21 +1248,27 @@ def process_email(request):
     logger.info("unmatched_contacts: {contacts}".format(contacts=", ".join(
                 unmatched_contacts)))
 
-    attachments, error = make_attachments(request, contact_emails, admin_email)
-    if error is not None:
-        return error
-    created_records, attachment_failures, error = make_records(
-        request, date_time, possible_contacts, created_contacts,
-        contact_emails, admin_email, admin_user, subject, email_text,
-        attachments, NUO_HOSTS)
-    if error is not None:
-        return error
-    send_contact_record_email_response(created_records, created_contacts,
-                                       attachment_failures, unmatched_contacts,
-                                       None, admin_email,
-                                       is_nuo=not bool(admin_user),
-                                       company=company,
-                                       buckets=NUO_LOCAL)
+    attachment_failures = []
+    if is_nuo:
+        created_records = make_outreach_records(
+            possible_contacts, created_contacts, admin_email, to, cc, subject,
+            email_text, NUO_HOSTS, partners)
+    else:
+        attachments, error = make_attachments(request, contact_emails,
+                                              admin_email)
+        if error is not None:
+            return error
+        (created_records, attachment_failures,
+         error) = make_communication_records(
+            request, date_time, possible_contacts, created_contacts,
+            contact_emails, admin_email, admin_user, subject, email_text,
+            attachments)
+        if error is not None:
+            return error
+    send_contact_record_email_response(
+        created_records, created_contacts, attachment_failures,
+        unmatched_contacts, None, admin_email, is_nuo=not bool(admin_user),
+        company=company, buckets=NUO_LOCAL)
     return HttpResponse(status=200)
 
 
@@ -1600,9 +1610,27 @@ def make_attachments(request, contact_emails, admin_email):
     return attachments, None
 
 
-def make_records(request, date_time, possible_contacts, created_contacts,
-                 contact_emails, admin_email, admin_user, subject, email_text,
-                 attachments, nuo_hosts):
+def make_outreach_records(possible_contacts, created_contacts, admin_email,
+                          to, cc, subject, email_text, nuo_hosts, partners):
+    contacts = possible_contacts + created_contacts
+    workflow_state, _ = OutreachWorkflowState.objects.get_or_create(
+        state='New')
+    records = []
+    for email in nuo_hosts:
+        record = OutreachRecord.objects.create(
+            outreach_email=email, from_email=admin_email,
+            email_body=email_text, subject=subject,
+            current_workflow_state=workflow_state,
+            to_emails=to, cc_emails=cc)
+        record.partners = partners
+        record.contacts = contacts
+        records.append(record)
+    return records
+
+
+def make_communication_records(request, date_time, possible_contacts,
+                               created_contacts, contact_emails, admin_email,
+                               admin_user, subject, email_text, attachments):
     """
     Creates communication/outreach records as appropriate from the information
     provided.
@@ -1639,49 +1667,36 @@ def make_records(request, date_time, possible_contacts, created_contacts,
         return None, None, HttpResponse(200)
 
     for contact in all_contacts:
-        if admin_user:
-            change_msg = "Email was sent by %s to %s" % \
-                         (admin_user.get_full_name(), contact.name)
-            record = ContactRecord.objects.create(partner=contact.partner,
-                                                  contact_type='email',
-                                                  contact=contact,
-                                                  contact_email=contact.email,
-                                                  contact_phone=contact.phone,
-                                                  created_by=admin_user,
-                                                  date_time=date_time,
-                                                  subject=subject,
-                                                  notes=force_text(email_text))
-            try:
-                for attachment in attachments:
-                    prm_attachment = PRMAttachment()
-                    prm_attachment.attachment = attachment
-                    prm_attachment.contact_record = record
-                    prm_attachment._partner = contact.partner
-                    prm_attachment.save()
-                    # The file pointer for this attachment is now at the end of
-                    # the file; reset it to the beginning for future use.
-                    attachment.seek(0)
-            except AttributeError:
-                attachment_failures.append(record)
-            log_change(record, None, admin_user, contact.partner, contact.name,
-                       action_type=ADDITION, change_msg=change_msg,
-                       impersonator=request.impersonator)
-            created_records.append(record)
-        else:
-            workflow_state, _ = OutreachWorkflowState.objects.get_or_create(
-                state='new')
-            for email in nuo_hosts:
-                record = OutreachRecord.objects.create(
-                    outreach_email=email, from_email=admin_email,
-                    email_body=email_text,
-                    current_workflow_state=workflow_state)
-                record.partners.add(contact.partner)
-                record.contacts.add(contact)
-                created_records.append(record)
+        change_msg = "Email was sent by %s to %s" % \
+                     (admin_user.get_full_name(), contact.name)
+        record = ContactRecord.objects.create(partner=contact.partner,
+                                              contact_type='email',
+                                              contact=contact,
+                                              contact_email=contact.email,
+                                              contact_phone=contact.phone,
+                                              created_by=admin_user,
+                                              date_time=date_time,
+                                              subject=subject,
+                                              notes=force_text(email_text))
+        try:
+            for attachment in attachments:
+                prm_attachment = PRMAttachment()
+                prm_attachment.attachment = attachment
+                prm_attachment.contact_record = record
+                prm_attachment._partner = contact.partner
+                prm_attachment.save()
+                # The file pointer for this attachment is now at the end of
+                # the file; reset it to the beginning for future use.
+                attachment.seek(0)
+        except AttributeError:
+            attachment_failures.append(record)
+        log_change(record, None, admin_user, contact.partner, contact.name,
+                   action_type=ADDITION, change_msg=change_msg,
+                   impersonator=request.impersonator)
+        created_records.append(record)
     return created_records, attachment_failures, None
 
 
-@restrict_to_staff()
 @requires("read outreach email address")
 def nuo_main(request):
     """
@@ -1696,7 +1711,6 @@ def nuo_main(request):
                               RequestContext(request))
 
 
-@restrict_to_staff()
 @requires("read outreach email address")
 def api_get_nuo_inbox_list(request):
     """
@@ -1715,7 +1729,6 @@ def api_get_nuo_inbox_list(request):
             list(inboxes)), content_type='application/json; charset=utf-8')
 
 
-@restrict_to_staff()
 @requires("create outreach email address")
 def api_add_nuo_inbox(request):
     """
@@ -1736,7 +1749,6 @@ def api_add_nuo_inbox(request):
                         content_type='application/json; charset=utf-8')
 
 
-@restrict_to_staff()
 @requires("delete outreach email address")
 def api_delete_nuo_inbox(request):
     """
@@ -1757,7 +1769,6 @@ def api_delete_nuo_inbox(request):
     return HttpResponse(json.dumps(ctx),
                         content_type='application/json; charset=utf-8')
 
-@restrict_to_staff()
 @requires("update outreach email address")
 def api_update_nuo_inbox(request):
     if not request.method == "POST":
@@ -1775,7 +1786,6 @@ def api_update_nuo_inbox(request):
                         content_type='application/json; charset=utf-8')
 
 
-@restrict_to_staff()
 @requires("read outreach record")
 def api_get_nuo_records_list(request):
     """
@@ -1793,13 +1803,14 @@ def api_get_nuo_records_list(request):
         'outreachEmail': record.outreach_email.email + '@my.jobs',
         'fromEmail': record.from_email,
         'currentWorkflowState': record.current_workflow_state.state,
+        'id': record.id,
     } for record in records]
 
     return HttpResponse(json.dumps(json_res), mimetype='application/json')
 
-@restrict_to_staff()
+
 @requires("read outreach record")
-def api_get_individual_nuo_record(request):
+def api_get_individual_nuo_record(request, record_id=None):
     """
     GET /prm/api/nonuseroutreach/records/record
 
@@ -1807,27 +1818,100 @@ def api_get_individual_nuo_record(request):
 
     """
     company = get_company_or_404(request)
-    record_id = request.GET.get('record_id', None)
     if not record_id:
         raise Http404("No record id provided")
     outreach_emails = OutreachEmailAddress.objects.filter(company=company)
     try:
         record = OutreachRecord.objects.get(outreach_email__in=outreach_emails,
                                             pk=record_id)
-        json_obj = dict(
-            date_added = record.date_added.strftime('%m-%d-%Y'),
-            outreach_email = record.outreach_email.email + '@my.jobs',
-            from_email = record.from_email,
-            email_body = record.email_body,
-            current_workflow_state = record.current_workflow_state.state,
-        )
+        json_obj = {
+            "date_added": record.date_added.strftime('%m-%d-%Y'),
+            "outreach_email": record.outreach_email.email + '@my.jobs',
+            "from_email": record.from_email,
+            "subject": record.subject,
+            "email_body": record.email_body,
+            "current_workflow_state": record.current_workflow_state.state,
+            "to_emails": record.to_emails,
+            "cc_emails": record.cc_emails,
+        }
     except OutreachRecord.DoesNotExist:
         json_obj = {}
 
     return HttpResponse(json.dumps(json_obj), mimetype='application/json')
 
+
+def build_contact_forms(company, form_data):
+    if form_data is None:
+        contact_data = None
+        location_data = None
+    else:
+        contact_data = {}
+        location_data = dict(form_data)
+        for field in NuoContactForm.Meta.fields:
+            if field in location_data:
+                contact_data[field] = location_data.pop(field)
+    return {
+        'contact': NuoContactForm(contact_data, company=company),
+        'location': NuoLocationForm(location_data),
+    }
+
+
+def merge_contact_forms(contact_forms, company):
+    if 'contact' in contact_forms:
+        contact_remote_form = RemoteForm(contact_forms['contact']).as_dict()
+    else:
+        contact_remote_form = RemoteForm(
+            NuoContactForm(company=company)).as_dict()
+
+    if 'location' in contact_forms:
+        location_remote_form = RemoteForm(contact_forms['location']).as_dict()
+    else:
+        location_remote_form = RemoteForm(NuoLocationForm()).as_dict()
+
+    combined_order = []
+    combined_order.extend(contact_remote_form['ordered_fields'])
+    combined_order.extend(location_remote_form['ordered_fields'])
+    combined_order.remove('notes')
+    combined_order.append('notes')
+    combined_fields = contact_remote_form['fields'].copy()
+    combined_fields.update(location_remote_form['fields'])
+    combined_data = contact_remote_form['data'].copy()
+    combined_data.update(location_remote_form['data'])
+    combined_errors = contact_remote_form['errors'].copy()
+    combined_errors.update(location_remote_form['errors'])
+    return {
+        'fields': combined_fields,
+        'ordered_fields': combined_order,
+        'data': combined_data,
+        'errors': combined_errors,
+    }
+
+
+@requires("convert outreach record")
+def api_get_nuo_forms(request):
+    company = get_company_or_404(request)
+    outreach_pk = request.GET.get('outreachId', None)
+    outreach_instance = OutreachRecord.objects.get(pk=outreach_pk)
+
+    forms = {
+        'partner': NuoPartnerForm(company=company),
+        'communication_record': NuoCommunicationRecordForm(company=company),
+        'outreach_record': NuoOutreachRecordForm(instance=outreach_instance),
+    }
+
+    payload = {
+        k: RemoteForm(f).as_dict()
+        for (k, f) in forms.iteritems()
+    }
+
+    contact_forms = build_contact_forms(company, None)
+    contact_payload = merge_contact_forms(contact_forms, company)
+    payload['contact'] = contact_payload
+
+    return HttpResponse(json.dumps(payload), mimetype='application/json')
+
+
 @csrf_exempt
-@restrict_to_staff()
 @requires("convert outreach record")
 def api_convert_outreach_record(request):
     """
@@ -1842,232 +1926,344 @@ def api_convert_outreach_record(request):
     object would be populated, ex. {... contact:{pk:"12"} ...}
 
     {
-        "outreachrecord":{"pk":"101", "current_workflow_state":"33"},
-
-        "partner": {"pk":"", "name":"James B", "data_source":"email", "uri":"http://www.example.com",
-        "tags":["12", "68"], "approval_status": "3"},
-
-        "contact": {"pk":"", "name":"Nicole J", "email":"nicolej@test.com", "phone":"7651234123",
-        "locations":[{"pk":"", "address_line_one":"", "address_line_two":"",
-        "city":"Newtoneous", "state":"AZ", "country_code":"1",
-        "label":"new place"}, {"pk":"2"}], "tags":["54", "12"], "notes": "long note left here",
-        "approval_status":"3"},
-
-        "contactrecord": {"contact_type":"phone", "location":"dining hall", "length":"10:30",
-        "subject":"new job", "date_time":"2016-01-01 05:10", "notes":"dude was chill",
-        "job_id":"10", "job_applications":"20", "job_interviews":"10", "job_hires":"0",
-        "tags":["10", "15", "3"], "approval_status":"1a"}
+        "outreachrecord": {
+            "pk": "101",
+            "current_workflow_state": "33"
+        },
+        "partner": {
+            "pk": "",
+            "name": "James B",
+            "data_source": "email",
+            "uri": "http://www.example.com",
+            "tags": [
+                "12",
+                "68"
+            ]
+        },
+        "contacts": [
+            {
+                "pk": "",
+                "name": "Nicole J",
+                "email": "nicolej@test.com",
+                "phone": "7651234123",
+                "location": {
+                    "pk": "",
+                    "address_line_one": "",
+                    "address_line_two": "",
+                    "city": "Newtoneous",
+                    "state": "AZ",
+                    "country_code": "1",
+                    "label": "new place"
+                },
+                "tags": [
+                    "54",
+                    "12",
+                    "newone"
+                ],
+                "notes": "long note left here"
+            },
+            {
+                "pk": "",
+                "name": "Markus Johnson",
+                "email": "markiej@test.com",
+                "phone": "1231231234",
+                "location": {
+                    "pk": "",
+                    "address_line_one": "boopie",
+                    "address_line_two": "",
+                    "city": "Blampitity",
+                    "state": "NY",
+                    "country_code": "1",
+                    "label": "newish place"
+                },
+                "tags": [
+                    "54",
+                    "12",
+                    "newone"
+                ],
+                "notes": "another long note left here"
+            }
+        ],
+        "contactrecord": {
+            "contact_type": "phone",
+            "location": "dining hall",
+            "length": "10:30",
+            "subject": "new job",
+            "date_time": "2016-01-01 05:10",
+            "notes": "dude was chill",
+            "job_id": "10",
+            "job_applications": "20",
+            "job_interviews": "10",
+            "job_hires": "0",
+            "tags": [
+                "10",
+                "15",
+                "3"
+            ]
+        }
     }
 
     :return: status code 200 on success, 400, 405 indicates error
 
     """
-    def add_tags_to_object(tagged_object, tags_list):
-        """
-        add tags from list of tags to the object
+    def create_tags(new_tags, company, user):
+        result = {}
+        for tag_name in new_tags.keys():
+            tag = Tag(name=tag_name, company=company, created_by=user)
+            tag.save()
+            result[tag_name] = tag
+        return result
 
-        :param tagged_object: object to add tags
-        :param tags_list: list of tag PKs
-        :return: None
-
-        """
-        try:
-            tags = Tag.objects.filter(pk__in=tags_list)
-            tagged_object.tags.add(*list(tags))
-        except ValueError as ve:
-            validator.form_field_error(tagged_object.__class__.__name__.lower(),
-                                       'tags', 'invalid pk provided for tag')
-
-    def return_or_create_object(target_model, object_pk, data_dict={},
-                                parent_field=None):
-        """
-        retrieve or create an object based on the inputs. if pk provided,
-        retrieve an object. else, use data_dict to create the object and
-        return it. if the object being returned is the child of a field (ex.
-        contact's location, partner's tag) then the parent field is supplied.
-        this function also checks if an approval status id exists in
-        and swaps it with the corresponding object within the data dictionary
-
-        :param target_model: model for use to create or retrieve object
-        :param object_pk: pk of existing object
-        :param data_dict: data to generate new object
-        :param parent_field: object is child of field, ex. partner's tag
-        :return: existing or newly created object
-
-        """
-        return_object = None
-        field_name = parent_field or target_model.__name__.lower()
-        if data_dict.get('approval_status'):
-            try:
-                approval = Status(code=data_dict['approval_status'],
-                                  approved_by=request.user)
-                data_dict['approval_status'] = approval
-            except ValueError:
-                validator.form_field_error(field_name,
-                                           'approval_status',
-                                           'approval status %s invalid' % object_pk)
-
-        if object_pk:
-            try:
-                return_object = target_model.objects.get(pk=object_pk)
-            except target_model.DoesNotExist:
-                validator.form_error(field_name,
-                                     'object not found for PK %s' % object_pk)
-            except ValueError:
-                validator.form_error(field_name,
-                                     '%s is not a valid pk' % object_pk)
-        else:
-            try:
-                return_object = target_model(**data_dict)
-                return_object.full_clean()
-            except ValidationError as ve:
-                for key, value in ve.message_dict.iteritems():
-                    validator.form_field_error(field_name,
-                                               key, value)
-            except TypeError as te:
-                validator.form_error(field_name,
-                                     "erroneous field detected in data dict")
-                return None
-
-        return return_object
+    def attach_new_tags(new_tags, created_tags, index, instance):
+        for tag_name, indicies in new_tags.iteritems():
+            for target_index in indicies:
+                if index == target_index:
+                    tag = created_tags[tag_name]
+                    instance.tags.add(tag)
 
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
     user_company = get_company_or_404(request)
-    data_object = request.body
-    valid_keys = ['outreachrecord', 'contactrecord', 'contact', 'partner']
-    validator = MultiFormApiValidator(valid_keys)
+    request_data = request.POST.get('request', '{}')
+    validate_only = request.GET.get('validate_only', 0)
 
-    if not data_object:
-        validator.api_error('data object not provided')
-        return validator.build_error_response()
+    api_errors = []
+
+    if not request_data or request_data == '{}':
+        api_errors.append('data object not provided')
+        return HttpResponse(json.dumps({
+            'api_errors': api_errors}), status=400)
 
     try:
-        data_object = json.loads(data_object)
+        request_object = json.loads(request_data)
     except (TypeError, ValueError):
-        validator.api_error('data object not formatted for JSON')
-        return validator.build_error_response()
+        api_errors.append('data object not formatted for JSON')
+        return HttpResponse(json.dumps({
+            'api_errors': api_errors}), status=400)
+
+    if 'data' not in request_object:
+        api_errors.append('data key missing')
+        return HttpResponse(json.dumps({
+            'api_errors': api_errors}), status=400)
+
+    data_object = request_object['data']
+    new_tags = request_object.get('new_tags', {})
+
+    valid_keys = {
+        'outreach_record',
+        'partner',
+        'communication_record',
+        'contacts',
+    }
 
     # verify that data object has correct keys, no additional keys and
     # that the value is a dict
-    for key, value in data_object.iteritems():
-        try:
-            index_of_key = valid_keys.index(key)
-        except ValueError:
-            index_of_key = None
+    extra_keys = set(data_object.keys()) - valid_keys
+    missing_keys = valid_keys - set(data_object.keys())
 
-        if index_of_key is None:
-            validator.api_error('%s is an invalid key' % key)
-            continue
-        valid_keys.pop(index_of_key)
-        if not isinstance(value, dict):
-            validator.api_error('error in key %s, expected dict, got %s.'
-                                % (key, type(value)))
+    if extra_keys:
+        for key in extra_keys:
+            api_errors.append('%s is an invalid key' % key)
 
-    # if any keys remain in the list, they were not in the data dict.
-    if valid_keys:
-        validator.api_error('object missing keys %s' % ', '.join(valid_keys))
+    # When validating, we may not have all the data yet.
+    if not validate_only:
+        if missing_keys:
+            api_errors.append(
+                'object missing keys %s' % ', '.join(missing_keys))
 
     # if there are any errors at this point, end processing
-    if validator.api_errors:
-        return validator.build_error_response()
-
+    if api_errors:
+        return HttpResponse(json.dumps({
+            'api_errors': api_errors}), status=400)
 
     # pull outreach record, validate it belongs to member's company
-    outreach_pk = data_object['outreachrecord'].get('pk', None)
-    workflow_pk = data_object['outreachrecord'].get('current_workflow_state',
-                                                    None)
-    try:
-        outreach_record = OutreachRecord.objects.get(
-            pk=outreach_pk, outreach_email__company=user_company
-        )
-    except OutreachRecord.DoesNotExist:
-        validator.form_error('outreachrecord', "invalid outreach record pk")
+    outreach_data = data_object['outreach_record']
+    outreach_pk = outreach_data.pop('pk', None)
+    outreach = OutreachRecord.objects.get(pk=outreach_pk)
+    outreach_form = NuoOutreachRecordForm(outreach_data, instance=outreach)
 
-    try:
-        workflow_status = OutreachWorkflowState.objects.get(pk=workflow_pk)
-    except OutreachWorkflowState.DoesNotExist:
-        validator.form_error('outreachrecord', "invalid outreach workflow pk")
+    contacts_data = data_object['contacts']
+    contact_results = []
+    for contact_data in contacts_data:
+        contact_pk = contact_data.pop('pk', None)
+        create_contact = request.user.can(user_company, "create contact")
+        if contact_pk:
+            contact = Contact.objects.get(
+                pk=contact_pk,
+                partner__owner=user_company)
+            if 'notes' in contact_data and contact_data['notes']:
+                notes_appended = {
+                    'notes': '\n'.join([contact.notes, contact_data['notes']]),
+                }
+                contact_forms = {
+                    'contact': NuoContactAppendNotesForm(
+                        notes_appended, instance=contact),
+                }
+                contact_results.append(contact_forms)
+            else:
+                contact_results.append({'instance': contact})
+        else:
+            if create_contact:
+                contact_forms = build_contact_forms(
+                    user_company, contact_data)
+                contact_results.append(contact_forms)
+            else:
+                api_errors.append(
+                    "User does not have permission to create a contact.")
 
-
-    # parse contact information
-    # pop is used to pull out necessary information and remove it from
-    # subsequent object creation. from here, we mold the dict to be used
-    # as a keyword dict to create a contact from the model
-    # during this step, the models are VALIDATED, but NOT SAVED
-    contact_pk = data_object['contact'].pop('pk', None)
-    contact_tags = data_object['contact'].pop('tags', [])
-    contact_locations = data_object['contact'].pop('locations', [])
-    contact_location_objects = []
-    create_contact = request.user.can(user_company, "create contact")
-    if contact_pk or create_contact:
-        contact = return_or_create_object(Contact,
-                                          contact_pk,
-                                          data_object['contact'])
-    else:
-        validator.form_error("contact", "User does not have permission to"
-                                        " create a contact.")
-
-
-    # parse locations for contact, create where necessary
-    for location in contact_locations:
-        location_pk = location.pop('pk', None)
-        location_object = return_or_create_object(Location,
-                                                  location_pk,
-                                                  location,
-                                                  'contact')
-        contact_location_objects.append(location_object)
-
-    partner_pk = data_object['partner'].pop('pk', None)
-    partner_tags = data_object['partner'].pop('tags', [])
-    data_object['partner']['owner'] = user_company
+    partner_form = None
+    partner = None
+    partner_data = data_object['partner']
+    partner_pk = partner_data.pop('pk', None)
     create_partner = request.user.can(user_company, "create partner")
-    if partner_pk or create_partner:
-        partner = return_or_create_object(Partner,
-                                          partner_pk,
-                                          data_object['partner'])
+    if partner_pk:
+        partner = Partner.objects.get(pk=partner_pk, owner=user_company)
     else:
-        validator.form_error("partner", "User does not have permission to"
-                                        " create a partner.")
+        if create_partner:
+            partner_data['owner'] = user_company
+            partner_form = NuoPartnerForm(partner_data, company=user_company)
+        else:
+            api_errors.append(
+                "User does not have permission to create a partner.")
 
+    communication_record_form = None
+    communication_record = None
+    if 'communication_record' in data_object:
+        communication_record_data = data_object['communication_record']
+        communication_record_pk = communication_record_data.pop('pk', None)
+        create_communication_record = request.user.can(
+            user_company, u'create communication record')
+        if communication_record_pk:
+            communication_record = ContactRecord.get(
+                pk=communication_record_pk, partner__owner=user_company)
+        else:
+            if create_communication_record:
+                communication_record_form = NuoCommunicationRecordForm(
+                    communication_record_data, company=user_company)
+            else:
+                api_errors.append(
+                    "User does not have permission to create a " +
+                    "communication record.")
 
-    contactrecord_tags = data_object['contactrecord'].pop('tags', [])
-    data_object['contactrecord']['created_by'] = request.user
-    contact_record = return_or_create_object(ContactRecord,
-                                             None,
-                                             data_object['contactrecord'])
+    # Run is_valid on all the forms.
+    def all_forms_iter():
+        yield outreach_form
+        if partner_form:
+            yield partner_form
+        for result in contact_results:
+            if isinstance(result, Contact):
+                continue
+            if 'contact' in result:
+                yield result['contact']
+            if 'location' in result:
+                yield result['location']
+        if communication_record_form:
+            yield communication_record_form
 
-    # if there are any errors at this point, return them to the UI
-    if validator.has_errors():
-        return validator.build_error_response()
+    all_forms = list(all_forms_iter())
+    has_errors = False
+    status = 200
+    all_validity = [f.is_valid() for f in all_forms]
+    if any(not v for v in all_validity):
+        has_errors = True
+        status = 400
 
-    # save all objects
-    contact.save()
-    add_tags_to_object(contact, contact_tags)
-    for c_location in contact_location_objects:
-        c_location.save()
-        contact.locations.add(c_location)
+    payload = {'forms': {'contacts': []}}
+    if partner_form:
+        partner_form_payload = RemoteForm(partner_form).as_dict()
+        del partner_form_payload['data']['owner']
+        payload['forms']['partner'] = partner_form_payload
+    elif partner:
+        payload['forms']['partner'] = {
+            'data': {'pk': partner.pk, 'name': partner.name},
+        }
 
-    partner.primary_contact = contact
-    partner.save()
-    add_tags_to_object(partner, partner_tags)
+    for result in contact_results:
+        if isinstance(result.get('contact'), NuoContactForm):
+            contact_form_payload = merge_contact_forms(result, user_company)
+            payload['forms']['contacts'].append(contact_form_payload)
+        else:
+            if 'instance' in result:
+                contact = result['instance']
+            else:
+                contact = result['contact'].instance
+            payload['forms']['contacts'].append({
+                'data': {'pk': contact.pk, 'name': contact.name}
+            })
 
-    # partner had to be linked after partner was saved, so add and re-save
-    contact.partner = partner
-    contact.save()
+    if communication_record_form:
+        communication_record_form_payload = RemoteForm(
+            communication_record_form).as_dict()
+        payload['forms']['communication_record'] = (
+            communication_record_form_payload)
+    elif communication_record:
+        payload['forms']['communication_record'] = {
+            'data': {
+                'pk': communication_record.pk,
+                'name': communication_record.name,
+            },
+        }
 
-    contact_record.partner = partner
-    contact_record.contact = contact
-    contact_record.save()
-    add_tags_to_object(contact_record, contactrecord_tags)
+    outreach_form_payload = RemoteForm(outreach_form).as_dict()
+    payload['forms']['outreach_record'] = outreach_form_payload
+    payload['forms']['outreach_record']['data']['pk'] = outreach_pk
 
-    outreach_record.current_workflow_state = workflow_status
-    outreach_record.save()
+    if api_errors:
+        return HttpResponse(json.dumps({
+            'api_errors': api_errors}), status=400)
 
-    if validator.has_errors():
-        return validator.build_error_response()
-    return HttpResponse("success")
+    if has_errors or validate_only:
+        return HttpResponse(
+            json.dumps(payload), status=status, mimetype='application/json')
+
+    created_tags = create_tags(new_tags, user_company, request.user)
+
+    outreach_form.save()
+
+    if partner_form:
+        partner_form.save()
+        outreach.partners.add(partner_form.instance)
+        partner = partner_form.instance
+        partner.created_by = request.user
+        partner.owner = user_company
+        partner.save()
+        attach_new_tags(new_tags, created_tags, 'partner', partner)
+
+    if communication_record_form:
+        communication_record_form.save()
+        communication_record = communication_record_form.instance
+        communication_record.created_by = request.user
+        attach_new_tags(
+            new_tags, created_tags, 'communicationrecord',
+            communication_record)
+
+    for i, contact_result in enumerate(contact_results):
+        if 'contact' in contact_result:
+            contact_result['contact'].save()
+            contact = contact_result['contact'].instance
+        else:
+            contact = contact_result['instance']
+
+        # on subsequent passes, make new communication records for each contact
+        if i > 0:
+            communication_record.recreate()
+
+        contact.partner = partner
+        contact.created_by = request.user
+        contact.save()
+        communication_record.contact = contact
+        communication_record.partner = partner
+        communication_record.save()
+        outreach.communication_records.add(communication_record_form.instance)
+        outreach.contacts.add(contact)
+        if 'location' in contact_result:
+            contact_result['location'].save()
+            contact_result['location'].instance.contacts.add(contact)
+        attach_new_tags(new_tags, created_tags, 'contact%s' % i, contact)
+
+    return HttpResponse('"success"')
+
 
 @requires('read tag')
 def tag_names(request):
@@ -2098,3 +2294,186 @@ def add_tags(request):
     data = request.GET.get('data', '').split(',')
     tag_get_or_create(company.id, data)
     return HttpResponse(json.dumps('success'))
+
+
+@require_http_methods(['GET', 'POST'])
+@requires('read partner')
+def api_get_partners(request):
+    """
+    GET /prm/api/partner/
+    POST /prm/api/partner/
+
+    Returns a list of partners. If a parameter named "q" is provided,
+    we filter for partners whose name contain that value. The partners
+    whose name start with that value, if any exist, are moved to the
+    beginning of the returned list.
+    """
+    company = get_company_or_404(request)
+
+    q = request.GET.get('q') or request.POST.get('q')
+    if q:
+        partners = list(company.partner_set.filter(name__icontains=q).annotate(Count('contact')))
+        sorted_partners = filter(
+            lambda partner: partner.name.lower().startswith(q.lower()),
+            partners)
+        sorted_partners.extend(set(partners).difference(
+            sorted_partners))
+    else:
+        sorted_partners = company.partner_set.all().annotate(Count('contact'))
+    return HttpResponse(json.dumps([{'id': partner.pk,
+                                     'name': partner.name,
+                                     'contact_count': partner.contact__count}
+                                    for partner in sorted_partners]))
+
+
+@require_http_methods(['GET'])
+@requires('read partner')
+def api_get_partner(request, partner_id):
+    """
+    GET /prm/api/partner/1/
+
+    Returns the partner with an ID of 1. Results in a 404 if that partner
+    doesn't exist or is owned by a different company.
+    """
+    company = get_company_or_404(request)
+
+    partner = get_object_or_404(company.partner_set, pk=partner_id)
+    return HttpResponse(json.dumps({'id': partner.pk, 'name': partner.name}))
+
+
+@require_http_methods(['POST'])
+@requires('create partner')  # Possible dependency on "create tag" - see below
+def api_create_partner(request):
+    """
+    POST /prm/api/partner/create/
+
+    Creates and returns a partner based on the provided POST data. Adds/creates
+    tags as appropriate.
+    """
+    company = get_company_or_404(request)
+    names = request.POST.getlist('tags')
+    tags = []
+    if names:
+        tags = list(company.tag_set.filter(name__in=names))
+        existing_tags = [tag.name for tag in tags]
+        new_tags = set(names).difference(existing_tags)
+        if new_tags:
+            if request.user.can(company, 'create tag'):
+                for new_tag in set(names).difference(existing_tags):
+                    tags.append(company.tag_set.create(name=new_tag,
+                                created_by=request.user))
+            else:
+                return MissingActivity('mypartners.views.api_create_partner: '
+                                       'user does not have "create tag" '
+                                       'permissions')
+
+    partner = Partner.objects.create(
+        name=request.POST['name'],
+        uri=request.POST.get('uri', ''),
+        data_source=request.POST.get('data_source', ''),
+        owner=company
+    )
+
+    if tags:
+        partner.tags = tags
+    return HttpResponse(json.dumps({'id': partner.pk, 'name': partner.name}))
+
+
+@require_http_methods(['GET', 'POST'])
+@requires('read contact')
+def api_get_contacts(request):
+    """
+    GET /prm/api/contact/
+    POST /prm/api/contact/
+
+    Returns a list of contacts. If a parameter named "q" is provided,
+    we filter for contacts whose name contain that value. If a parameter named
+    "partner_id" is provided, we only search that partner's contacts. The
+    contacts whose name start with "q", if any exist, are moved to the
+    beginning of the returned list.
+    """
+    company = get_company_or_404(request)
+
+    q = request.GET.get('q') or request.POST.get('q')
+    partner_id = (request.GET.get('partner_id')
+                  or request.POST.get('partner_id'))
+    if partner_id:
+        contact_args = {'partner__id': partner_id}
+    else:
+        contact_args = {'partner__owner': company}
+
+    contacts = (
+        Contact.objects.filter(**contact_args).prefetch_related('partner'))
+    if q:
+        q_obj = Q(email__icontains=q) | Q(name__icontains=q)
+        contacts = list(contacts.filter(q_obj))
+        sorted_contacts = filter(
+            lambda contact: (contact.name.lower().startswith(q.lower())
+                             or contact.email.lower().startswith(q.lower())),
+            contacts)
+        sorted_contacts.extend(set(contacts).difference(sorted_contacts))
+    else:
+        sorted_contacts = contacts
+    return HttpResponse(json.dumps([
+        {
+            'id': contact.pk,
+            'name': contact.name,
+            'email': contact.email,
+            'partner': {
+                'pk': contact.partner.pk,
+                'name': contact.partner.name,
+            },
+        } for contact in sorted_contacts]))
+
+
+@require_http_methods(['GET'])
+@requires('read contact')
+def api_get_contact(request, contact_id):
+    """
+    GET /prm/api/contact/1/
+
+    Returns the contact with an ID of 1. Results in a 404 if that contact
+    doesn't exist or is owned by a different company.
+    """
+    company = get_company_or_404(request)
+    contact = get_object_or_404(Contact, pk=contact_id, partner__owner=company)
+    return HttpResponse(json.dumps({'id': contact.pk,
+                                    'name': contact.name,
+                                    'email': contact.email}))
+
+
+@require_http_methods(['POST'])
+@requires('create contact')
+def api_create_contact(request):
+    """
+    POST /prm/api/contact/create/
+
+    Creates and returns a contact based on the provided POST data.
+    """
+    company = get_company_or_404(request)
+    partner = get_object_or_404(company.partner_set,
+                                pk=request.POST['partner_id'])
+    contact = Contact.objects.create(
+        name=request.POST['name'],
+        email=request.POST.get('email', ''),
+        phone=request.POST.get('phone', ''),
+        notes=request.POST.get('notes', ''),
+        partner=partner
+    )
+    location = Location.objects.create(
+        **{key: request.POST.get('key', '')
+           for key in ['address_line_one', 'address_line_two', 'city', 'state',
+                       'postal_code', 'label']}
+    )
+    contact.locations.add(location)
+
+    return HttpResponse(json.dumps({'id': contact.pk,
+                                    'name': contact.name,
+                                    'email': contact.email}))
+
+
+@require_http_methods(['GET', 'POST'])
+def api_get_workflow_states(request):
+    return HttpResponse(json.dumps(
+        [{'id': ows.pk, 'name': ows.state}
+         for ows in OutreachWorkflowState.objects.all()]))

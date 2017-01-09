@@ -811,6 +811,46 @@ class TestDynamicReports(MyReportsTestCase):
         expected_name = u'partner-19 \u2019'
         self.assertEqual(expected_name, last_found_name)
 
+    def test_dynamic_contacts_trial_report(self):
+        """Run a trial report."""
+        self.maxDiff = 10000
+        self.client.login_user(self.user)
+
+        partner = PartnerFactory(owner=self.company)
+        for i in range(0, 10):
+            location = LocationFactory.create(
+                city="city-%s" % i, state='ZZ')
+            # unicode here to push through report generation/download
+            ContactFactory.create(
+                name=u"name-%s \u2019" % i,
+                partner=partner,
+                locations=[location])
+
+        report_data = self.find_report_data('contacts')
+
+        resp = self.client.post(
+            reverse('run_trial_dynamic_report'),
+            data={
+                'report_data_id': report_data.pk,
+                'name': 'The Report',
+                'filter': json.dumps({
+                    'locations': {
+                        'city': 'city-2',
+                    },
+                }),
+                'values': json.dumps(['phone', 'tags', 'email', 'name']),
+            })
+        self.assertEqual(200, resp.status_code)
+        report_content = json.loads(resp.content)
+        self.assertEqual([
+            {
+                u'email': u'fake@email.com',
+                u'name': u'name-2 \u2019',
+                u'phone': u'84104391',
+                u'tags': [],
+            },
+        ], report_content)
+
     def test_dynamic_comm_records_report(self):
         """Create some test data, run, list, and download a commrec report."""
         self.client.login_user(self.user)

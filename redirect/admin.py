@@ -170,8 +170,8 @@ class DestinationManipulationAdmin(admin.ModelAdmin):
         """Gives the ability to save the queryset as a csv"""
 
         query = request.GET.get('q')
-        # Older versions of Django are broken with respect to the 
-        # "Select all x destination manipulations" link in that regardless of 
+        # Older versions of Django are broken with respect to the
+        # "Select all x destination manipulations" link in that regardless of
         # if it is chosen or not, you will always only get at most 100 records.
         # Thus, we manually run the filter and return all results if this
         # option is present.
@@ -181,16 +181,20 @@ class DestinationManipulationAdmin(admin.ModelAdmin):
         else:
             result = queryset
 
-        fields = ("BUID", "View Source", "Action Type", "Action", "Value 1",
-                  "Value 2")
+        fields = ("BUID", "View Source", "View Source Name", "Action Type",
+                  "Action", "Value 1", "Value 2")
         output = StringIO()
         writer = csv.writer(output)
         writer.writerow(fields)
 
         for item in result:
+            view_source = ViewSource.objects.filter(
+                view_source_id=item.view_source).first()
+
             writer.writerow([
                 item.buid,
                 item.view_source,
+                getattr(view_source, 'name', ''),
                 item.action_type,
                 item.action,
                 item.value_1,

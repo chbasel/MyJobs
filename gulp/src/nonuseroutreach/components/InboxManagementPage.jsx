@@ -1,8 +1,5 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {markPageLoadingAction} from '../../common/actions/loading-actions';
-import {doGetInboxes} from '../actions/inbox-actions';
-import {setPageAction} from '../actions/navigation-actions';
 import Inbox from './Inbox';
 import {Col, Row} from 'react-bootstrap';
 
@@ -11,16 +8,6 @@ import {Col, Row} from 'react-bootstrap';
  * inboxes.
  */
 class InboxManagementPage extends React.Component {
-  componentDidMount() {
-    // update the application's state with the current page and refresh the
-    // list of inboxes
-    const {dispatch} = this.props;
-    dispatch(setPageAction('inboxes'));
-    dispatch(markPageLoadingAction(true));
-    dispatch(doGetInboxes());
-    dispatch(markPageLoadingAction(false));
-  }
-
   render() {
     const {dispatch, inboxes} = this.props;
 

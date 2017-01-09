@@ -950,7 +950,7 @@ class CompanyProfileForm(RequestForm):
 
     def __init__(self, *args, **kwargs):
         super(CompanyProfileForm, self).__init__(*args, **kwargs)
-        if not self.instance.company.product_access:
+        if 'MarketPlace' not in self.instance.company.enabled_access:
             self.fields.pop('authorize_net_login', None)
             self.fields.pop('authorize_net_transaction_key', None)
 

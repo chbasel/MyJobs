@@ -11,7 +11,7 @@ class WildcardMiddlewareTestCase(DirectSEOBase):
         subdomain, which should result in a 301 redirect to the root domain.
 
         """
-        site = SeoSiteFactory.build(domain='www.my.jobs',name=u'www.my.jobs')
+        site = SeoSiteFactory.build(domain='www.my.jobs', name=u'www.my.jobs')
         site.save()
 
         settings.WILDCARD_REDIRECT = True
@@ -33,25 +33,19 @@ class WildcardMiddlewareTestCase(DirectSEOBase):
         # check that it redirects when it supposed to
         resp = self.client.get('/', HTTP_HOST='fake.usa.jobs', follow=True)
         self.assertEqual(resp.status_code, 301)
-        WildcardMiddlewareTestCase._check_external_redirect(self,
-            resp,"http://usa.jobs")
+        self.assertRedirects(resp, 'http://usa.jobs', status_code=301,
+                             target_status_code=301)
 
         # check that is respects the setting toggle
         settings.WILDCARD_REDIRECT = False
         resp = self.client.get('/', HTTP_HOST='wrong.www.my.jobs')
         self.assertEqual(resp.status_code, 200)
 
-    def _check_external_redirect(obj,resp,target):
-        """
-        Checks a given external redirect for success. testClient can't access
-        external links, so we can't test for its response code. It's still
-        necesarry to check the redirect target.
-
-        Inputs:
-        :obj:       the testClient object from the calling method
-        :resp:      the testClient response object from the calling method
-        :target:    the url string where the redirect should have ended
-
-        """
-        obj.assertRedirects(resp,target,status_code=301,target_status_code=301)
-
+    def test_wildcard_redirect_respects_protocol(self):
+        settings.WILDCARD_REDIRECT = True
+        resp = self.client.get('/', **{
+            'HTTP_HOST': 'fake.usa.jobs',
+            'wsgi.url_scheme': 'https'
+        })
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp['Location'], 'https://usa.jobs')

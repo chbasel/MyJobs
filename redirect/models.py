@@ -145,7 +145,7 @@ class BaseRedirect(models.Model):
         """Generates the redirected link for a redirect object."""
         # Handle the fact that guid is has leading/trailing braces and dashes.
         # '{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}'
-        return "http://my.jobs/%s" % self.guid[1:-1].replace('-', '') + '10'
+        return "https://my.jobs/%s" % self.guid[1:-1].replace('-', '') + '10'
 
 
 class Redirect(BaseRedirect):
