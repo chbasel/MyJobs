@@ -99,10 +99,6 @@ USAMap.propTypes = {
    */
   margin: React.PropTypes.object,
   /**
-   * Scale is a type of number for the scale of the map in terms of how zoomed in or out the display is
-   */
-  scale: React.PropTypes.number.isRequired,
-  /**
    * pathClicked is a function to be called when a path on the chart is clicked
    */
   pathClicked: React.PropTypes.func,
