@@ -29,9 +29,9 @@ class AnalyticsApp extends React.Component {
     const currentEndMonth = moment().month();
     const currentEndDay = moment().date();
     const currentEndYear = moment().year();
-    const currentStartMonth = moment().month() - 1;
+    const currentStartMonth = moment().month() - 1 === -1 ? 11 : moment().month() - 1;
     const currentStartDay = moment().date() + 1;
-    const currentStartYear = moment().year();
+    const currentStartYear = currentStartMonth === 11 ? moment().year() - 1 : moment().year();
     const {dispatch} = this.props;
     dispatch(doGetPageData(startDate, endDate, currentEndMonth, currentEndDay, currentEndYear, currentStartMonth, currentStartDay, currentStartYear));
   }

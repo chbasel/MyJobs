@@ -864,6 +864,65 @@ color: $primary-blue;
            border-bottom: 1px solid $white;
            padding: 25px 0px 0px 5px;
          }
+         .side-dimension-header:hover {
+           cursor: pointer;
+         }
+
+         .side-dimension:hover .side-circle-btn, .side-dimension.active-main .side-circle-btn {
+           background: $primary-blue;
+         }
+         .side-dimension:hover .side-circle-btn:before, .side-dimension.active-main .side-circle-btn:before {
+           border: 5px solid $primary-blue;
+           -webkit-box-shadow: inset 0px 0px 0px 4px rgba(90, 109, 129, 1);
+           -moz-box-shadow: inset 0px 0px 0px 4px rgba(90, 109, 129, 1);
+           box-shadow: inset 0px 0px 0px 4px rgba(90, 109, 129, 1);
+         }
+
+         .side-dimension:hover {
+           cursor: pointer;
+         }
+
+         .side-dimension {
+           color: $white;
+           border-bottom: 1px solid $white;
+           padding: 25px 10px;
+           transition: all 500ms;
+
+           .side-dimension-title {
+             font-size: 16px;
+             font-weight: 400;
+             position: relative;
+             right: 10px;
+           }
+
+           &:hover {
+             cursor: pointer;
+             background: $light-gray;
+             color: $primary-blue;
+           }
+         }
+
+         .side-dimension-feedback:hover  .side-dimension-title.feedback {
+           color: $primary-blue;
+         }
+
+         .feedback {
+           padding: 25px 30px 25px 30px;
+           color: #FFFFFF;
+         }
+         .feedback:hover {
+           color: $primary-blue;
+         }
+         .side-dimension-feedback {
+           color: #FFFFFF;
+           border-bottom: 1px solid #FFFFFF;
+           padding: 25px 0px;
+         }
+         .side-dimension-feedback:hover {
+           color: $primary-blue;
+           background: $light-gray;
+           cursor: pointer;
+         }
 
          .filter-header {
            color: $white;
@@ -1029,6 +1088,9 @@ color: $primary-blue;
       color: $primary-blue;
       top: 10px;
       z-index: 9;
+    }
+    .open-mobile-tabs:hover, .close-mobile-tabs:hover {
+      cursor: pointer;
     }
     .arrow-active {
       display: none;

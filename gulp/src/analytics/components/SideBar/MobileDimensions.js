@@ -30,7 +30,7 @@ class MobileDimensions extends Component {
       <div id="mobile_menu" className={activeMobileMenu ? 'active-mobile' : ''}>
         <ul className="sidebar-container">
           <li onClick={toggleMenu} className="side-dimension-header">
-            <p className="filter-header">Primary Dimensions{activeMobileMenu ? <i className="fa fa-minus mobile-close" aria-hidden="true"></i> : <i className="fa fa-plus mobile-open" aria-hidden="true"></i>}</p>
+            <p className="filter-header">Primary Dimensions{activeMobileMenu ? <i className="fa fa-caret-down mobile-close" aria-hidden="true"></i> : <i className="fa fa-caret-up mobile-open" aria-hidden="true"></i>}</p>
             <div className="clearfix"></div>
            </li>
           {primaryMobileDimensions}
