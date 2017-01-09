@@ -6,6 +6,7 @@ from seo.tests.factories import (SeoSiteFactory, SeoSiteRedirectFactory)
 from seo.models import BusinessUnit, SeoSite, QueryRedirect, QParameter, \
     LocationParameter
 from setup import DirectSEOBase
+import thread_manager
 
 
 class SiteRedirectMiddlewareTestCase(DirectSEOBase):
@@ -76,7 +77,7 @@ class MultiHostMiddlewareTestCase(DirectSEOBase):
     def test_existant_site(self):
         # test the site_id, site name, buids, etc
         self.client.get('/', HTTP_HOST=self.test_site.domain)
-        self.assertEqual(settings.SITE_ID, self.test_site.id)
+        self.assertEqual(thread_manager.get('SITE_ID'), self.test_site.id)
         self.assertEqual(settings.SITE_NAME, self.test_site.name)
 
     def test_non_existant_site(self):
@@ -86,7 +87,7 @@ class MultiHostMiddlewareTestCase(DirectSEOBase):
 
         # test that the site returned is the default site
         response = self.client.get('/', HTTP_HOST='jklsdasdfj.jobs')
-        self.assertEqual(settings.SITE_ID, 1)
+        self.assertEqual(thread_manager.get('SITE_ID'), 1)
         self.assertEqual(settings.SITE_NAME, site.name)
         self.assertEqual(len(settings.SITE_BUIDS), site.business_units.all().count())
 

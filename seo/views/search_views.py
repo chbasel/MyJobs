@@ -36,7 +36,6 @@ from slugify import slugify
 from moc_coding import models as moc_models
 from redirect.helpers import redirect_if_new
 from serializers import ExtraValue, XMLExtraValuesSerializer
-from settings import DEFAULT_PAGE_SIZE
 from xmlparse import text_fields
 from import_jobs import add_jobs, delete_by_guid
 from transform import transform_for_postajob
@@ -56,6 +55,7 @@ from seo.models import (BusinessUnit, Company, Configuration, Country,
 from seo.decorators import custom_cache_page, protected_site, home_page_check
 from seo.sitemap import DateSitemap
 from seo.templatetags.seo_extras import filter_carousel
+import thread_manager
 from transform import hr_xml_to_json
 from universal.states import states_with_sites
 from universal.helpers import get_company_or_404
@@ -63,6 +63,7 @@ from universal.decorators import restrict_to_staff
 from myjobs.decorators import user_is_allowed
 from myemails.models import EmailSection
 from myblocks.models import Page
+
 
 """
 The 'filters' dictionary seen in some of these methods
@@ -141,7 +142,7 @@ def ajax_geolocation_facet(request):
 
     sort_order = request.REQUEST.get('sort', 'relevance')
 
-    num_items = int(request.GET.get('num_items', DEFAULT_PAGE_SIZE))
+    num_items = int(request.GET.get('num_items', settings.DEFAULT_PAGE_SIZE))
 
     facet_field_type = request.GET.get('facet', 'buid')
 
@@ -212,7 +213,7 @@ def ajax_get_facets(request, filter_path, facet_type):
     sqs = helpers.prepare_sqs_from_search_params(GET)
     sort_order = request.REQUEST.get('sort', 'relevance')
     offset = int(GET.get('offset', site_config.num_filter_items_to_show*2))
-    num_items = int(GET.get('num_items', DEFAULT_PAGE_SIZE))
+    num_items = int(GET.get('num_items', settings.DEFAULT_PAGE_SIZE))
     if _type == 'facet':
         # Standard facets are all already loaded on page load,
         # so there will never be anything to return here.
@@ -294,9 +295,9 @@ def ajax_get_jobs(request, filter_path):
     except ValueError:
         offset = 0
     try:
-        num_items = int(GET.get(u'num_items', DEFAULT_PAGE_SIZE))
+        num_items = int(GET.get(u'num_items', settings.DEFAULT_PAGE_SIZE))
     except ValueError:
-        num_items = DEFAULT_PAGE_SIZE
+        num_items = settings.DEFAULT_PAGE_SIZE
     custom_facets = settings.DEFAULT_FACET
     sqs = helpers.prepare_sqs_from_search_params(GET)
     sort_order = request.REQUEST.get('sort', 'relevance')
@@ -686,7 +687,7 @@ def job_listing_nav_redirect(request, home=None, cc3=None):
         redirect_kwargs['title_slug'] = '/'.join(slug.split('/')[0:-1])
     elif home == 'facet':
         url = 'location_facet'
-        custom_facets = helpers.get_solr_facet(settings.SITE_ID,
+        custom_facets = helpers.get_solr_facet(thread_manager.get('SITE_ID'),
                                                settings.SITE_BUIDS,
                                                filters)
         # This needs to be changed to get_object_or_404
@@ -1195,8 +1196,7 @@ def company_listing(request, alpha=None, group=None):
     site_config = get_site_config(request)
     jobs_count = get_total_jobs_count()
     custom_facets = settings.DEFAULT_FACET
-    featured = SeoSite.objects.get(id=settings.SITE_ID).\
-               featured_companies.all()
+    featured = settings.SITE.featured_companies.all()
 
     if group == 'featured':
         companies = featured

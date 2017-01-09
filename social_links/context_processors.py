@@ -5,6 +5,8 @@ from django.conf import settings
 from social_links.models import SocialLink
 from social_links.helpers import (get_microsite_carousel,
                                   create_carousel_cycle_string)
+import thread_manager
+
 
 def social_links_context(request):
     cache_key = '%s:social_links' % request.get_host()
@@ -13,13 +15,13 @@ def social_links_context(request):
 
     if not social_links_cache:
         social_links = {'company':[], 'social':[], 'directemployers':[]}
-        slinks = SocialLink.objects.filter(sites=settings.SITE_ID)
+        slinks = SocialLink.objects.filter(sites=thread_manager.get('SITE_ID'))
         default = SocialLink.objects.filter(group__name='SEO Test Group')
         slinks = itertools.chain(slinks, default)
         for slink in sorted(slinks,
-                            key=lambda x:getattr(x, 'link_title')):
+                            key=lambda x: getattr(x, 'link_title')):
             social_links[slink.link_type].append(slink)
-        carousel = get_microsite_carousel(settings.SITE_ID)
+        carousel = get_microsite_carousel(thread_manager.get('SITE_ID'))
 
         if carousel:
             cyclestr = create_carousel_cycle_string(carousel)

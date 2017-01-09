@@ -35,6 +35,7 @@ from registration.models import Invitation
 from social_links import models as social_models
 from seo.route53 import can_send_email, make_mx_record
 from seo.search_backend import DESearchQuerySet
+import thread_manager
 from myjobs.models import User, Activity
 from mypartners.models import Tag
 from universal.accessibility import DOCTYPE_CHOICES, LANGUAGE_CODES_CHOICES
@@ -60,13 +61,13 @@ class JobsByBuidManager(models.Manager):
 class ConfigBySiteManager(models.Manager):
     def get_query_set(self):
         return super(ConfigBySiteManager, self).get_query_set().filter(
-            seosite__id=settings.SITE_ID)
+            seosite__id=thread_manager.get('SITE_ID'))
 
 
 class GoogleAnalyticsBySiteManager(models.Manager):
     def get_query_set(self):
         return super(GoogleAnalyticsBySiteManager, self).get_query_set().filter(
-            seosite__id=settings.SITE_ID)
+            seosite__id=thread_manager.get('SITE_ID'))
 
 
 class NonChainedForeignKey(ForeignKey):
@@ -149,7 +150,9 @@ class CustomFacet(BaseSavedSearch):
         return '%s' % self.name
 
     def active_site_facet(self):
-        facets = self.seositefacet_set.filter(seosite__id=settings.SITE_ID)
+        facets = self.seositefacet_set.filter(
+            seosite__id=thread_manager.get('SITE_ID')
+        )
         return facets.first()
 
     def get_op(self):

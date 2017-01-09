@@ -474,7 +474,6 @@ FIXTURE_DIRS = (
 
 
 # Default site settings
-SITE_ID = 1
 SITE_NAME = ""
 SITE_BUIDS = []
 SITE_PACKAGES = []

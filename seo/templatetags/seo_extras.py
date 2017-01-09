@@ -19,6 +19,7 @@ from django.utils.translation import ugettext
 from django.http import QueryDict
 
 from seo.models import CustomPage, Company, GoogleAnalytics, SiteTag
+import thread_manager
 from universal.helpers import get_object_or_none, update_url_param
 
 
@@ -200,7 +201,7 @@ def custom_page_navigation(context):
 
     if html is None:
         links = CustomPage.objects.filter(
-            sites=settings.SITE_ID).values_list('url', 'title')
+            sites=thread_manager.get('SITE_ID')).values_list('url', 'title')
         html = "".join(["<a href='%s'>%s</a>" % (url, title)
                         for (url, title) in links])
         cache.set(cache_key, html, timeout)
@@ -306,7 +307,7 @@ def get_ga_context():
     ga.html and footer.html rendered with manual context variable.
 
     """
-    site_id = settings.SITE_ID
+    site_id = thread_manager.get('SITE_ID')
     ga = GoogleAnalytics.objects.filter(seosite=site_id)
     view_source = settings.VIEW_SOURCE
     build_num = settings.BUILD

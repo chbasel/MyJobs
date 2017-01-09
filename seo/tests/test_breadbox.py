@@ -9,6 +9,7 @@ from seo.models import CustomFacet
 from seo.tests.factories import (BusinessUnitFactory, CustomFacetFactory,
                                  SeoSiteFacetFactory, SeoSiteFactory)
 from seo.tests.setup import DirectSEOBase
+import thread_manager
 
 
 class BreadboxTests(DirectSEOBase):
@@ -17,7 +18,7 @@ class BreadboxTests(DirectSEOBase):
 
         self.site = SeoSiteFactory()
         settings.SITE = self.site
-        settings.SITE_ID = self.site.pk
+        thread_manager.set('SITE_ID', self.site.id)
         settings.STANDARD_FACET = []
         for x in range(1, 4):
             facet = CustomFacetFactory(name_slug='custom-facet-%s' % x,
@@ -75,7 +76,6 @@ class BreadboxTests(DirectSEOBase):
         self.assertEqual(breadbox.custom_facet_breadcrumbs[0].url,
                          '/computer-network-defense-analyst/jobs-in'
                          '/communication-jobs/booz-allen-hamilton/careers/')
-
 
     def test_title_breadcrumbs(self):
         path = '/test-title/%s/' % settings.SLUG_TAGS['title_slug']

@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-from django.conf import settings
-
 from seo.cache import get_facet_count_key
 from seo.helpers import build_filter_dict
 from setup import DirectSEOBase
+import thread_manager
 
 
 class SeoCacheTestCase(DirectSEOBase):
@@ -20,7 +19,7 @@ class SeoCacheTestCase(DirectSEOBase):
         key1 = get_facet_count_key(filters1)
         key2 = get_facet_count_key(filters2)
         key3 = get_facet_count_key(filters3)
-        settings.SITE_ID = 10
+        thread_manager.set('SITE_ID', 10)
         key4 = get_facet_count_key(filters1)
 
         self.assertNotEqual(key2, key3)

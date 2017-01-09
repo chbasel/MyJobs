@@ -42,11 +42,12 @@ from seo.tests.setup import (DirectSEOBase,
                              DirectSEOTestCase,
                              patch_settings,
                              DirectSeoTCWithSiteAndConfig)
-from seo.models import (BusinessUnit, Company, Configuration, CustomPage,
+from seo.models import (BusinessUnit, Company, CustomPage,
                         SeoSite, SeoSiteFacet, SiteTag, User)
 from seo.templatetags.seo_extras import url_for_sort_field
 from seo.tests import factories
 import solr_settings
+import thread_manager
 from universal.helpers import build_url
 
 
@@ -2568,7 +2569,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         # Check that CSS for network sites is loaded properly
         self.assertContains(resp, '/style/def.ui.dotjobs.css')
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(settings.SITE_ID, 1)
+        self.assertEqual(thread_manager.get('SITE_ID'), 1)
         self.assertEqual(settings.SITE_TITLE, "Test Site")
 
     def footer_no_network_tag_test(self):
@@ -2585,7 +2586,7 @@ class SeoViewsTestCase(DirectSEOTestCase):
         fp.save()
         resp = self.client.get('/test-page/')
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(settings.SITE_ID, 1)
+        self.assertEqual(thread_manager.get('SITE_ID'), 1)
         # Header text
         self.assertNotIn("direct_dotjobsWideHeader", resp)
         # Footer text

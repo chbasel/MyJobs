@@ -4,6 +4,7 @@ from django.core.cache import cache
 from seo.helpers import get_jobs, get_solr_facet
 
 from seo.models import Configuration, SeoSite
+import thread_manager
 from django.conf import settings
 
 # This module is currently a holding place for low-level caching that was
@@ -29,7 +30,7 @@ def site_item_key(item_key):
         :item_key: A string to uniquely identify the cached item within a site
 
     """
-    return "%s::%s" % (item_key, settings.SITE_ID)
+    return "%s::%s" % (item_key, thread_manager.get('SITE_ID'))
 
 
 def get_total_jobs_count():
@@ -56,7 +57,7 @@ def get_facet_count_key(filters=None, query_string=None):
 
     # We use a hash to ensure key length is under memcache's 250 character limit
     return "browsefacets::%s%s%s" % (
-        settings.SITE_ID,
+        thread_manager.get('SITE_ID'),
         hashlib.md5(unicode(filters)).hexdigest(),
         hashlib.md5(unicode(query_string)).hexdigest()
     )

@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse_lazy
 from seo import helpers, models
 from seo.tests import factories
 from setup import DirectSEOBase
+import thread_manager
 
 
 filter_types = ['city', 'state', 'country', 'title', 'company', 'moc',
@@ -27,7 +28,7 @@ class FiltersTestCase(DirectSEOBase):
         self.request = DummyRequest()
         self.site = models.SeoSite.objects.first()
         settings.SITE = self.site
-        settings.SITE_ID = self.site.pk
+        thread_manager.set('SITE_ID', self.site.pk)
         self.config = factories.ConfigurationFactory(num_filter_items_to_show=5)
         for filter_type in filter_types:
             setattr(self.config, 'browse_%s_show' % filter_type, True)
@@ -293,8 +294,9 @@ class FiltersTestCase(DirectSEOBase):
 
         facet_counts['facet_slab'] = []
         for i in range(1,5):
-            seo_facets = factories.SeoSiteFacetFactory.create_batch(num_items, seosite=self.site,
-                                                                    facet_group=i)
+            seo_facets = factories.SeoSiteFacetFactory.create_batch(
+                num_items, seosite=self.site, facet_group=i
+            )
             for seo_facet in seo_facets:
                 facet_counts['facet_slab'].append((seo_facet.customfacet, 5))
 
@@ -360,7 +362,8 @@ class FiltersTestCase(DirectSEOBase):
         factories.SeoSiteFacetFactory(customfacet=facet4, seosite=self.site,
                                       facet_group=4)
 
-        facet_counts = {'facet_slab': [(facet1, 5), (facet2, 5), (facet3, 5), (facet4, 5)]}
+        facet_counts = {'facet_slab': [(facet1, 5), (facet2, 5), (facet3, 5),
+                                       (facet4, 5)]}
         for filter_type in filter_types:
             facet_counts['%s_slab' % filter_type] = []
 

@@ -15,6 +15,7 @@ from django.template import RequestContext
 from django.views.decorators.cache import cache_page
 
 from seo.cache import cache_page_prefix, get_site_config
+import thread_manager
 from myjobs.models import Ticket, User
 
 
@@ -48,10 +49,11 @@ def home_page_check(view_func):
 def protected_site(view_func):
     @wraps(view_func)
     def decorator(request, *args, **kwargs):
-        if settings.SITE_ID in settings.PROTECTED_SITES:
+        site_id = thread_manager.get('SITE_ID')
+        if site_id in settings.PROTECTED_SITES:
             if request.REQUEST.get('key') == settings.SEARCH_API_KEY:
                     return view_func(request, *args, **kwargs)
-            groups = settings.PROTECTED_SITES[settings.SITE_ID]
+            groups = settings.PROTECTED_SITES[site_id]
             if request.user.is_authenticated():
                 if list(set(groups) &
                         set(request.user.groups.values_list('id', flat=True))):

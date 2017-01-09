@@ -11,6 +11,8 @@ from django.db import models, DatabaseError
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+import thread_manager
+
 
 class SocialLinkType(models.Model):
     def __unicode__(self):
@@ -100,7 +102,7 @@ class SocialLink(models.Model):
                 # and this icon was manually uploaded; Prepend s3 url to it
                 link_icon = s3_url + link_icon
         else:
-            site = Site.objects.get(pk=settings.SITE_ID)
+            site = Site.objects.get(pk=thread_manager.get('SITE_ID'))
             link_icon = '/'.join([site.domain, link_icon])
         return link_icon
 

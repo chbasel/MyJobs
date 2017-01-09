@@ -5,6 +5,7 @@ from myjobs.models import User
 from seo.tests import factories
 from seo.models import SeoSite
 from setup import DirectSEOBase
+import thread_manager
 
 
 class SiteTestCase(DirectSEOBase):
@@ -17,7 +18,7 @@ class SiteTestCase(DirectSEOBase):
         SeoSite.objects.all().delete()
         self.site = factories.SeoSiteFactory(id=1)
         settings.SITE = self.site
-        settings.SITE_ID = self.site.pk
+        thread_manager.set('SITE_ID', self.site.pk)
         self.configuration = factories.ConfigurationFactory(status=2)
         self.configuration.save()
         self.site.configurations.clear()

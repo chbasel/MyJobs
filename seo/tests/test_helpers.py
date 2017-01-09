@@ -9,6 +9,7 @@ from seo import helpers
 from seo.models import CustomFacet
 from seo.tests import factories
 from setup import DirectSEOBase, DirectSeoTCWithSiteAndConfig
+import thread_manager
 
 
 class SeoHelpersTestCase(DirectSEOBase):
@@ -20,7 +21,7 @@ class SeoHelpersTestCase(DirectSEOBase):
     def test_get_solr_facet_always_show(self):
         site_facet = factories.SeoSiteFacetFactory()
         site = site_facet.seosite
-        settings.SITE_ID = site.pk
+        thread_manager.set('SITE_ID', site.pk)
         settings.SITE = site
         custom_facet = site_facet.customfacet
         custom_facet.show_production = 1

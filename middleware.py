@@ -15,6 +15,7 @@ from impersonate.middleware import ImpersonateMiddleware
 from myjobs.models import User, SecondPartyAccessRequest
 from postajob.models import SitePackage
 from seo.models import SeoSite, SeoSiteRedirect, SeoSiteFacet
+import thread_manager
 import version
 
 
@@ -182,6 +183,9 @@ class MultiHostMiddleware:
             cache.set(site_cache_key, my_site, MINUTES_TO_CACHE*60)
         settings.SITE = my_site
         my_buids = [bu.id for bu in my_site.business_units.all()]
+
+        thread_manager.set('SITE_ID', my_site.id)
+
         settings.SITE_ID = my_site.id
         settings.SITE_NAME = my_site.name
         settings.SITE_BUIDS = my_buids
