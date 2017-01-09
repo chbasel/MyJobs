@@ -1,4 +1,4 @@
-import {mapValues, includes, keys, filter} from 'lodash-compat';
+import {map, mapValues, includes, keys, filter} from 'lodash-compat';
 
 export const states = [
   {display: 'Select a State', value: ''},
@@ -393,3 +393,29 @@ export const contactNotesOnlyForm = {
   fields: mapValues(contactForm.fields, (f, key) =>
     key === 'notes' ? f : readonlyField(f)),
 };
+
+/**
+ * Assign user selected tag colors to default grey tags.
+ * Called as wrapper function around the api.getForms method
+ * in process-outreach-action.js
+ */
+export function colorizeTagsInForms(forms) {
+  const responseWithColoredTags = mapValues(forms, form => ({
+    ...form,
+    fields: mapValues(form.fields, field => {
+      if (field.widget.input_type === 'selectmultiple') {
+        const newField = {
+          ...field,
+          choices: map(field.choices, c => ({
+            ...c,
+            hexColor:
+              field.widget.attrs.tag_colors[c.value].hex_color,
+          })),
+        };
+        return newField;
+      }
+      return field;
+    }),
+  }));
+  return responseWithColoredTags;
+}
