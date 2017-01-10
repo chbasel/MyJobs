@@ -37,8 +37,8 @@ class USAMap extends Component {
     });
   }
   render() {
-    const {chartData, width, height, scale, pathClicked, colorRange} = this.props;
-    const projection = d3.geo.albersUsa().scale(scale).translate([width / 2, height / 2]);
+    const {chartData, width, height, colorRange, pathClicked} = this.props;
+    const projection = d3.geo.albersUsa().scale(width).translate([width / 2, height / 2]);
     const path = d3.geo.path().projection(projection);
     const rowData = chartData.PageLoadData.rows;
     const colors = d3.scale.quantize().range(colorRange).domain([1, d3.max(rowData, (d) => d.job_views)]);
@@ -67,18 +67,15 @@ class USAMap extends Component {
     });
     return (
       <div className="chart-container" style={{width: '100%'}}>
-        <Legend mapProps={this.props} format=".0f" colorRanges={colors}/>
         <svg
           className="chart"
-          version="1.1"
           height={height}
           width={width}
-          viewBox={'0 0 ' + width + ' ' + height + ''}
-          preserveAspectRatio="xMinYMin meet"
          >
          {paths}
-         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.states} x={this.state.x} y={this.state.y} xPosition={355} yPosition={275}/>
+         <Legend mapProps={this.props} legendTitleX={width * 0.035 * 1.33} legendTitleY={height * 0.04 * (-1.5)} borderTransform={`translate(0, ${height * -0.024})`} legendTransform={`translate(${(width - 100) * 1.14}, ${width * 0.035 * 3})`} legendRectX={width * 0.035 * 0.86} legendTextX={width * 0.035 * 2.2} height={(height * 0.04)} width={(width * 0.035)} format=".0f" colorRanges={colors}/>
          </svg>
+         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.states} x={this.state.x} y={this.state.y} xPosition={240} yPosition={245}/>
       </div>
     );
   }
@@ -102,10 +99,6 @@ USAMap.propTypes = {
    */
   margin: React.PropTypes.object,
   /**
-   * Scale is a type of number for the scale of the map in terms of how zoomed in or out the display is
-   */
-  scale: React.PropTypes.number.isRequired,
-  /**
    * pathClicked is a function to be called when a path on the chart is clicked
    */
   pathClicked: React.PropTypes.func,
@@ -118,7 +111,6 @@ USAMap.propTypes = {
 USAMap.defaultProps = {
   height: 500,
   width: 1920,
-  scale: 1000,
   margin: {top: 50, left: 25, right: 25, bottom: 25},
   pathClicked: () => {},
 };

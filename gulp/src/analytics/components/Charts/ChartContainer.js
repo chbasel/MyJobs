@@ -14,8 +14,13 @@ class ChartContainer extends Component {
     super(props, context);
   }
   render() {
-    const {chartData, dispatch} = this.props;
+    const {chartData, dispatch, width} = this.props;
     const chartType = chartData.PageLoadData.chart_type;
+    const worldHeight = (width * 0.4);
+    const usaHeight = (width * 0.341);
+    const usaWidth = (width / 1.45);
+    const worldWidth = (width / 1.3);
+    const worldScale = (width * 0.083);
     // Grab the row data to check and make sure the data coming back isn't empty
     const dataPresent = chartData.PageLoadData.rows;
     const chartTitleByDisplay = chartData.PageLoadData.column_names[0].label;
@@ -29,12 +34,12 @@ class ChartContainer extends Component {
     let chartDisplay;
     switch (chartType) {
     case 'map:world':
-      chartDisplay = <WorldMap width={1920} height={500} scale={105} chartData={chartData} colorRange={ranges} pathClicked={pathClicked}/>;
+      chartDisplay = <WorldMap width={worldWidth} height={worldHeight} projectionScale={worldScale} chartData={chartData} colorRange={ranges} pathClicked={pathClicked}/>;
       break;
     case 'map:nation':
       const countryFilter = chartData.activeFilters.filter((x) => x.type === 'country')[0] || {};
       if (countryFilter.value === 'USA') {
-        chartDisplay = <USAMap width={1920} height={500} scale={1100} chartData={chartData} colorRange={ranges} pathClicked={pathClicked}/>;
+        chartDisplay = <USAMap width={usaWidth} height={usaHeight} chartData={chartData} colorRange={ranges} pathClicked={pathClicked}/>;
       } else {
         chartDisplay = <SimpleBarChart width={600} height={400} chartData={chartData} pathClicked={pathClicked} />;
       }
@@ -59,8 +64,10 @@ class ChartContainer extends Component {
           </Row>
           <hr/>
             <Row>
-              <Col>
-                {isEmpty(dataPresent) ? <NoResults type="div" errorMessage="No charts found" helpErrorMessage={helpError}/> : chartDisplay}
+              <Col md={12}>
+                <div className="svg-container">
+                  {isEmpty(dataPresent) ? <NoResults type="div" errorMessage="No charts found" helpErrorMessage={helpError}/> : chartDisplay}
+                </div>
               </Col>
             </Row>
         </div>
@@ -70,6 +77,7 @@ class ChartContainer extends Component {
 
 ChartContainer.propTypes = {
   chartData: React.PropTypes.object.isRequired,
+  width: React.PropTypes.number.isRequired,
   dispatch: React.PropTypes.func.isRequired,
 };
 

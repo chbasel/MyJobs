@@ -18,7 +18,7 @@ class SideBar extends Component {
     dispatch(doSwitchMainDimension(mainDimension, startDate, endDate));
   }
   render() {
-    const {analytics, activeMobile, closeMenu} = this.props;
+    const {analytics} = this.props;
     const activeDimension = analytics.activePrimaryDimension;
     const primaryDimensions = analytics.primaryDimensions.dimensionList.reports.map((report, i) => {
       return (
@@ -26,10 +26,9 @@ class SideBar extends Component {
       );
     });
     return (
-      <div id="menu" className={activeMobile ? 'active-mobile' : ''}>
+      <div id="menu">
         <ul className="sidebar-container">
           <li className="side-dimension-header">
-            <i onClick={closeMenu} className="close-mobile fa fa-arrow-circle-left" aria-hidden="true"></i>
             <p className="filter-header">Primary Dimensions</p>
             <div className="clearfix"></div>
            </li>
@@ -46,8 +45,6 @@ class SideBar extends Component {
 SideBar.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
-  activeMobile: React.PropTypes.bool.isRequired,
-  closeMenu: React.PropTypes.func.isRequired,
 };
 
 export default connect(state => ({

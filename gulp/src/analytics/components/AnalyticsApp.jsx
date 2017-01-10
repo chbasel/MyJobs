@@ -2,6 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {doGetPageData} from '../actions/page-loading-actions';
 import SideBar from './SideBar/SideBar';
+import MobileDimensions from './SideBar/MobileDimensions';
 import Header from './Header/Header';
 import TabsContainer from './Tabs/TabsContainer';
 import LoadingSpinner from './Loading';
@@ -11,8 +12,13 @@ class AnalyticsApp extends React.Component {
   constructor() {
     super();
 
+    this.toggleMobileMenu = this.toggleMobileMenu.bind(this);
+    this.toggleTabsMenu = this.toggleTabsMenu.bind(this);
+    this.closeAllMobileMenus = this.closeAllMobileMenus.bind(this);
+
     this.state = {
-      mobileActive: false,
+      mobileMenuActive: false,
+      tabsMenuActive: false,
     };
   }
   componentDidMount() {
@@ -23,20 +29,26 @@ class AnalyticsApp extends React.Component {
     const currentEndMonth = moment().month();
     const currentEndDay = moment().date();
     const currentEndYear = moment().year();
-    const currentStartMonth = moment().month() - 1;
+    const currentStartMonth = moment().month() - 1 === -1 ? 11 : moment().month() - 1;
     const currentStartDay = moment().date() + 1;
-    const currentStartYear = moment().year();
+    const currentStartYear = currentStartMonth === 11 ? moment().year() - 1 : moment().year();
     const {dispatch} = this.props;
     dispatch(doGetPageData(startDate, endDate, currentEndMonth, currentEndDay, currentEndYear, currentStartMonth, currentStartDay, currentStartYear));
   }
-  openMobileMenu() {
+  toggleMobileMenu() {
     this.setState({
-      mobileActive: true,
+      mobileMenuActive: !this.state.mobileMenuActive,
     });
   }
-  closeMobileMenu() {
+  toggleTabsMenu() {
     this.setState({
-      mobileActive: false,
+      tabsMenuActive: !this.state.tabsMenuActive,
+    });
+  }
+  closeAllMobileMenus() {
+    this.setState({
+      mobileMenuActive: false,
+      tabsMenuActive: false,
     });
   }
   render() {
@@ -47,14 +59,17 @@ class AnalyticsApp extends React.Component {
       );
     }
     return (
-      <div id="page_wrapper">
-          {analytics.navFetching ? <LoadingSpinner/> : ''}
-          <SideBar closeMenu={this.closeMobileMenu.bind(this)} activeMobile={this.state.mobileActive}/>
-          <Header openMenu={this.openMobileMenu.bind(this)}/>
-        <div id="page_content">
-          <TabsContainer/>
+      <div>
+        <div id="page_wrapper">
+            {analytics.navFetching ? <LoadingSpinner/> : ''}
+            <SideBar />
+            <Header tabsActive={this.state.tabsMenuActive} toggleTabs={this.toggleTabsMenu} />
+          <div id="page_content" ref="contentContainer">
+            <TabsContainer tabsMenuActive={this.state.tabsMenuActive} closeMenus={this.closeAllMobileMenus} />
+          </div>
+          <div className="clearfix"></div>
         </div>
-        <div className="clearfix"></div>
+        <MobileDimensions toggleMenu={this.toggleMobileMenu} activeMobileMenu={this.state.mobileMenuActive} closeMenus={this.closeAllMobileMenus}/>
       </div>
     );
   }

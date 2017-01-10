@@ -14,14 +14,16 @@ class Tab extends Component {
   }
   activeTab(id, event) {
     event.preventDefault();
-    const {dispatch} = this.props;
+    const {dispatch, close} = this.props;
     dispatch(doSwitchActiveTab(id));
+    close();
   }
   removeSelectedTab(tabId) {
     const {dispatch} = this.props;
     dispatch(doRemoveSelectedTab(tabId));
   }
   _renderTitles() {
+    const {active} = this.props;
     function labels(child, index) {
       const activeTab = (child.props.active ? 'tab active-tab' : 'tab');
       return (
@@ -36,7 +38,7 @@ class Tab extends Component {
       );
     }
     return (
-      <nav className="tab-navigation">
+      <nav className={active ? 'tab-navigation open' : 'tab-navigation'}>
         <ul className="tab-labels">
           {this.props.children.map(labels.bind(this))}
         </ul>
@@ -65,8 +67,15 @@ Tab.propTypes = {
   children: React.PropTypes.arrayOf(
     React.PropTypes.element.isRequired,
   ),
-  // tabData: React.PropTypes.object.isRequired,
   dispatch: React.PropTypes.func.isRequired,
+  /**
+   * Active boolean to display which tab information is active on the screen
+   */
+  active: React.PropTypes.bool,
+  /**
+   * Function to close a tab using the X button in the top right corner of the tab
+   */
+  close: React.PropTypes.func,
 };
 
 export default connect()(Tab);
