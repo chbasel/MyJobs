@@ -292,9 +292,10 @@ class FiltersTestCase(DirectSEOBase):
             facet_counts['%s_slab' % filter_type] = items
 
         facet_counts['facet_slab'] = []
-        for i in range(1,5):
-            seo_facets = factories.SeoSiteFacetFactory.create_batch(num_items, seosite=self.site,
-                                                                    facet_group=i)
+        for i in range(1, 7):
+            seo_facets = factories.SeoSiteFacetFactory.create_batch(
+                num_items, seosite=self.site, facet_group=i
+            )
             for seo_facet in seo_facets:
                 facet_counts['facet_slab'].append((seo_facet.customfacet, 5))
 
@@ -337,14 +338,13 @@ class FiltersTestCase(DirectSEOBase):
         self.assertEqual(num_widgets, 10)
 
     def test_seosite_facet_in_facet_group(self):
-        self.config.browse_facet_show = True
-        self.config.browse_facet_text = 'Facet 1'
-        self.config.browse_facet_show_2 = True
-        self.config.browse_facet_text_2 = 'Facet 2'
-        self.config.browse_facet_show_3 = True
-        self.config.browse_facet_text_3 = 'Facet 3'
-        self.config.browse_facet_show_4 = True
-        self.config.browse_facet_text_4 = 'Facet 4'
+        show_str = 'browse_facet_show'
+        text_str = 'browse_facet_text'
+        for i in range(1, 7):
+            show = "%s_%s" % (show_str, i) if i > 1 else show_str
+            text = "%s_%s" % (text_str, i) if i > 1 else text_str
+            setattr(self.config, show, True)
+            setattr(self.config, text, 'Facet %s' % i)
         self.config.save()
 
         facet1 = factories.CustomFacetFactory(name='Test 1')
@@ -359,8 +359,15 @@ class FiltersTestCase(DirectSEOBase):
         facet4 = factories.CustomFacetFactory(name='Test 4')
         factories.SeoSiteFacetFactory(customfacet=facet4, seosite=self.site,
                                       facet_group=4)
+        facet5 = factories.CustomFacetFactory(name='Test 5')
+        factories.SeoSiteFacetFactory(customfacet=facet5, seosite=self.site,
+                                      facet_group=5)
+        facet6 = factories.CustomFacetFactory(name='Test 6')
+        factories.SeoSiteFacetFactory(customfacet=facet6, seosite=self.site,
+                                      facet_group=6)
 
-        facet_counts = {'facet_slab': [(facet1, 5), (facet2, 5), (facet3, 5), (facet4, 5)]}
+        facet_counts = {'facet_slab': [(facet1, 5), (facet2, 5), (facet3, 5),
+                                       (facet4, 5), (facet5, 5), (facet6, 5)]}
         for filter_type in filter_types:
             facet_counts['%s_slab' % filter_type] = []
 
@@ -374,6 +381,8 @@ class FiltersTestCase(DirectSEOBase):
         self.assertIn('Facet 2', titles)
         self.assertIn('Facet 3', titles)
         self.assertIn('Facet 4', titles)
+        self.assertIn('Facet 5', titles)
+        self.assertIn('Facet 6', titles)
 
         for widget in widgets:
             if widget.widget_type == 'facet':
