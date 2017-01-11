@@ -513,6 +513,66 @@ path:hover {
     box-shadow: none;
 }
 
+/*CSS FOR THE BREADCRUMBS*/
+.breadcrumbs-container {
+  display: inline-block;
+  list-style: outside none none;
+  padding: 0;
+  margin: 0;
+}
+.analytics-breadcrumbs {
+  display: inline;
+  margin-right: 10px;
+}
+.breadcrumb-active, .breadcrumb-active:hover, .breadcrumb-active:focus, .breadcrumb-active:active {
+  background: $light-gray;
+  display: inline-block;
+  outline: medium none;
+  padding: 10px 10px 10px 25px;
+  text-decoration: none;
+  color: $primary-blue;
+  position: relative;
+}
+.breadcrumb-active:hover {
+  background: $darkest-gray;
+  color: $white;
+}
+.breadcrumb-active:focus {
+  background: $primary-blue;
+  color: $white;
+}
+.breadcrumb-active::before {
+  border-color: transparent transparent transparent $white;
+  border-style: solid;
+  border-width: 20px 0 20px 20px;
+  box-sizing: border-box;
+  content: "";
+  height: 0;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 0;
+}
+.breadcrumb-active::after {
+  border-color: transparent transparent transparent $light-gray;
+  border-style: solid;
+  border-width: 20px 0 20px 20px;
+  box-sizing: border-box;
+  content: "";
+  height: 0;
+  left: 100%;
+  position: absolute;
+  top: 0;
+  width: 0;
+  z-index: 1;
+}
+.breadcrumb-active:hover::after {
+	border-left-color: $darkest-gray;
+}
+.breadcrumb-active:focus::after {
+	border-left-color: $primary-blue;
+}
+
 /*CSS FOR THE NEW DIMENSION TABLE*/
 .rwd-table {
   min-width: 300px;
