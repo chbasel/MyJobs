@@ -552,7 +552,7 @@ HAYSTACK_CONNECTIONS = {
     },
     'relationships': {
         'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
-        'URL': 'http://ec2-54-91-126-26.compute-1.amazonaws.com:8983/solr/relationships',
+        'URL': 'http://127.0.0.1:8983/solr/relationships',
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password'],
         'EXCLUDED_INDEXES': ['seo.search_indexes.JobIndex'],
