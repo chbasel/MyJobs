@@ -22,6 +22,7 @@ export function doGetSelectedFilterData(tableValue, typeValue) {
     try {
       dispatch(markNavLoadingAction(true));
       dispatch(doStoreActiveFilter(typeValue, tableValue));
+
       // Storing the current filters inside of the state to send off in the request to the API
       const storedFilters = [];
       // Storing the dates in order to update the reducer with them
@@ -29,6 +30,7 @@ export function doGetSelectedFilterData(tableValue, typeValue) {
       getState().pageLoadData.activeFilters.map((filter) => {
         storedFilters.push(filter);
       });
+      console.log(storedFilters);
       getState().pageLoadData.navigation.map((nav) => {
         if (nav.active) {
           storedDates = {
