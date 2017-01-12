@@ -1,23 +1,11 @@
 import React from 'react';
 import {Component} from 'react';
-import BreadCrumbs from '../BreadCrumbs';
-
-
-const crumbs = [
-  {name: 'Country'},
-  {name: 'State'},
-  {name: 'City'},
-  {name: 'Found On'},
-  {name: 'Job Guid'},
-  {name: 'Job Title'},
-];
 
 class Table extends Component {
   render() {
     const {tableData} = this.props;
     return (
       <div id={'table_data_tab_' + tableData.navId} className="table-data">
-        <BreadCrumbs crumbs={crumbs}/>
         <div id={'table_search_tab_' + tableData.navId} className="table-search">
             </div>
             <div className="clearfix"></div>
