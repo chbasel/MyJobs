@@ -517,11 +517,11 @@ path:hover {
 .breadcrumbs-container {
   list-style: outside none none;
   padding: 0;
-  margin: 0 0 20px 0;
+  margin: 0 0 15px 0;
 }
 .analytics-breadcrumbs {
-  display: inline;
-  margin-right: 10px;
+  display: inline-block;
+  margin: 0 10px 10px 0;
 }
 .breadcrumb-active, .breadcrumb-active:hover, .breadcrumb-active:focus, .breadcrumb-active:active {
   background: $primary-blue;
