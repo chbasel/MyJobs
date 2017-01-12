@@ -317,6 +317,7 @@ INSTALLED_APPS = (
     'corsheaders',
     'ajax_select',
     'impersonate',
+    'relationships',
 )
 
 # Captcha SSL
@@ -540,13 +541,22 @@ HAYSTACK_CONNECTIONS = {
         'URL': 'http://127.0.0.1:8983/solr/seo',
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password'],
+        'EXCLUDED_INDEXES': ['relationships.indexes.SiteRelationshipIndex'],
     },
     'groups': {
         'ENGINE': 'saved_search.groupsearch.SolrGrpEngine',
         'URL': 'http://127.0.0.1:8983/solr/seo',
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password'],
+        'EXCLUDED_INDEXES': ['relationships.indexes.SiteRelationshipIndex'],
     },
+    'relationships': {
+        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
+        'URL': 'http://ec2-54-91-126-26.compute-1.amazonaws.com:8983/solr/relationships',
+        'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
+        'HTTP_AUTH_PASSWORD': SOLR_AUTH['password'],
+        'EXCLUDED_INDEXES': ['seo.search_indexes.JobIndex'],
+    }
 }
 
 # Keep these here since a number of apps need them. (circular imports)
@@ -561,6 +571,10 @@ TEST_HAYSTACK_CONNECTIONS = {
         'URL': 'http://127.0.0.1:8983/solr/seo',
         'INCLUDE_SPELLING': True,
     },
+    'relationships': {
+        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
+        'URL': 'http://127.0.0.1:8983/solr/relationships',
+    }
 }
 
 # Password settings

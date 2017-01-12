@@ -26,6 +26,9 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'relationships', ['SiteRelationship'])
 
+        # Adding unique constraint on 'SiteRelationship', fields ['parent', 'child', 'by']
+        db.create_unique(u'relationships_siterelationship', ['parent_id', 'child_id', 'by_id'])
+
         # Adding model 'NormalizedSiteRelationship'
         db.create_table(u'relationships_normalizedsiterelationship', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -34,11 +37,15 @@ class Migration(SchemaMigration):
             ('parent', self.gf('django.db.models.fields.related.ForeignKey')(related_name='normalized_child_set', to=orm['seo.SeoSite'])),
             ('child', self.gf('django.db.models.fields.related.ForeignKey')(related_name='normalized_parent_set', to=orm['seo.SeoSite'])),
             ('by', self.gf('django.db.models.fields.related.ForeignKey')(related_name='normalized_by_set', to=orm['relationships.Relationship'])),
+            ('depth', self.gf('django.db.models.fields.IntegerField')()),
         ))
         db.send_create_signal(u'relationships', ['NormalizedSiteRelationship'])
 
 
     def backwards(self, orm):
+        # Removing unique constraint on 'SiteRelationship', fields ['parent', 'child', 'by']
+        db.delete_unique(u'relationships_siterelationship', ['parent_id', 'child_id', 'by_id'])
+
         # Deleting model 'Relationship'
         db.delete_table(u'relationships_relationship')
 
@@ -92,6 +99,7 @@ class Migration(SchemaMigration):
             'by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'normalized_by_set'", 'to': u"orm['relationships.Relationship']"}),
             'child': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'normalized_parent_set'", 'to': u"orm['seo.SeoSite']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'depth': ('django.db.models.fields.IntegerField', [], {}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'normalized_child_set'", 'to': u"orm['seo.SeoSite']"}),
             'weight': ('django.db.models.fields.FloatField', [], {'default': '0'})
@@ -102,7 +110,7 @@ class Migration(SchemaMigration):
             'type': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         u'relationships.siterelationship': {
-            'Meta': {'object_name': 'SiteRelationship'},
+            'Meta': {'unique_together': "(('parent', 'child', 'by'),)", 'object_name': 'SiteRelationship'},
             'by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['relationships.Relationship']"}),
             'child': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'parent_set'", 'to': u"orm['seo.SeoSite']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
