@@ -1,5 +1,5 @@
 from django.db.models.signals import post_save
-from django.db.models.signals import post_delete
+from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
 from relationships.models import NormalizedSiteRelationship, SiteRelationship
@@ -11,7 +11,7 @@ def create_normalized_relationships(sender, instance, created, *args, **kwargs):
     update_relationships(instance)
 
 
-@receiver(post_delete, sender=SiteRelationship)
+@receiver(pre_delete, sender=SiteRelationship)
 def delete_normalized_relationships(sender, instance, *args, **kwargs):
     update_relationships(instance)
 
