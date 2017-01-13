@@ -28,8 +28,11 @@ class TableContainer extends Component {
     });
   }
   handlePageSizeChange(e) {
+    const {tableData} = this.props;
+    const rowData = tableData.PageLoadData.rows;
+    const size = e.target.value === 'All' ? Number(rowData.length) : Number(e.target.value);
     this.setState({
-      pageSize: Number(e.target.value),
+      pageSize: size,
     });
   }
   render() {
@@ -40,7 +43,7 @@ class TableContainer extends Component {
     const start = pageSize * (currentPage - 1);
     const end = start + pageSize;
     const paginationData = rowData.slice(start, end);
-    const count = [10, 15, 20, 25];
+    const count = [10, 15, 20, 25, 'All'];
     return (
       <div>
         <Table count={count} pageChange={this.handlePageChange} currentPage={this.state.currentPage} handlePageSizeChange={this.handlePageSizeChange} pageSize={this.state.pageSize} tableData={tableData}>

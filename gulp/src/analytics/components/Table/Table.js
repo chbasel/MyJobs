@@ -16,7 +16,7 @@ class Table extends Component {
         </table>
         <div className="pagination-container">
           <Pagination tableData={tableData} pageSize={pageSize} currentPage={currentPage} pageChange={pageChange} />
-          <PageSize showCount={count} handlePageSizeChange={handlePageSizeChange} pageSize={pageSize} />
+          <PageSize showCount={count} handlePageSizeChange={handlePageSizeChange} />
         </div>
       </div>
     );

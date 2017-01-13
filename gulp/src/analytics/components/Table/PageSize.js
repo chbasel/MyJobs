@@ -3,7 +3,7 @@ import {Component} from 'react';
 
 class PageSize extends Component {
   render() {
-    const {pageSize, handlePageSizeChange, showCount} = this.props;
+    const {handlePageSizeChange, showCount} = this.props;
     const options = showCount.map((show, i) => {
       return (
         <option key={i} value={show}>{show}</option>
@@ -12,7 +12,7 @@ class PageSize extends Component {
     return (
       <div>
         <label htmlFor="pageSize">Per Page: </label>
-        <select className="page-size" value={pageSize} onChange={handlePageSizeChange}>
+        <select className="page-size" onChange={handlePageSizeChange}>
           {options}
         </select>
       </div>
@@ -21,10 +21,6 @@ class PageSize extends Component {
 }
 
 PageSize.propTypes = {
-  /**
-   * Number supplied for the value of the select box
-   */
-  pageSize: React.PropTypes.number.isRequired,
   /**
    * Function supplied in order to handle the changing of the page size in the component
    */
