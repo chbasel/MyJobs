@@ -7,6 +7,7 @@ import re
 import urllib
 from urlparse import urlparse, urlunparse
 
+from django.db import connection
 from django.db.models.loading import get_model
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -554,3 +555,15 @@ def extract_value(obj, *attrs, **kwargs):
     """
     default = kwargs.get('default', None)
     return reduce(lambda acc, x: getattr(acc, x, default), attrs, obj)
+
+
+def make_chunks(l, n=1025):
+    """
+    Yield successive n-sized chunks from a list.
+
+    """
+    if connection.vendor == 'sqlite':
+        # SQLite has a default maximum number of SQL variables of 999
+        n = min(n, 999)
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]

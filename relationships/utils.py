@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from relationships.models import SiteRelationship, DenormalizedSiteRelationship
 from seo.models import SeoSite
+from universal.helpers import make_chunks
 
 
 logger = logging.getLogger(__name__)
@@ -59,14 +60,15 @@ class Graph(object):
         parent_id = parent.id if isinstance(parent, SeoSite) else parent
         children_by_depth = self.children_by_depth(parent_id, depth=10)
 
-        normalized = []
+        denormalized = []
         for depth, children in children_by_depth.iteritems():
             for child_id, weight, by_id in children:
-                normalized.append(DenormalizedSiteRelationship(
+                denormalized.append(DenormalizedSiteRelationship(
                     parent_id=parent_id,
                     child_id=child_id,
                     weight=weight,
                     by_id=by_id,
                     depth=depth,
                 ))
-        DenormalizedSiteRelationship.objects.bulk_create(normalized)
+        for subset in make_chunks(denormalized):
+            DenormalizedSiteRelationship.objects.bulk_create(subset)
