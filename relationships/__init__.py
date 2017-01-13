@@ -1,2 +1,1 @@
-from relationships.signals import (create_denormalized_relationships,
-                                   delete_denormalized_relationships)
+from relationships.signals import update_relationships

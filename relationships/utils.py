@@ -70,5 +70,6 @@ class Graph(object):
                     by_id=by_id,
                     depth=depth,
                 ))
+
         for subset in make_chunks(denormalized):
             DenormalizedSiteRelationship.objects.bulk_create(subset)
