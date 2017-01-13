@@ -5,6 +5,20 @@ import Tab from './Tab';
 import TabsPanel from './TabsPanel';
 import TableContainer from '../Table/TableContainer';
 import ChartContainer from '../Charts/ChartContainer';
+import BreadCrumbs from '../BreadCrumbs';
+
+
+const crumbs = [
+  {name: 'Country'},
+  {name: 'State'},
+  {name: 'City'},
+  {name: 'Found On'},
+  {name: 'Job Guid'},
+  {name: 'Job Title'},
+  {name: 'Location'},
+  {name: 'Site Found On'},
+  {name: 'Site Found On By Job Location Title'},
+];
 
 class TabsContainer extends Component {
   constructor() {
@@ -36,6 +50,7 @@ class TabsContainer extends Component {
     const tabsPanel = analytics.navigation.map((tab, index) => {
       return (
         <TabsPanel key={index} id={tab.navId} active={tab.active} label={tab.PageLoadData.column_names[0].label}>
+          <BreadCrumbs crumbs={crumbs}/>
           <ChartContainer chartData={tab} width={chartWidth}/>
           <TableContainer tableData={tab}/>
         </TabsPanel>
