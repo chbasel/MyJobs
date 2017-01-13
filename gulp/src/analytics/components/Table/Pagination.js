@@ -27,7 +27,7 @@ class Pagination extends Component {
     return pageChange(pageNum);
   }
   render() {
-    const {currentPage, showCount, handlePageSizeChange} = this.props;
+    const {currentPage, showCount, handlePageSizeChange, dataLength} = this.props;
     const start = currentPage - 1;
     const end = start + 5;
     const numPages = this.getNumPages();
@@ -56,7 +56,7 @@ class Pagination extends Component {
     }
     const pages = numPages > 5 ? pageLinks.slice(start, end) : pageLinks;
     return (
-      <div className={numPages > 1 ? 'pager active-pager' : 'pager hide-pager'}>
+      <div className={dataLength > 10 ? 'pager active-pager' : 'pager hide-pager'}>
         <PageSize handlePageChange={this.handlePageChange.bind(this)} currentPage={currentPage} showCount={showCount} handlePageSizeChange={handlePageSizeChange} />
         <div className="page-links-container">
           {prevPageLinks}
@@ -94,6 +94,10 @@ Pagination.propTypes = {
    * Function supplied in order to change the amount of data shown per page on the page size component
    */
   handlePageSizeChange: React.PropTypes.func,
+  /**
+   * Length of the data in deciding whether or not to show the pagination
+   */
+  dataLength: React.PropTypes.number,
 };
 
 export default Pagination;

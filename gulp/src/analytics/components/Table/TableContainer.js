@@ -46,7 +46,7 @@ class TableContainer extends Component {
     const count = [10, 15, 20, 25, 'All'];
     return (
       <div>
-        <Table count={count} pageChange={this.handlePageChange} currentPage={this.state.currentPage} handlePageSizeChange={this.handlePageSizeChange} pageSize={this.state.pageSize} tableData={tableData}>
+        <Table dataLength={rowData.length}count={count} pageChange={this.handlePageChange} currentPage={this.state.currentPage} handlePageSizeChange={this.handlePageSizeChange} pageSize={this.state.pageSize} tableData={tableData}>
           <TableColumns columnData={tableData}/>
           <TableRows pageSize={this.state.pageSize} rowData={paginationData} tableData={tableData} />
         </Table>

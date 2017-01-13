@@ -5,7 +5,7 @@ import Pagination from './Pagination';
 
 class Table extends Component {
   render() {
-    const {tableData, handlePageSizeChange, pageSize, currentPage, pageChange, count} = this.props;
+    const {tableData, handlePageSizeChange, pageSize, currentPage, pageChange, count, dataLength} = this.props;
     return (
       <div id={'table_data_tab_' + tableData.navId} className="table-data">
         <div id={'table_search_tab_' + tableData.navId} className="table-search">
@@ -15,7 +15,7 @@ class Table extends Component {
           {this.props.children}
         </table>
         <div className="pagination-container">
-          <Pagination showCount={count} handlePageSizeChange={handlePageSizeChange} tableData={tableData} pageSize={pageSize} currentPage={currentPage} pageChange={pageChange} />
+          <Pagination dataLength={dataLength} showCount={count} handlePageSizeChange={handlePageSizeChange} tableData={tableData} pageSize={pageSize} currentPage={currentPage} pageChange={pageChange} />
         </div>
       </div>
     );
@@ -53,6 +53,10 @@ Table.propTypes = {
    * React array of numbers supplied to the page size in order to change the amount of data being shown in the table
    */
   count: React.PropTypes.array,
+  /**
+   * Length of the data in deciding whether or not to show the pagination
+   */
+  dataLength: React.PropTypes.number,
 };
 
 export default Table;
