@@ -15,8 +15,6 @@ class TableRows extends Component {
   }
   render() {
     const {rowData, tableData} = this.props;
-    // const newRowData = rowData.PageLoadData.rows;
-    // console.log(newRowData);
     const columnData = tableData.PageLoadData.column_names;
     const originalHeader = [];
     const modHeader = [];
@@ -55,7 +53,8 @@ class TableRows extends Component {
 }
 
 TableRows.propTypes = {
-  // rowData: React.PropTypes.object.isRequired,
+  rowData: React.PropTypes.array.isRequired,
+  tableData: React.PropTypes.object.isRequired,
   dispatch: React.PropTypes.func.isRequired,
 };
 

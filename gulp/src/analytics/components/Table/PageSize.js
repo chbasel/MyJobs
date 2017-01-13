@@ -20,4 +20,19 @@ class PageSize extends Component {
   }
 }
 
+PageSize.propTypes = {
+  /**
+   * Number supplied for the value of the select box
+   */
+  pageSize: React.PropTypes.number.isRequired,
+  /**
+   * Function supplied in order to handle the changing of the page size in the component
+   */
+  handlePageSizeChange: React.PropTypes.func.isRequired,
+  /**
+   * Array supplied to the page size in order to handle the options that are available when it comes to the amount of data shown on the table at one time
+   */
+  showCount: React.PropTypes.array.isRequired,
+};
+
 export default PageSize;

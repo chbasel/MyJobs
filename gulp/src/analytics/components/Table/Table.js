@@ -4,68 +4,8 @@ import PageSize from './PageSize';
 import Pagination from './Pagination';
 
 class Table extends Component {
-  constructor() {
-    super();
-  }
-
- //  getPage() {
- //    const {tableData, pageSize} = this.props;
- //    const paginationData = tableData.PageLoadData.rows;
- //    const start = pageSize * (this.state.currentPage - 1);
- //    const end = start + pageSize;
- //    return {
- //      currentPage: this.state.currentPage,
- //      data: paginationData.slice(start, end),
- //      numPages: this.getNumPages(),
- //      handleClick: (pageNum) => {return this.handlePageChange(pageNum)},
- //    };
- // }
- // getNumPages() {
- //   const {tableData, pageSize} = this.props;
- //   const paginationData = tableData.PageLoadData.rows;
- //   let numPages = Math.floor(paginationData.length / pageSize);
- //   if (paginationData.length % pageSize > 0) {
- //     numPages++
- //   }
- //   return numPages;
- // }
- // handlePageChange(pageNum) {
- //   this.setState({
- //     currentPage: pageNum
- //   });
- // }
- // pager() {
- //   const {tableData, pageSize} = this.props;
- //   const paginationData = tableData.PageLoadData.rows;
- //   const start = pageSize * (this.state.currentPage - 1);
- //   const end = start + pageSize;
- //   const currentPage = this.state.currentPage;
- //   const data = paginationData.slice(start, end);
- //   const numPages = this.getNumPages();
- //   const handleClick = (pageNum) => {return this.handlePageChange.bind(this, pageNum)};
- //   const pageLinks = [];
- //   if (currentPage > 1) {
- //      if (currentPage > 2) {
- //        pageLinks.push(<span className="pageLink" onClick={handleClick(1)}>«</span>);
- //        pageLinks.push(' ');
- //      }
- //      pageLinks.push(<span className="pageLink" onClick={handleClick(currentPage - 1)}>‹</span>);
- //      pageLinks.push(' ');
- //    }
- //    pageLinks.push(<span className="currentPage">Page {currentPage} of {numPages}</span>);
- //    if (currentPage < numPages) {
- //      pageLinks.push(' ');
- //      pageLinks.push(<span className="pageLink" onClick={handleClick(currentPage + 1)}>›</span>);
- //      if (currentPage < numPages - 1) {
- //        pageLinks.push(' ');
- //        pageLinks.push(<span className="pageLink" onClick={handleClick(numPages)}>»</span>);
- //      }
- //    }
- //    return <div className="pager">{pageLinks}</div>;
- //  }
   render() {
-    const {tableData, handlePageSizeChange, pageSize, currentPage, pageChange} = this.props;
-    const count = [1, 2, 3, 4, 5];
+    const {tableData, handlePageSizeChange, pageSize, currentPage, pageChange, count} = this.props;
     return (
       <div id={'table_data_tab_' + tableData.navId} className="table-data">
         <div id={'table_search_tab_' + tableData.navId} className="table-search">
@@ -84,10 +24,36 @@ class Table extends Component {
 }
 
 Table.propTypes = {
+  /**
+   * Children for the table including the headers and rows
+   */
   children: React.PropTypes.arrayOf(
     React.PropTypes.element.isRequired,
   ),
+  /**
+   * Data that is supplied to the table
+   */
   tableData: React.PropTypes.object.isRequired,
+  /**
+   * Function supplied in order to change the amount of data shown per page on the page size component
+   */
+  handlePageSizeChange: React.PropTypes.func,
+  /**
+   * Page size is a number describing how much data is initially shown on the table
+   */
+  pageSize: React.PropTypes.number.isRequired,
+  /**
+   * Current page is a number that shows which page of the pagination is initially shown when the table renders
+   */
+  currentPage: React.PropTypes.number.isRequired,
+  /**
+   * Page Change is a function supplied to change the page when using the pagination
+   */
+  pageChange: React.PropTypes.func.isRequired,
+  /**
+   * React array of numbers supplied to the page size in order to change the amount of data being shown in the table
+   */
+  count: React.PropTypes.array,
 };
 
 export default Table;
