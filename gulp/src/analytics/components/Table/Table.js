@@ -1,6 +1,7 @@
 import React from 'react';
 import {Component} from 'react';
 import PageSize from './PageSize';
+import Pagination from './Pagination';
 
 class Table extends Component {
   constructor() {
@@ -63,7 +64,7 @@ class Table extends Component {
  //    return <div className="pager">{pageLinks}</div>;
  //  }
   render() {
-    const {tableData, handlePageSizeChange, pageSize, enablePaging} = this.props;
+    const {tableData, handlePageSizeChange, pageSize, currentPage, pageChange} = this.props;
     const count = [1, 2, 3, 4, 5];
     return (
       <div id={'table_data_tab_' + tableData.navId} className="table-data">
@@ -74,7 +75,7 @@ class Table extends Component {
           {this.props.children}
         </table>
         <div className="pagination-container">
-          {enablePaging}
+          <Pagination tableData={tableData} pageSize={pageSize} currentPage={currentPage} pageChange={pageChange} />
           <PageSize showCount={count} handlePageSizeChange={handlePageSizeChange} pageSize={pageSize} />
         </div>
       </div>
