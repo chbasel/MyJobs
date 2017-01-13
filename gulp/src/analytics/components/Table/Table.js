@@ -1,6 +1,6 @@
 import React from 'react';
 import {Component} from 'react';
-import PageSize from './PageSize';
+
 import Pagination from './Pagination';
 
 class Table extends Component {
@@ -15,10 +15,8 @@ class Table extends Component {
           {this.props.children}
         </table>
         <div className="pagination-container">
-          <Pagination tableData={tableData} pageSize={pageSize} currentPage={currentPage} pageChange={pageChange} />
-          <PageSize showCount={count} handlePageSizeChange={handlePageSizeChange} />
+          <Pagination showCount={count} handlePageSizeChange={handlePageSizeChange} tableData={tableData} pageSize={pageSize} currentPage={currentPage} pageChange={pageChange} />
         </div>
-        <div className="clearfix"></div>
       </div>
     );
   }

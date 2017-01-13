@@ -792,12 +792,17 @@ color: $primary-blue;
   margin-right: 10px;
   font-size: 16px;
 }
-.pager {
-  float: right;
+.pager.active-pager {
+  display: block;
+}
+.pager.hide-pager {
+  display: none;
 }
 .page-size-container {
   float: left;
-  margin-top: 23px;
+}
+.page-links-container {
+  float: right;
 }
 .page-link {
   padding: 5px 10px;

@@ -1,5 +1,6 @@
 import React from 'react';
 import {Component} from 'react';
+import PageSize from './PageSize';
 
 class Pagination extends Component {
   constructor() {
@@ -26,7 +27,7 @@ class Pagination extends Component {
     return pageChange(pageNum);
   }
   render() {
-    const {currentPage} = this.props;
+    const {currentPage, showCount, handlePageSizeChange} = this.props;
     const start = currentPage - 1;
     const end = start + 5;
     const numPages = this.getNumPages();
@@ -55,10 +56,14 @@ class Pagination extends Component {
     }
     const pages = numPages > 5 ? pageLinks.slice(start, end) : pageLinks;
     return (
-      <div className="pager">
-        {prevPageLinks}
-        {pages}
-        {nextPageLinks}
+      <div className={numPages > 1 ? 'pager active-pager' : 'pager hide-pager'}>
+        <PageSize handlePageChange={this.handlePageChange.bind(this)} currentPage={currentPage} showCount={showCount} handlePageSizeChange={handlePageSizeChange} />
+        <div className="page-links-container">
+          {prevPageLinks}
+          {pages}
+          {nextPageLinks}
+        </div>
+        <div className="clearfix"></div>
       </div>
     );
   }
@@ -81,6 +86,14 @@ Pagination.propTypes = {
    * Current page is a number supplied in order to know which page is currently being displayed with data in the table
    */
   currentPage: React.PropTypes.number.isRequired,
+  /**
+   * React array of numbers supplied to the page size in order to change the amount of data being shown in the table
+   */
+  showCount: React.PropTypes.array,
+  /**
+   * Function supplied in order to change the amount of data shown per page on the page size component
+   */
+  handlePageSizeChange: React.PropTypes.func,
 };
 
 export default Pagination;
