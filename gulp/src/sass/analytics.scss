@@ -797,14 +797,40 @@ color: $primary-blue;
 }
 .page-size-container {
   float: left;
-  margin-top: 25px;
+  margin-top: 23px;
 }
 .page-link {
   padding: 5px 10px;
-  border: 1px solid $primary-blue;
+  border: 1px solid $light-gray;
   outline: 0;
-  box-shadow: inset 0px 1px 0px rgba(255,255,255, .8), 0px 1px 3px rgba(0,0,0, .1);
+  box-shadow: inset 0px 1px 0px rgba(255,255,255, .8), 0px 1px 3px rgba(0,0,0, .7);
   margin: 0 5px;
+  border-radius: 3px;
+  background: $white;
+  color: $primary-blue;
+}
+.page-link.individual-page.active-page {
+  background: $primary-blue;
+  color: $white;
+  border: 1px solid $primary-blue;
+  box-shadow: inset 0px 1px 0px rgba(255,255,255, .1), 0px 1px 3px rgba(0,0,0, .7);
+}
+.page-link:hover {
+  background: $primary-blue;
+  color: $white;
+  border: 1px solid $primary-blue;
+  box-shadow: inset 0px 1px 0px rgba(255,255,255, .1), 0px 1px 3px rgba(0,0,0, .7);
+}
+.show-page-size {
+  position: relative;
+  top: 2px;
+}
+.page-size {
+  height: 30px;
+  width: 50px;
+  border: 1px solid $light-gray;
+  outline: 0;
+  box-shadow: inset 0px 1px 0px rgba(255,255,255, .8), 0px 1px 3px rgba(0,0,0, .7);
   border-radius: 3px;
   background: $white;
   color: $primary-blue;

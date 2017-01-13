@@ -2,6 +2,13 @@ import React from 'react';
 import {Component} from 'react';
 
 class Pagination extends Component {
+  constructor() {
+    super();
+
+    this.state = {
+      active: 1,
+    };
+  }
   getNumPages() {
     const {tableData, pageSize} = this.props;
     const paginationData = tableData.PageLoadData.rows;
@@ -13,6 +20,9 @@ class Pagination extends Component {
   }
   handlePageChange(pageNum) {
     const {pageChange} = this.props;
+    this.setState({
+      active: pageNum,
+    });
     return pageChange(pageNum);
   }
   render() {
@@ -33,7 +43,7 @@ class Pagination extends Component {
     }
     for (let i = 1; i <= numPages; i++) {
       const page = i;
-      pageLinks.push(<button onClick={this.handlePageChange.bind(this, page)} className="page-link individual-page">{page}</button>);
+      pageLinks.push(<button onClick={this.handlePageChange.bind(this, page)} className={this.state.active === page ? 'page-link individual-page active-page' : 'page-link individual-page'}>{page}</button>);
     }
     if (currentPage < numPages) {
       nextPageLinks.push(' ');
