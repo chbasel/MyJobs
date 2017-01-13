@@ -9,7 +9,6 @@ from relationships.utils import Graph
 @receiver(post_save, sender=SiteRelationship)
 @receiver(post_delete, sender=SiteRelationship)
 def update_relationships(sender, instance, *args, **kwargs):
-    print instance
     site = instance.parent
 
     is_parent_of = DenormalizedSiteRelationship.objects.filter(parent=site)
