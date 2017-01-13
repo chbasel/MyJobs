@@ -17,27 +17,39 @@ class Pagination extends Component {
   }
   render() {
     const {currentPage} = this.props;
+    const start = currentPage - 1;
+    const end = start + 5;
     const numPages = this.getNumPages();
+    const prevPageLinks = [];
     const pageLinks = [];
+    const nextPageLinks = [];
     if (currentPage > 1) {
       if (currentPage > 2) {
-        pageLinks.push(<span className="page-link beginning-link" onClick={this.handlePageChange.bind(this, 1)}>«</span>);
-        pageLinks.push(' ');
+        prevPageLinks.push(<button className="page-link beginning-link" onClick={this.handlePageChange.bind(this, 1)}>«</button>);
+        prevPageLinks.push(' ');
       }
-      pageLinks.push(<span className="page-link previous-link" onClick={this.handlePageChange.bind(this, currentPage - 1)}>Prev</span>);
-      pageLinks.push(' ');
+      prevPageLinks.push(<button className="page-link previous-link" onClick={this.handlePageChange.bind(this, currentPage - 1)}>Prev</button>);
+      prevPageLinks.push(' ');
     }
-    pageLinks.push(<span className="current-page">Page {currentPage} of {numPages}</span>);
+    for (let i = 1; i <= numPages; i++) {
+      const page = i;
+      pageLinks.push(<button onClick={this.handlePageChange.bind(this, page)} className="page-link individual-page">{page}</button>);
+    }
     if (currentPage < numPages) {
-      pageLinks.push(' ');
-      pageLinks.push(<span className="page-link next-link" onClick={this.handlePageChange.bind(this, currentPage + 1)}>Next</span>);
+      nextPageLinks.push(' ');
+      nextPageLinks.push(<button className="page-link next-link" onClick={this.handlePageChange.bind(this, currentPage + 1)}>Next</button>);
       if (currentPage < numPages - 1) {
-        pageLinks.push(' ');
-        pageLinks.push(<span className="page-link end-link" onClick={this.handlePageChange.bind(this, numPages)}>»</span>);
+        nextPageLinks.push(' ');
+        nextPageLinks.push(<button className="page-link end-link" onClick={this.handlePageChange.bind(this, numPages)}>»</button>);
       }
     }
+    const pages = numPages > 5 ? pageLinks.slice(start, end) : pageLinks;
     return (
-      <div className="pager">{pageLinks}</div>
+      <div className="pager">
+        {prevPageLinks}
+        {pages}
+        {nextPageLinks}
+      </div>
     );
   }
 }

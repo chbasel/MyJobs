@@ -18,6 +18,7 @@ class Table extends Component {
           <Pagination tableData={tableData} pageSize={pageSize} currentPage={currentPage} pageChange={pageChange} />
           <PageSize showCount={count} handlePageSizeChange={handlePageSizeChange} />
         </div>
+        <div className="clearfix"></div>
       </div>
     );
   }

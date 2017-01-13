@@ -10,8 +10,8 @@ class PageSize extends Component {
       );
     });
     return (
-      <div>
-        <label htmlFor="pageSize">Per Page: </label>
+      <div className="page-size-container">
+        <span className="show-page-size">Show:</span>
         <select className="page-size" onChange={handlePageSizeChange}>
           {options}
         </select>

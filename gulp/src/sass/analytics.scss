@@ -785,6 +785,31 @@ color: $primary-blue;
   transform: rotate(45deg);
 }
 
+/*CSS FOR THE PAGINATION*/
+
+.show-page-size {
+  color: $primary-blue;
+  margin-right: 10px;
+  font-size: 16px;
+}
+.pager {
+  float: right;
+}
+.page-size-container {
+  float: left;
+  margin-top: 25px;
+}
+.page-link {
+  padding: 5px 10px;
+  border: 1px solid $primary-blue;
+  outline: 0;
+  box-shadow: inset 0px 1px 0px rgba(255,255,255, .8), 0px 1px 3px rgba(0,0,0, .1);
+  margin: 0 5px;
+  border-radius: 3px;
+  background: $white;
+  color: $primary-blue;
+}
+
 /*RESPONSIVE MEDIA QUERIES FOR ANALYTICS PAGE*/
 
 /*==========  Mobile First Method  ==========*/
