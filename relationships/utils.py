@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 
-from relationships.models import SiteRelationship, NormalizedSiteRelationship
+from relationships.models import SiteRelationship, DenormalizedSiteRelationship
 from seo.models import SeoSite
 
 
@@ -62,11 +62,11 @@ class Graph(object):
         normalized = []
         for depth, children in children_by_depth.iteritems():
             for child_id, weight, by_id in children:
-                normalized.append(NormalizedSiteRelationship(
+                normalized.append(DenormalizedSiteRelationship(
                     parent_id=parent_id,
                     child_id=child_id,
                     weight=weight,
                     by_id=by_id,
                     depth=depth,
                 ))
-        NormalizedSiteRelationship.objects.bulk_create(normalized)
+        DenormalizedSiteRelationship.objects.bulk_create(normalized)

@@ -1,9 +1,9 @@
 from haystack import indexes
 
-from relationships.models import NormalizedSiteRelationship
+from relationships.models import DenormalizedSiteRelationship
 
 
-class NormalizedSiteRelationshipIndex(indexes.SearchIndex, indexes.Indexable):
+class DenormalizedSiteRelationshipIndex(indexes.SearchIndex, indexes.Indexable):
     parent = indexes.IntegerField()
     child = indexes.IntegerField()
     by = indexes.IntegerField()
@@ -12,7 +12,7 @@ class NormalizedSiteRelationshipIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True)
 
     def get_model(self):
-        return NormalizedSiteRelationship
+        return DenormalizedSiteRelationship
 
     def index_queryset(self, using=None):
         return self.get_model().objects.all()

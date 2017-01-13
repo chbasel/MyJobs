@@ -41,7 +41,7 @@ class SiteRelationship(BaseRelationship):
         return super(SiteRelationship, self).save(**kwargs)
 
 
-class NormalizedSiteRelationship(BaseRelationship):
+class DenormalizedSiteRelationship(BaseRelationship):
     parent = models.ForeignKey('seo.SeoSite', blank=False,
                                related_name='normalized_child_set')
     child = models.ForeignKey('seo.SeoSite', blank=False,

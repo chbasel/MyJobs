@@ -29,8 +29,8 @@ class Migration(SchemaMigration):
         # Adding unique constraint on 'SiteRelationship', fields ['parent', 'child', 'by']
         db.create_unique(u'relationships_siterelationship', ['parent_id', 'child_id', 'by_id'])
 
-        # Adding model 'NormalizedSiteRelationship'
-        db.create_table(u'relationships_normalizedsiterelationship', (
+        # Adding model 'DenormalizedSiteRelationship'
+        db.create_table(u'relationships_denormalizedsiterelationship', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('weight', self.gf('django.db.models.fields.FloatField')(default=0)),
             ('created_on', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
@@ -39,7 +39,7 @@ class Migration(SchemaMigration):
             ('by', self.gf('django.db.models.fields.related.ForeignKey')(related_name='normalized_by_set', to=orm['relationships.Relationship'])),
             ('depth', self.gf('django.db.models.fields.IntegerField')()),
         ))
-        db.send_create_signal(u'relationships', ['NormalizedSiteRelationship'])
+        db.send_create_signal(u'relationships', ['DenormalizedSiteRelationship'])
 
 
     def backwards(self, orm):
@@ -52,8 +52,8 @@ class Migration(SchemaMigration):
         # Deleting model 'SiteRelationship'
         db.delete_table(u'relationships_siterelationship')
 
-        # Deleting model 'NormalizedSiteRelationship'
-        db.delete_table(u'relationships_normalizedsiterelationship')
+        # Deleting model 'DenormalizedSiteRelationship'
+        db.delete_table(u'relationships_denormalizedsiterelationship')
 
 
     models = {
@@ -94,8 +94,8 @@ class Migration(SchemaMigration):
             u'package_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['postajob.Package']", 'unique': 'True', 'primary_key': 'True'}),
             'sites': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['seo.SeoSite']", 'null': 'True', 'symmetrical': 'False'})
         },
-        u'relationships.normalizedsiterelationship': {
-            'Meta': {'object_name': 'NormalizedSiteRelationship'},
+        u'relationships.denormalizedsiterelationship': {
+            'Meta': {'object_name': 'DenormalizedSiteRelationship'},
             'by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'normalized_by_set'", 'to': u"orm['relationships.Relationship']"}),
             'child': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'normalized_parent_set'", 'to': u"orm['seo.SeoSite']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),

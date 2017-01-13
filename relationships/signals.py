@@ -2,29 +2,29 @@ from django.db.models.signals import post_save
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
-from relationships.models import NormalizedSiteRelationship, SiteRelationship
+from relationships.models import DenormalizedSiteRelationship, SiteRelationship
 from relationships.utils import Graph
 
 
 @receiver(post_save, sender=SiteRelationship)
-def create_normalized_relationships(sender, instance, created, *args, **kwargs):
+def create_denormalized_relationships(sender, instance, created, *args, **kwargs):
     update_relationships(instance)
 
 
 @receiver(pre_delete, sender=SiteRelationship)
-def delete_normalized_relationships(sender, instance, *args, **kwargs):
+def delete_denormalized_relationships(sender, instance, *args, **kwargs):
     update_relationships(instance)
 
 
 def update_relationships(instance):
     site = instance.parent
 
-    is_parent_of = NormalizedSiteRelationship.objects.filter(parent=site)
+    is_parent_of = DenormalizedSiteRelationship.objects.filter(parent=site)
     list(is_parent_of)
     is_parent_of.delete()
 
-    has_as_child = NormalizedSiteRelationship.objects.filter(child=site)
-    has_as_child = NormalizedSiteRelationship.objects.filter(
+    has_as_child = DenormalizedSiteRelationship.objects.filter(child=site)
+    has_as_child = DenormalizedSiteRelationship.objects.filter(
         parent__id__in=has_as_child.values_list('parent_id', flat=True)
     )
 
