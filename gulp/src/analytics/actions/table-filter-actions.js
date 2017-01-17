@@ -25,6 +25,7 @@ export function doGetSelectedFilterData(tableValue, typeValue) {
 
       // Storing the current filters inside of the state to send off in the request to the API
       const storedFilters = [];
+      // Storing the current breadcrumbs inside of the state to use for creating breadcrumbs
       const storedBreadCrumbs = [];
       // Storing the dates in order to update the reducer with them
       let storedDates;
@@ -35,7 +36,6 @@ export function doGetSelectedFilterData(tableValue, typeValue) {
       getState().pageLoadData.activeFilters.map((filter) => {
         storedBreadCrumbs.push(filter.value);
       });
-      console.log(getState().pageLoadData);
       getState().pageLoadData.navigation.map((nav) => {
         if (nav.active) {
           storedDates = {

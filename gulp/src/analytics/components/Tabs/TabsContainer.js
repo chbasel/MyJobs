@@ -42,7 +42,7 @@ class TabsContainer extends Component {
     const tabsPanel = analytics.navigation.map((tab, index) => {
       return (
         <TabsPanel key={index} id={tab.navId} active={tab.active} label={tab.PageLoadData.column_names[0].label}>
-          <BreadCrumb breadcrumbClick={crumb => this.handleBreadcrumbClick(crumb)} id={tab.navId} crumbs={tab.crumbs}/>
+          <BreadCrumb breadcrumbClick={crumb => this.handleBreadcrumbClick(crumb)} crumbs={tab.crumbs}/>
           <ChartContainer chartData={tab} width={chartWidth}/>
           <TableContainer tableData={tab}/>
         </TabsPanel>
@@ -59,6 +59,7 @@ class TabsContainer extends Component {
 }
 
 TabsContainer.propTypes = {
+  dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
   /**
    * Boolean stating whether or not the tabs are shown on screen

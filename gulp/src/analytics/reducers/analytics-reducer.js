@@ -93,7 +93,6 @@ export default handleActions({
   'STORE_ACTIVE_FILTER': (state, action) => {
     const checkType = action.payload.type;
     const index = findIndex(state.activeFilters, f => f.type === checkType);
-    console.log(index);
     if (index > -1) {
       return {
         ...state,

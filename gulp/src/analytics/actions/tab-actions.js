@@ -41,7 +41,7 @@ export function doRemoveSelectedTab(tabId) {
 }
 
 /**
- * This action switches the current tab to a tab selected using the tabid
+ * This action will also switch the current tab depending on which breadcrumb you actually click on
  */
 export function doBreadCrumbSwitchTab(crumb) {
   return (dispatch, getState) => {
