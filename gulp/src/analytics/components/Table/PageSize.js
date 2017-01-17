@@ -28,7 +28,6 @@ class PageSize extends Component {
     );
   }
 }
-// handlePageChange={this.handlePageChange.bind(this, startPage)} currentPage={currentPage}
 PageSize.propTypes = {
   /**
    * Function supplied in order to handle the changing of the page size in the component
