@@ -1,6 +1,7 @@
 import {createAction} from 'redux-actions';
 
 export const switchActiveTab = createAction('SWITCH_ACTIVE_TAB');
+export const breadCrumbSwitchTab = createAction('BREADCRUMB_SWITCH_ACTIVE_TAB');
 export const removeSelectedTab = createAction('REMOVE_SELECTED_TAB');
 export const setCurrentRange = createAction('SET_CURRENT_RANGE');
 
@@ -36,5 +37,22 @@ export function doRemoveSelectedTab(tabId) {
       dispatch(switchActiveTab(maxNav));
     }
     dispatch(removeSelectedTab(tabId));
+  };
+}
+
+/**
+ * This action switches the current tab to a tab selected using the tabid
+ */
+export function doBreadCrumbSwitchTab(crumb) {
+  return (dispatch, getState) => {
+    let tabId;
+    getState().pageLoadData.navigation.map((nav) => {
+      if (nav.crumbs.length < 1) {
+        tabId = nav.navId;
+      } else if (nav.crumbs[nav.crumbs.length - 1] === crumb) {
+        tabId = nav.navId;
+      }
+    });
+    dispatch(switchActiveTab(tabId));
   };
 }

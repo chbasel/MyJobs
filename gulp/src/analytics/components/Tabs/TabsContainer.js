@@ -1,17 +1,18 @@
 import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
+import {doBreadCrumbSwitchTab} from '../../actions/tab-actions';
 import Tab from './Tab';
 import TabsPanel from './TabsPanel';
 import TableContainer from '../Table/TableContainer';
 import ChartContainer from '../Charts/ChartContainer';
+import BreadCrumb from '../BreadCrumb';
 
 class TabsContainer extends Component {
   constructor() {
     super();
 
     this.handleResize = this.handleResize.bind(this);
-    // this.handleBreadcrumbClick = this.handleBreadcrumbClick.bind(this);
 
     this.state = {
       chartWidth: 1,
@@ -31,12 +32,17 @@ class TabsContainer extends Component {
       chartWidth: this.refs.contentContainer.clientWidth,
     });
   }
+  handleBreadcrumbClick(crumb) {
+    const {dispatch} = this.props;
+    dispatch(doBreadCrumbSwitchTab(crumb));
+  }
   render() {
     const {analytics, tabsMenuActive, closeMenus} = this.props;
     const chartWidth = this.state.chartWidth;
     const tabsPanel = analytics.navigation.map((tab, index) => {
       return (
         <TabsPanel key={index} id={tab.navId} active={tab.active} label={tab.PageLoadData.column_names[0].label}>
+          <BreadCrumb breadcrumbClick={crumb => this.handleBreadcrumbClick(crumb)} id={tab.navId} crumbs={tab.crumbs}/>
           <ChartContainer chartData={tab} width={chartWidth}/>
           <TableContainer tableData={tab}/>
         </TabsPanel>

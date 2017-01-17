@@ -25,12 +25,17 @@ export function doGetSelectedFilterData(tableValue, typeValue) {
 
       // Storing the current filters inside of the state to send off in the request to the API
       const storedFilters = [];
+      const storedBreadCrumbs = [];
       // Storing the dates in order to update the reducer with them
       let storedDates;
       getState().pageLoadData.activeFilters.map((filter) => {
         storedFilters.push(filter);
       });
-      console.log(storedFilters);
+      storedBreadCrumbs.push(getState().pageLoadData.activeFilters[0].type);
+      getState().pageLoadData.activeFilters.map((filter) => {
+        storedBreadCrumbs.push(filter.value);
+      });
+      console.log(getState().pageLoadData);
       getState().pageLoadData.navigation.map((nav) => {
         if (nav.active) {
           storedDates = {
@@ -50,6 +55,7 @@ export function doGetSelectedFilterData(tableValue, typeValue) {
         date: storedDates,
         tabFilter: tabFilters,
         loadRange: range,
+        crumbs: storedBreadCrumbs,
       };
       dispatch(setSelectedFilterData(navFilterData));
       dispatch(markNavLoadingAction(false));

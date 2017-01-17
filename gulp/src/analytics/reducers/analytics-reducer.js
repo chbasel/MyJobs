@@ -26,6 +26,7 @@ export const initialPageData = {
   pageFetching: true,
   navFetching: false,
   navigation: [],
+  breadCrumbs: [],
   activeFilters: [],
   startMonth: '',
   startDay: '',
@@ -123,6 +124,7 @@ export default handleActions({
         {
           navId: navCount++,
           active: true,
+          crumbs: filterData.crumbs,
           startDate: filterData.date.startDate,
           activeFilters: filterData.tabFilter,
           endDate: filterData.date.endDate,
@@ -134,6 +136,24 @@ export default handleActions({
     };
   },
   'SWITCH_ACTIVE_TAB': (state, action) => {
+    const activeTab = action.payload;
+    return {
+      ...state,
+      navigation: state.navigation.map((nav) => {
+        if (nav.navId === activeTab) {
+          return {
+            ...nav,
+            active: true,
+          };
+        }
+        return {
+          ...nav,
+          active: false,
+        };
+      }),
+    };
+  },
+  'BREADCRUMB_SWITCH_ACTIVE_TAB': (state, action) => {
     const activeTab = action.payload;
     return {
       ...state,
@@ -166,6 +186,7 @@ export default handleActions({
         {
           navId: navCount++,
           active: true,
+          crumbs: [],
           startDate: mainDimensionData.startDate,
           endDate: mainDimensionData.endDate,
           PageLoadData: mainDimensionData.pageData,

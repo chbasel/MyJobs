@@ -572,6 +572,9 @@ path:hover {
  .breadcrumb-active:focus::after {
  	border-left-color: $primary-red;
  }
+ .crumb-title {
+   text-transform: uppercase;
+ }
 
 /*CSS FOR THE NEW DIMENSION TABLE*/
 .rwd-table {
