@@ -31,37 +31,21 @@ class Pagination extends Component {
     const start = currentPage - 1;
     const end = start + 5;
     const numPages = this.getNumPages();
-    const prevPageLinks = [];
     const pageLinks = [];
-    const nextPageLinks = [];
-    if (currentPage > 1) {
-      if (currentPage > 2) {
-        prevPageLinks.push(<button className="page-link beginning-link" onClick={this.handlePageChange.bind(this, 1)}>«</button>);
-        prevPageLinks.push(' ');
-      }
-      prevPageLinks.push(<button className="page-link previous-link" onClick={this.handlePageChange.bind(this, currentPage - 1)}>Prev</button>);
-      prevPageLinks.push(' ');
-    }
     for (let i = 1; i <= numPages; i++) {
       const page = i;
-      pageLinks.push(<button onClick={this.handlePageChange.bind(this, page)} className={this.state.active === page ? 'page-link individual-page active-page' : 'page-link individual-page'}>{page}</button>);
-    }
-    if (currentPage < numPages) {
-      nextPageLinks.push(' ');
-      nextPageLinks.push(<button className="page-link next-link" onClick={this.handlePageChange.bind(this, currentPage + 1)}>Next</button>);
-      if (currentPage < numPages - 1) {
-        nextPageLinks.push(' ');
-        nextPageLinks.push(<button className="page-link end-link" onClick={this.handlePageChange.bind(this, numPages)}>»</button>);
-      }
+      pageLinks.push(<button key={page} onClick={this.handlePageChange.bind(this, page)} className={this.state.active === page ? 'page-link individual-page active-page' : 'page-link individual-page'}>{page}</button>);
     }
     const pages = numPages > 5 ? pageLinks.slice(start, end) : pageLinks;
     return (
       <div className={dataLength > 10 ? 'pager active-pager' : 'pager hide-pager'}>
         <PageSize handlePageChange={this.handlePageChange.bind(this)} currentPage={currentPage} showCount={showCount} handlePageSizeChange={handlePageSizeChange} />
         <div className="page-links-container">
-          {prevPageLinks}
+          {currentPage > 2 ? <button className="page-link beginning-link" onClick={this.handlePageChange.bind(this, 1)}>«</button> : ''}
+          {currentPage > 1 ? <button className="page-link previous-link" onClick={this.handlePageChange.bind(this, currentPage - 1)}>Prev</button> : ''}
           {pages}
-          {nextPageLinks}
+          {currentPage < numPages ? <button className="page-link next-link" onClick={this.handlePageChange.bind(this, currentPage + 1)}>Next</button> : ''}
+          {currentPage < numPages - 1 ? <button className="page-link end-link" onClick={this.handlePageChange.bind(this, numPages)}>»</button> : ''}
         </div>
         <div className="clearfix"></div>
       </div>
