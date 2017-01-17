@@ -22,6 +22,9 @@ class Calendar extends Component {
       errorMessage: false,
     };
   }
+  componentDidMount() {
+    window.addEventListener('mousedown', this.pageClick.bind(this), false);
+  }
   setRangeSelection(range) {
     const {dispatch, analytics, hideCalendarRangePicker} = this.props;
     const startRange = range[0];
@@ -39,6 +42,20 @@ class Calendar extends Component {
       showCalendar: false,
     });
     hideCalendarRangePicker();
+  }
+  pageClick() {
+    if (this.mouseIsDownOnCalendar) {
+      return;
+    }
+    this.setState({
+      showCalendar: false,
+    });
+  }
+  mouseDownHandler() {
+    this.mouseIsDownOnCalendar = true;
+  }
+  mouseUpHandler() {
+    this.mouseIsDownOnCalendar = false;
   }
   showCalendar() {
     this.setState({
@@ -90,9 +107,14 @@ class Calendar extends Component {
     const {dispatch, analytics, hideCalendarRangePicker} = this.props;
     const startDate = `${analytics.startMonth + 1}/${analytics.startDay}/${analytics.startYear}`;
     const endDate = `${analytics.endMonth + 1}/${analytics.endDay}/${analytics.endYear}`;
+    let activeFilters;
+    analytics.navigation.map((nav) => {
+      if (nav.active) {
+        activeFilters = nav.activeFilters;
+      }
+    });
     if (Date.parse(startDate) < Date.parse(endDate)) {
       const activeMainDimension = analytics.activePrimaryDimension;
-      const activeFilters = analytics.activeFilters;
       dispatch(doSetCustomRange(startDate, endDate, activeMainDimension, activeFilters));
       this.setState({
         showCalendar: false,
@@ -138,7 +160,7 @@ class Calendar extends Component {
       <div onMouseDown={onMouseDown} onMouseUp={onMouseUp} className={showCalendarRangePicker ? 'calendar-container active-picker' : 'calendar-container non-active-picker'}>
         <ul>
           <li className="calendar-pick full-calendar">
-            <div className={this.state.showCalendar ? 'show-calendar' : 'hide-calendar'}>
+            <div onMouseDown={this.mouseDownHandler.bind(this)} onMouseUp={this.mouseUpHandler.bind(this)} className={this.state.showCalendar ? 'show-calendar' : 'hide-calendar'}>
               {this.state.errorMessage ? <HelpText message={errorMessage}/> : ''}
               <div className="start-calendar">
                 <p className="date-label">Start Date</p>
@@ -161,9 +183,21 @@ class Calendar extends Component {
 Calendar.propTypes = {
   dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
+  /**
+   * Boolean true or false determining whether the calendar is shown or not
+   */
   showCalendarRangePicker: React.PropTypes.bool,
+  /**
+   * Function for hiding teh calendar
+   */
   hideCalendarRangePicker: React.PropTypes.func,
+  /**
+   * Mousedown on the calendar to keep the calendar displayed when clicking on it
+   */
   onMouseDown: React.PropTypes.func,
+  /**
+   * Mouseup on the calendar to keep it displayed when click inside of it
+   */
   onMouseUp: React.PropTypes.func,
 };
 

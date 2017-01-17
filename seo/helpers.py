@@ -742,8 +742,8 @@ def sort_custom_facets_by_group(custom_facets):
              values are a list of custom facets for that facet_group.
 
     """
-    # Right now we know we only have these 4 facet_groups.
-    grouped_facets = {1: [], 2: [], 3: [], 4: []}
+    # Right now we know we only have these 6 facet_groups.
+    grouped_facets = {1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
 
     for facet, count in custom_facets:
         cached_facets = getattr(settings, 'STANDARD_FACET', [])

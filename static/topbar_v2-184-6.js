@@ -30,12 +30,20 @@ utils.readCookie = function readCookie(cookie) {
  **/
 utils.logoutTimer = function readCookie(url) {
   if (!timer) {
-    timer = window.setInterval(function redirect() {
-      // if we are logged out and not already on the home page
-      if (utils.readCookie('loggedout') && window.location.pathname !== url) {
-        window.location.assign(url);
-      }
-    }, 500);
+    if (loggedin) {
+      // We were logged in when this was called. Set up our logout timer.
+      timer = window.setInterval(function redirect() {
+        // if we are logged out and not already on the home page
+        // If the loggedout cookie is set, a log out was initiated by the
+        // user via.
+        // If the exp cookie is missing, the user's session has expired.
+        if ((utils.readCookie('loggedout') && window.location.pathname !== url) ||
+            ((!utils.readCookie('exp')) && (window.location.pathname !== url))) {
+          window.location.assign(url);
+        }
+
+      }, 500);
+    }
   } else {
     window.clearInterval(timer);
   }
@@ -54,7 +62,6 @@ utils.setCookie = function(name, value, days) {
   document.cookie = name + '=' + value + expires + '; path=/';
 };
 
-var readCookie = utils.readCookie;
 
 $(window).ready(function () {
     if (typeof tools_companies !== 'undefined') {
