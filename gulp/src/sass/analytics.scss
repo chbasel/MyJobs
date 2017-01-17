@@ -524,7 +524,7 @@ path:hover {
    display: inline-block;
   margin: 0 10px 10px 0;
  }
- .breadcrumb-active, .breadcrumb-active:hover, .breadcrumb-active:focus, .breadcrumb-active:active {
+ .crumb-title, .crumb-title:hover {
    background: $primary-blue;
   display: inline-block;
    outline: medium none;
@@ -533,15 +533,15 @@ path:hover {
    color: $white;
    position: relative;
  }
- .breadcrumb-active:hover {
+ .crumb-title:hover {
    background: $darkest-gray;
    color: $white;
  }
- .breadcrumb-active:focus {
+ .crumb-title.active-crumb {
    background: $primary-red;
    color: $white;
  }
- .breadcrumb-active::before {
+ .crumb-title::before {
    border-color: transparent transparent transparent $light-gray;
    border-style: solid;
    border-width: 13px 0 13px 13px;
@@ -553,7 +553,7 @@ path:hover {
   top: 0;
    width: 0;
  }
- .breadcrumb-active::after {
+ .crumb-title::after {
    border-color: transparent transparent transparent $primary-blue;
    border-style: solid;
    border-width: 13px 0 13px 13px;
@@ -566,11 +566,14 @@ path:hover {
   width: 0;
    z-index: 1;
  }
- .breadcrumb-active:hover::after {
- 	border-left-color: $darkest-gray;
+ .crumb-title.active-crumb::after {
+   border-color: transparent transparent transparent $primary-red;
  }
- .breadcrumb-active:focus::after {
- 	border-left-color: $primary-red;
+ .crumb-title.active-crumb:hover::after {
+   border-left-color: $primary-red;
+ }
+ .crumb-title:hover::after {
+ 	border-left-color: $darkest-gray;
  }
  .crumb-title {
    text-transform: uppercase;
