@@ -7,6 +7,7 @@ class SimpleBarChart extends Component {
   render() {
     const {chartData, width, height, pathClicked} = this.props;
     const barData = chartData.PageLoadData.rows;
+    const mainBarData = barData.slice(0, 11);
     const xAxis = chartData.PageLoadData.column_names[0].key;
     const barClicked = (bar) => {pathClicked(bar.activeLabel, xAxis);};
     return (
@@ -15,7 +16,7 @@ class SimpleBarChart extends Component {
           <BarChart
             width={width}
             height={height}
-            data={barData}
+            data={mainBarData}
             margin={{top: 5, right: 30, left: 20, bottom: 100}}
             onClick={barClicked}>
            <XAxis dataKey={xAxis} interval={0} tick={<RotatedXAxisTick />} />
