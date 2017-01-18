@@ -1,4 +1,5 @@
 from django.db.models.signals import post_save
+
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
@@ -30,4 +31,4 @@ def update_relationships(sender, instance, *args, **kwargs):
     graph = Graph()
 
     for site in sites_to_update:
-        graph.normalize_all_relationships(site)
+        graph.denormalize_all_relationships(site)

@@ -16,6 +16,24 @@ class Graph(object):
         self.build()
 
     def build(self):
+        """
+        Creates a graph of all SiteRelationships and stores it
+        in Graph.__graph__.
+
+        Graph will be of the format:
+
+        {
+            parent_id: {
+                relationship_id: [
+                    (child_id, weight_of_relationship, relationship_id),
+                    ...
+                ],
+                ...
+            },
+            ...
+        }
+
+        """
         graph = defaultdict(lambda: defaultdict(list))
 
         site_relationships = SiteRelationship.objects.all()
@@ -30,6 +48,18 @@ class Graph(object):
         self.__graph__ = graph
 
     def children_by_depth(self, parent_id, by=None, depth=1):
+        """
+        Gets all of the children for a site, arranged by depth.
+
+        :param parent_id: The site id of the site children are wanted for.
+        :param by: If provided, the relationship id of the relationship
+                   the children should be related by.
+        :param depth: The number of relationships that should be followed when
+                      getting children.
+        :return: A dictionary of children by depth, formatted:
+                {depth: [(child_id, weight, relationship_id), ...], ...}
+
+        """
         children_by_depth = {}
         current = (parent_id, )
 
@@ -45,6 +75,16 @@ class Graph(object):
         return children_by_depth
 
     def immediate_children(self, site_id, by=None):
+        """
+        Gets the immediate children (so only following one relationship) for
+        a site.
+
+        :param site_id: The site id of the site children are wanted for.
+        :param by: If provided, the relationship id of the relationship
+                   that the immediate children should be related by.
+        :return: A list of children, formatted:
+                    (child_id, weight, relationship_id)
+        """
         start_node = self.__graph__[site_id]
 
         if by:
@@ -56,7 +96,17 @@ class Graph(object):
 
         return children
 
-    def normalize_all_relationships(self, parent):
+    def denormalize_all_relationships(self, parent):
+        """
+        Take the graph stored in __graph__ and flatten so that all relationships
+        are accounted for, e.g. if a->b and b->c, then flatten to
+        a->b, a->c, b->c.
+
+        Stores flattened entries in the DenormalizedSiteRelationship table.
+
+        :param parent: The site or site id that should be denormalized.
+
+        """
         parent_id = parent.id if isinstance(parent, SeoSite) else parent
         children_by_depth = self.children_by_depth(parent_id, depth=10)
 
