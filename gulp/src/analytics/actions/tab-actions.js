@@ -80,7 +80,6 @@ export function doBreadCrumbSwitchTab(crumb) {
         }
       });
     }
-    console.log(index);
     dispatch(switchActiveTab(tabId));
   };
 }
