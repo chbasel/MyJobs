@@ -2,6 +2,7 @@ import {createAction} from 'redux-actions';
 
 export const switchActiveTab = createAction('SWITCH_ACTIVE_TAB');
 export const breadCrumbSwitchTab = createAction('BREADCRUMB_SWITCH_ACTIVE_TAB');
+export const storeDeletedTab = createAction('STORE_DELETED_TAB');
 export const removeSelectedTab = createAction('REMOVE_SELECTED_TAB');
 export const setCurrentRange = createAction('SET_CURRENT_RANGE');
 
@@ -36,6 +37,8 @@ export function doRemoveSelectedTab(tabId) {
       });
       dispatch(switchActiveTab(maxNav));
     }
+    // Storing the deleted tab before it's removed from the state
+    dispatch(storeDeletedTab(selectedTab[0]));
     dispatch(removeSelectedTab(tabId));
   };
 }
@@ -47,10 +50,13 @@ export function doBreadCrumbSwitchTab(crumb) {
   return (dispatch, getState) => {
     let tabId;
     getState().pageLoadData.navigation.map((nav) => {
-      if (nav.crumbs.length < 1) {
+      if (nav.crumbs.length === 1 && nav.crumbs[0] === crumb) {
         tabId = nav.navId;
-      } else if (nav.crumbs[nav.crumbs.length - 1] === crumb) {
-        tabId = nav.navId;
+      }
+      if (nav.crumbs.indexOf(crumb)) {
+        if (nav.crumbs[nav.crumbs.length - 1] === crumb) {
+          tabId = nav.navId;
+        }
       }
     });
     dispatch(switchActiveTab(tabId));

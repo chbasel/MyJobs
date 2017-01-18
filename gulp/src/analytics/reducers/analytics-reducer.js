@@ -38,6 +38,7 @@ export const initialPageData = {
   activeReport: '',
   primaryDimensions: {},
   activePrimaryDimension: '',
+  deletedNavigation: [],
 };
 
 export default handleActions({
@@ -66,7 +67,7 @@ export default handleActions({
           active: true,
           startDate: loadData.startDate,
           endDate: loadData.endDate,
-          crumbs: [],
+          crumbs: [loadData.pageData.column_names[0].label.toLowerCase()],
           activeFilters: [],
           PageLoadData: loadData.pageData,
           currentDateRange: loadData.loadRange,
@@ -170,6 +171,18 @@ export default handleActions({
       }),
     };
   },
+  'REPLACE_DELETED_TAB': (state, action) => {
+    const replacedTab = action.payload;
+    return {
+      ...state,
+      navigation: [
+        ...state.navigation.map((nav) => {
+          return nav;
+        }),
+        replacedTab,
+      ],
+    };
+  },
   'SET_CURRENT_RANGE': (state, action) => {
     const range = action.payload;
     return {
@@ -201,6 +214,13 @@ export default handleActions({
     return {
       ...state,
       activePrimaryDimension: activeMainDimension,
+    };
+  },
+  'STORE_DELETED_TAB': (state, action) => {
+    const deleted = action.payload;
+    return {
+      ...state,
+      deletedNavigation: state.deletedNavigation.concat(deleted),
     };
   },
   'REMOVE_SELECTED_TAB': (state, action) => {

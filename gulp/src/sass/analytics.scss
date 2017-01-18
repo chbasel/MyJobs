@@ -578,6 +578,9 @@ path:hover {
  .crumb-title {
    text-transform: uppercase;
  }
+ .tab-panel:first-child .breadcrumb-container {
+   display: none;
+ }
 
 /*CSS FOR THE NEW DIMENSION TABLE*/
 .rwd-table {
