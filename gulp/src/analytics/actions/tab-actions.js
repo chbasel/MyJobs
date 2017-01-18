@@ -51,17 +51,27 @@ export function doRemoveSelectedTab(tabId) {
 export function doBreadCrumbSwitchTab(crumb) {
   return (dispatch, getState) => {
     let tabId;
+    let index;
+    const navigation = getState().pageLoadData.navigation;
     // Looping through the deleted tabs to see if the crumbs match in case we need to re add the tab back as an undo function
     if (getState().pageLoadData.deletedNavigation.length > 0) {
       getState().pageLoadData.deletedNavigation.map((deleted) => {
         if (deleted.crumbs[deleted.crumbs.length - 1] === crumb) {
-          dispatch(restoreDeletedTab(deleted));
+          for (let i = 0; i < navigation.length; i++) {
+            if (navigation[i].navId === deleted.navId + 1) {
+              index = i;
+              break;
+            } else {
+              index = 1;
+            }
+          }
+          dispatch(restoreDeletedTab({deleted: deleted, index: index}));
           dispatch(deleteStoredDeletedTab(deleted));
           tabId = deleted.navId;
         }
       });
     } else {
-      getState().pageLoadData.navigation.map((nav) => {
+      navigation.map((nav) => {
         if (nav.crumbs.length === 1 && nav.crumbs[0] === crumb) {
           tabId = nav.navId;
         }
@@ -70,6 +80,7 @@ export function doBreadCrumbSwitchTab(crumb) {
         }
       });
     }
+    console.log(index);
     dispatch(switchActiveTab(tabId));
   };
 }

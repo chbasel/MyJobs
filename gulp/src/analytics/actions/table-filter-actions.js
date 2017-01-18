@@ -32,7 +32,6 @@ export function doGetSelectedFilterData(tableValue, typeValue) {
       getState().pageLoadData.activeFilters.map((filter) => {
         storedFilters.push(filter);
       });
-      console.log(getState().pageLoadData);
       storedBreadCrumbs.push(getState().pageLoadData.navigation[0].PageLoadData.column_names[0].label.toLowerCase());
       getState().pageLoadData.activeFilters.map((filter) => {
         storedBreadCrumbs.push(filter.value);

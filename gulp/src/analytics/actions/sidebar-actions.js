@@ -37,7 +37,6 @@ export function doSwitchMainDimension(mainDimension, start, end) {
       const splitEnd = end.split(' ')[0];
       const splitStart = start.split(' ')[0];
       const range = splitStart + ' - ' + splitEnd;
-      console.log(currentDimensionData);
       // Creating object of data coming back from the API along with the starting and ending date to send to reducer when the main dimension is changed
       const allLoadData = {
         startDate: start,
