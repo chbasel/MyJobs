@@ -5,6 +5,7 @@ class BreadCrumb extends Component {
   render() {
     const {breadcrumbClick, crumbs} = this.props;
     const breadcrumbs = crumbs.map((crumb, i) => {
+      console.log(crumb);
       return (
         <li key={i} onClick={() => breadcrumbClick(crumb)} className="analytics-breadcrumbs">
           <a className="crumb-title" href="#">{crumb}</a>
