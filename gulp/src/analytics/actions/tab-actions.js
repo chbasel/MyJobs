@@ -51,6 +51,7 @@ export function doRemoveSelectedTab(tabId) {
 export function doBreadCrumbSwitchTab(crumb) {
   return (dispatch, getState) => {
     let tabId;
+    // Looping through the deleted tabs to see if the crumbs match in case we need to re add the tab back as an undo function
     if (getState().pageLoadData.deletedNavigation.length > 0) {
       getState().pageLoadData.deletedNavigation.map((deleted) => {
         if (deleted.crumbs[deleted.crumbs.length - 1] === crumb) {
@@ -69,7 +70,6 @@ export function doBreadCrumbSwitchTab(crumb) {
         }
       });
     }
-    console.log(tabId);
     dispatch(switchActiveTab(tabId));
   };
 }
