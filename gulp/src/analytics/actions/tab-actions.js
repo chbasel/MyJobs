@@ -2,7 +2,9 @@ import {createAction} from 'redux-actions';
 
 export const switchActiveTab = createAction('SWITCH_ACTIVE_TAB');
 export const breadCrumbSwitchTab = createAction('BREADCRUMB_SWITCH_ACTIVE_TAB');
+export const restoreDeletedTab = createAction('REPLACE_DELETED_TAB');
 export const storeDeletedTab = createAction('STORE_DELETED_TAB');
+export const deleteStoredDeletedTab = createAction('DELETE_STORED_DELETED_TAB');
 export const removeSelectedTab = createAction('REMOVE_SELECTED_TAB');
 export const setCurrentRange = createAction('SET_CURRENT_RANGE');
 
@@ -49,16 +51,25 @@ export function doRemoveSelectedTab(tabId) {
 export function doBreadCrumbSwitchTab(crumb) {
   return (dispatch, getState) => {
     let tabId;
-    getState().pageLoadData.navigation.map((nav) => {
-      if (nav.crumbs.length === 1 && nav.crumbs[0] === crumb) {
-        tabId = nav.navId;
-      }
-      if (nav.crumbs.indexOf(crumb)) {
+    if (getState().pageLoadData.deletedNavigation.length > 0) {
+      getState().pageLoadData.deletedNavigation.map((deleted) => {
+        if (deleted.crumbs[deleted.crumbs.length - 1] === crumb) {
+          dispatch(restoreDeletedTab(deleted));
+          dispatch(deleteStoredDeletedTab(deleted));
+          tabId = deleted.navId;
+        }
+      });
+    } else {
+      getState().pageLoadData.navigation.map((nav) => {
+        if (nav.crumbs.length === 1 && nav.crumbs[0] === crumb) {
+          tabId = nav.navId;
+        }
         if (nav.crumbs[nav.crumbs.length - 1] === crumb) {
           tabId = nav.navId;
         }
-      }
-    });
+      });
+    }
+    console.log(tabId);
     dispatch(switchActiveTab(tabId));
   };
 }

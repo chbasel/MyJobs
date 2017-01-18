@@ -26,7 +26,6 @@ export const initialPageData = {
   pageFetching: true,
   navFetching: false,
   navigation: [],
-  breadCrumbs: [],
   activeFilters: [],
   startMonth: '',
   startDay: '',
@@ -176,11 +175,21 @@ export default handleActions({
     return {
       ...state,
       navigation: [
-        ...state.navigation.map((nav) => {
-          return nav;
-        }),
+        ...state.navigation,
         replacedTab,
       ],
+    };
+  },
+  'DELETE_STORED_DELETED_TAB': (state, action) => {
+    const deleteStored = action.payload;
+    return {
+      ...state,
+      deletedNavigation: state.deletedNavigation.filter((deleted) => {
+        if (deleted.navId === deleteStored.navId) {
+          return deleted.navId !== deleteStored.navId;
+        }
+        return deleted;
+      }),
     };
   },
   'SET_CURRENT_RANGE': (state, action) => {
