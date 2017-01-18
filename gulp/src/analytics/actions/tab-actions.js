@@ -60,7 +60,6 @@ export function doBreadCrumbSwitchTab(crumb) {
           for (let i = 0; i < navigation.length; i++) {
             if (navigation[i].navId === deleted.navId + 1) {
               index = i;
-              break;
             } else {
               index = 1;
             }
@@ -68,12 +67,21 @@ export function doBreadCrumbSwitchTab(crumb) {
           dispatch(restoreDeletedTab({deleted: deleted, index: index}));
           dispatch(deleteStoredDeletedTab(deleted));
           tabId = deleted.navId;
+        } else {
+          navigation.map((nav) => {
+            if (nav.crumbs.length === 1 && nav.crumbs[0] === crumb) {
+              tabId = 1;
+            }
+            if (nav.crumbs[nav.crumbs.length - 1] === crumb) {
+              tabId = nav.navId;
+            }
+          });
         }
       });
     } else {
       navigation.map((nav) => {
         if (nav.crumbs.length === 1 && nav.crumbs[0] === crumb) {
-          tabId = nav.navId;
+          tabId = 1;
         }
         if (nav.crumbs[nav.crumbs.length - 1] === crumb) {
           tabId = nav.navId;
