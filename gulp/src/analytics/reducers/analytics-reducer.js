@@ -206,7 +206,7 @@ export default handleActions({
         {
           navId: navCount++,
           active: true,
-          crumbs: [],
+          crumbs: [mainDimensionData.pageData.column_names[0].label.toLowerCase()],
           startDate: mainDimensionData.startDate,
           endDate: mainDimensionData.endDate,
           PageLoadData: mainDimensionData.pageData,
