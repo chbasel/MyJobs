@@ -537,7 +537,7 @@ path:hover {
    background: $darkest-gray;
    color: $white;
  }
- .crumb-title.active-crumb {
+ .tab-panel .breadcrumb-container .analytics-breadcrumbs:last-child .crumb-title {
    background: $primary-red;
    color: $white;
  }
@@ -566,12 +566,12 @@ path:hover {
   width: 0;
    z-index: 1;
  }
- .crumb-title.active-crumb::after {
-   border-color: transparent transparent transparent $primary-red;
- }
- .crumb-title.active-crumb:hover::after {
-   border-left-color: $primary-red;
- }
+ //.crumb-title.active-crumb::after {
+//   border-color: transparent transparent transparent $primary-red;
+ //}
+ //.crumb-title.active-crumb:hover::after {
+//   border-left-color: $primary-red;
+ //}
  .crumb-title:hover::after {
  	border-left-color: $darkest-gray;
  }
@@ -580,6 +580,12 @@ path:hover {
  }
  .tab-panel:first-child .breadcrumb-container {
    display: none;
+ }
+ .tab-panel .breadcrumb-container .analytics-breadcrumbs:last-child .crumb-title::after {
+   border-left-color: $primary-red;
+ }
+ .tab-panel .breadcrumb-container .analytics-breadcrumbs:last-child .crumb-title:hover::after {
+   border-left-color: $primary-red;
  }
 
 /*CSS FOR THE NEW DIMENSION TABLE*/

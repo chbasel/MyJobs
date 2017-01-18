@@ -3,11 +3,11 @@ import {Component} from 'react';
 
 class BreadCrumb extends Component {
   render() {
-    const {breadcrumbClick, crumbs, id} = this.props;
+    const {breadcrumbClick, crumbs} = this.props;
     const breadcrumbs = crumbs.map((crumb, i) => {
       return (
         <li key={i} onClick={() => breadcrumbClick(crumb)} className="analytics-breadcrumbs">
-          <a className={i + 1 === id ? 'crumb-title active-crumb' : 'crumb-title'} href="#">{crumb}</a>
+          <a className="crumb-title" href="#">{crumb}</a>
         </li>
       );
     });
@@ -20,7 +20,7 @@ class BreadCrumb extends Component {
 }
 
 BreadCrumb.propTypes = {
-  id: React.PropTypes.number.isRequired,
+  id: React.PropTypes.number,
   crumbs: React.PropTypes.array.isRequired,
   breadcrumbClick: React.PropTypes.func,
 };
