@@ -1,1 +1,0 @@
-from relationships.signals import update_relationships

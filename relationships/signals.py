@@ -1,19 +1,22 @@
-from django.db.models.signals import post_save
-
-from django.db.models.signals import post_delete
-from django.dispatch import receiver
-
-from relationships.models import DenormalizedSiteRelationship, SiteRelationship
-from relationships.utils import Graph
-
-
-@receiver(post_save, sender=SiteRelationship)
-@receiver(post_delete, sender=SiteRelationship)
 def update_relationships(sender, instance, *args, **kwargs):
+    """
+    Remove no longer valid DenormalizedSiteRelationships and adds
+    new DenormalizedSiteRelationships based on the site relationship that
+    changed.
+
+    :param sender: The model that triggered the change (should always be
+                   SiteRelationship or a subclass of SiteRelationship).
+    :param instance: The SiteRelationship instance that triggered the change.
+
+    """
+    # Signals are imported in models.py, which means there are circular
+    # imports if these are done at the top of the file.
+    from relationships.utils import Graph
+    from relationships.models import DenormalizedSiteRelationship
+
     site = instance.parent
 
     is_parent_of = DenormalizedSiteRelationship.objects.filter(parent=site)
-    list(is_parent_of)
     is_parent_of.delete()
 
     has_as_child = DenormalizedSiteRelationship.objects.filter(child=site)
