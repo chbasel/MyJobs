@@ -164,6 +164,12 @@ class SavedSearch(models.Model):
                                                                     extras)
                         self.url = mypartners.helpers.add_extra_params(self.url,
                                                                        extras)
+                    campaigns = ("de_n=PRM Saved Search"
+                                 "&de_m=email&de_c={partner}").format(
+                        partner=self.partnersavedsearch.partner.name)
+                    mypartners.helpers.add_extra_params_to_jobs(items, campaigns)
+                    self.url = mypartners.helpers.add_extra_params(self.url, campaigns)
+
                 if self.custom_message and not custom_msg:
                     custom_msg = self.custom_message
 
@@ -504,6 +510,12 @@ class SavedSearchDigest(models.Model):
                     mypartners.helpers.add_extra_params_to_jobs(items, extras)
                     search.url = mypartners.helpers.add_extra_params(search.url,
                                                                      extras)
+                campaigns = ("de_n=PRM Saved Search"
+                             "&de_m=email&de_c={partner}").format(
+                    partner=pss.partner.name)
+                mypartners.helpers.add_extra_params_to_jobs(items, campaigns)
+                search.url = mypartners.helpers.add_extra_params(search.url, campaigns)
+
             search_list.append((search, items, count))
 
         saved_searches = [(search, items, count)
@@ -638,6 +650,12 @@ class PartnerSavedSearch(SavedSearch):
             if extras:
                 mypartners.helpers.add_extra_params_to_jobs(items, extras)
                 self.url = mypartners.helpers.add_extra_params(self.url, extras)
+
+            campaigns = ("de_n=PRM Saved Search"
+                         "&de_m=email&de_c={partner}").format(
+                partner=self.partner.name)
+            mypartners.helpers.add_extra_params_to_jobs(items, campaigns)
+            self.url = mypartners.helpers.add_extra_params(self.url, campaigns)
 
             custom_msg = self.custom_message if self.custom_message else ''
             context_dict = {
