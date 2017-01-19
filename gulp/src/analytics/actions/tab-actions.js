@@ -1,8 +1,8 @@
 import {createAction} from 'redux-actions';
 
 export const switchActiveTab = createAction('SWITCH_ACTIVE_TAB');
-export const breadCrumbSwitchTab = createAction('BREADCRUMB_SWITCH_ACTIVE_TAB');
-export const restoreDeletedTab = createAction('REPLACE_DELETED_TAB');
+export const breadCrumbSwitchTab = createAction('BREADCRUMB_SWITCH_TAB');
+export const restoreDeletedTab = createAction('RESTORE_DELETED_TAB');
 export const storeDeletedTab = createAction('STORE_DELETED_TAB');
 export const deleteStoredDeletedTab = createAction('DELETE_STORED_DELETED_TAB');
 export const removeSelectedTab = createAction('REMOVE_SELECTED_TAB');

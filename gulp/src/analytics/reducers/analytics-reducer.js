@@ -152,7 +152,7 @@ export default handleActions({
       }),
     };
   },
-  'BREADCRUMB_SWITCH_ACTIVE_TAB': (state, action) => {
+  'BREADCRUMB_SWITCH_TAB': (state, action) => {
     const activeTab = action.payload;
     return {
       ...state,
@@ -170,9 +170,9 @@ export default handleActions({
       }),
     };
   },
-  'REPLACE_DELETED_TAB': (state, action) => {
+  'RESTORE_DELETED_TAB': (state, action) => {
     const replacedTab = action.payload;
-    const newNavigation = state.navigation.slice(0, state.navigation.length);
+    const newNavigation = state.navigation.slice(0);
     newNavigation.splice(replacedTab.index, 0, replacedTab.deleted);
     return {
       ...state,
@@ -184,10 +184,7 @@ export default handleActions({
     return {
       ...state,
       deletedNavigation: state.deletedNavigation.filter((deleted) => {
-        if (deleted.navId === deleteStored.navId) {
-          return deleted.navId !== deleteStored.navId;
-        }
-        return deleted;
+        return deleted.navId !== deleteStored.navId;
       }),
     };
   },
