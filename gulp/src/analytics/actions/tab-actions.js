@@ -60,6 +60,10 @@ export function doBreadCrumbSwitchTab(crumb) {
           for (let i = 0; i < navigation.length; i++) {
             if (navigation[i].navId === deleted.navId + 1) {
               index = i;
+              break;
+            } else if (navigation[i].navId === deleted.navId - 1) {
+              index = i + 1;
+              break;
             } else {
               index = 1;
             }
