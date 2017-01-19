@@ -1,24 +1,12 @@
 import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
+import {doBreadCrumbSwitchTab} from '../../actions/tab-actions';
 import Tab from './Tab';
 import TabsPanel from './TabsPanel';
 import TableContainer from '../Table/TableContainer';
 import ChartContainer from '../Charts/ChartContainer';
-import BreadCrumbs from '../BreadCrumbs';
-
-
-const crumbs = [
-  {name: 'Country'},
-  {name: 'State'},
-  {name: 'City'},
-  {name: 'Found On'},
-  {name: 'Job Guid'},
-  {name: 'Job Title'},
-  {name: 'Location'},
-  {name: 'Site Found On'},
-  {name: 'Site Found On By Job Location Title'},
-];
+import BreadCrumb from '../BreadCrumb';
 
 class TabsContainer extends Component {
   constructor() {
@@ -44,13 +32,17 @@ class TabsContainer extends Component {
       chartWidth: this.refs.contentContainer.clientWidth,
     });
   }
+  handleBreadcrumbClick(crumb) {
+    const {dispatch} = this.props;
+    dispatch(doBreadCrumbSwitchTab(crumb));
+  }
   render() {
     const {analytics, tabsMenuActive, closeMenus} = this.props;
     const chartWidth = this.state.chartWidth;
     const tabsPanel = analytics.navigation.map((tab, index) => {
       return (
         <TabsPanel key={index} id={tab.navId} active={tab.active} label={tab.PageLoadData.column_names[0].label}>
-          <BreadCrumbs crumbs={crumbs}/>
+          <BreadCrumb breadcrumbClick={crumb => this.handleBreadcrumbClick(crumb)} id={tab.navId} crumbs={tab.crumbs}/>
           <ChartContainer chartData={tab} width={chartWidth}/>
           <TableContainer tableData={tab}/>
         </TabsPanel>
@@ -67,6 +59,7 @@ class TabsContainer extends Component {
 }
 
 TabsContainer.propTypes = {
+  dispatch: React.PropTypes.func.isRequired,
   analytics: React.PropTypes.object.isRequired,
   /**
    * Boolean stating whether or not the tabs are shown on screen
