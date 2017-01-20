@@ -91,12 +91,17 @@ export default handleActions({
     };
   },
   'STORE_ACTIVE_FILTER': (state, action) => {
+    const navigation = state.navigation;
     const checkType = action.payload.type;
     const index = findIndex(state.activeFilters, f => f.type === checkType);
+    let tabIndex;
     if (index > -1) {
+      for (let i = 0; i < navigation.length; i++) {
+        tabIndex = navigation[i].active ? i : 1;
+      }
       return {
         ...state,
-        navigation: state.navigation.slice(0, index + 1),
+        navigation: navigation.slice(0, tabIndex + 1),
         activeFilters: state.activeFilters.slice(0, index).concat(action.payload),
       };
     }
