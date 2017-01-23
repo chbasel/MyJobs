@@ -21,6 +21,10 @@ class Calendar extends Component {
       showCalendar: false,
       errorMessage: false,
     };
+
+    this.showCalendar = this.showCalendar.bind(this);
+    this.mouseUpHandler = this.mouseUpHandler.bind(this);
+    this.mouseDownHandler = this.mouseDownHandler.bind(this);
   }
   componentDidMount() {
     window.addEventListener('mousedown', this.pageClick.bind(this), false);
@@ -36,7 +40,6 @@ class Calendar extends Component {
       }
     });
     const activeMainDimension = analytics.activePrimaryDimension;
-    // const activeFilters = analytics.activeFilters;
     dispatch(doSetSelectedRange(startRange, endRange, activeMainDimension, activeFilters));
     this.setState({
       showCalendar: false,
@@ -160,7 +163,7 @@ class Calendar extends Component {
       <div onMouseDown={onMouseDown} onMouseUp={onMouseUp} className={showCalendarRangePicker ? 'calendar-container active-picker' : 'calendar-container non-active-picker'}>
         <ul>
           <li className="calendar-pick full-calendar">
-            <div onMouseDown={this.mouseDownHandler.bind(this)} onMouseUp={this.mouseUpHandler.bind(this)} className={this.state.showCalendar ? 'show-calendar' : 'hide-calendar'}>
+            <div onMouseDown={this.mouseDownHandler} onMouseUp={this.mouseUpHandler} className={this.state.showCalendar ? 'show-calendar' : 'hide-calendar'}>
               {this.state.errorMessage ? <HelpText message={errorMessage}/> : ''}
               <div className="start-calendar">
                 <p className="date-label">Start Date</p>
@@ -171,7 +174,7 @@ class Calendar extends Component {
                 {endCalendar}
               </div>
             </div>
-            <RangeSelection applySelection={() => this.applyCustomRange()} cancelSelection={hideCalendarRangePicker} showCalendar={this.showCalendar.bind(this)} showCustomRange={() => this.showCalendar()} setRange={y => this.setRangeSelection(y)}/>
+            <RangeSelection applySelection={() => this.applyCustomRange()} cancelSelection={hideCalendarRangePicker} showCalendar={this.showCalendar} showCustomRange={() => this.showCalendar()} setRange={y => this.setRangeSelection(y)}/>
           </li>
         </ul>
       </div>

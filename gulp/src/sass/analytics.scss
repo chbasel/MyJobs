@@ -109,8 +109,8 @@ footer {
   padding-left: 200px;
 
   #page_content {
-    padding-left: 50px;
-    padding-right: 50px;
+    padding-left: 25px;
+    padding-right: 25px;
   }
 
   #menu {
@@ -247,9 +247,6 @@ footer {
 }
 
 /*CSS FOR THE TABS*/
-.tab-content-container {
-
-}
 .tab-labels li:first-of-type .close-tab {
   visibility: hidden;
 }
@@ -515,10 +512,8 @@ path:hover {
 
 /*CSS FOR THE BREADCRUMBS*/
 
-.breadcrumbs-container {
-   list-style: outside none none;
-   padding: 0;
-   margin: 0 0 15px 0;
+.breadcrumb-container {
+   margin-left: 0;
  }
 .analytics-breadcrumbs {
   display: inline-block;
@@ -566,12 +561,6 @@ path:hover {
   width: 0;
    z-index: 1;
  }
- //.crumb-title.active-crumb::after {
-//   border-color: transparent transparent transparent $primary-red;
- //}
- //.crumb-title.active-crumb:hover::after {
-//   border-left-color: $primary-red;
- //}
  .crumb-title:hover::after {
  	border-left-color: $darkest-gray;
  }
@@ -1267,8 +1256,8 @@ color: $primary-blue;
          display: block;
        }
        #page_content {
-         padding-left: 50px;
-         padding-right: 50px;
+         padding-left: 25px;
+         padding-right: 25px;
 
          .tab {
             display: inline-block;
@@ -1377,7 +1366,7 @@ color: $primary-blue;
          }
        }
        .tab-content-container {
-         margin: -10px 0 50px 0;
+         margin: -10px 0 25px 0;
        }
      }
      #mobile_menu {
@@ -1411,8 +1400,8 @@ color: $primary-blue;
        padding-left: 200px;
 
        #page_content {
-         padding-left: 50px;
-         padding-right: 50px;
+         padding-left: 25px;
+         padding-right: 25px;
        }
        .open-mobile, .close-mobile {
          display: none;
