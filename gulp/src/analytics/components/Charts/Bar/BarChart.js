@@ -2,6 +2,7 @@ import React from 'react';
 import {Component} from 'react';
 import {BarChart, Cell, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts';
 import RotatedXAxisTick from './RotatedXAxisTick';
+import {isEmpty} from 'lodash-compat/lang';
 
 class SimpleBarChart extends Component {
   render() {
@@ -18,7 +19,7 @@ class SimpleBarChart extends Component {
             height={height}
             data={mainBarData}
             margin={{top: 5, right: 30, left: 20, bottom: 100}}
-            onClick={barClicked}>
+            onClick={isEmpty(chartData.PageLoadData.remaining_dimensions) ? () => {} : barClicked}>
            <XAxis dataKey={xAxis} interval={0} tick={<RotatedXAxisTick />} />
            <YAxis/>
            <CartesianGrid strokeDasharray="3 3" />
