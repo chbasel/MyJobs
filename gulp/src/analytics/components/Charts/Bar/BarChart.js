@@ -19,7 +19,7 @@ class SimpleBarChart extends Component {
             height={height}
             data={mainBarData}
             margin={{top: 5, right: 30, left: 20, bottom: 100}}
-            onClick={isEmpty(chartData.PageLoadData.remaining_dimensions) ? () => {} : barClicked}>
+            onClick={!isEmpty(chartData.PageLoadData.remaining_dimensions) ? barClicked : () => {}}>
            <XAxis dataKey={xAxis} interval={0} tick={<RotatedXAxisTick />} />
            <YAxis/>
            <CartesianGrid strokeDasharray="3 3" />
