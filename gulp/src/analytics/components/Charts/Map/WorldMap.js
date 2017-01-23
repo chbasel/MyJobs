@@ -5,6 +5,7 @@ import Paths from '../Common/Paths';
 import ToolTip from '../Common/ToolTip';
 import Legend from '../Common/Legend';
 import mapData from 'common/resources/maps/countries';
+import {isEmpty} from 'lodash-compat/lang';
 
 class WorldMap extends Component {
   constructor() {
@@ -49,7 +50,13 @@ class WorldMap extends Component {
       return '#E6E6E6';
     };
     const countryClicked = (country) => {
-      return () => {pathClicked(country.id, 'country');};
+      let returnFunction = () => {};
+      if (!isEmpty(chartData.PageLoadData.remaining_dimensions)) {
+        returnFunction = () => {
+          pathClicked(country.id, 'country');
+        };
+      }
+      return returnFunction;
     };
     const toolTipData = [];
     for (let i = 0; i < rowData.length; i++) {
