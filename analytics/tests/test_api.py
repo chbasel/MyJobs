@@ -355,8 +355,8 @@ class TestApi(MyJobsBase):
         self.assertIn('analytics_report_id', fields)
 
     def test_valid_dynamic_charts_request(self):
-        expected_rows = [{u"country": u"USA", u"job_views": 10, u"visitors": 3},
-                         {u"country": u"GER", u"job_views": 3, u"visitors": 1}]
+        expected_rows = [{u"country": u"USA", u"job_views": 10},
+                         {u"country": u"GER", u"job_views": 3}]
         self.populate_mongo_data()
         request_data = {"date_start": "10/18/2012 00:00:00",
                         "date_end": "10/19/2012 00:00:00",
@@ -371,10 +371,8 @@ class TestApi(MyJobsBase):
         self.assertEqual(result['rows'], expected_rows)
 
     def test_group_overwrite_dynamic_charts_request(self):
-        expected_rows = [{u"found_on": u"www.google.com", u"job_views": 10,
-                          u"visitors": 3},
-                         {u"found_on": u"www.google.de", u"job_views": 3,
-                          u"visitors": 1}]
+        expected_rows = [{u"found_on": u"www.google.com", u"job_views": 10},
+                         {u"found_on": u"www.google.de", u"job_views": 3}]
         self.populate_mongo_data()
         request_data = {"date_start": "10/18/2012 00:00:00",
                         "date_end": "10/19/2012 00:00:00",
@@ -390,8 +388,8 @@ class TestApi(MyJobsBase):
         self.assertEqual(result['rows'], expected_rows)
 
     def test_active_filter_dynamic_charts_request(self):
-        expected_rows = [{u"state": u"IN", u"job_views": 9, u"visitors": 2},
-                         {u"state": u"MI", u"job_views": 1, u"visitors": 1}]
+        expected_rows = [{u"state": u"IN", u"job_views": 9},
+                         {u"state": u"MI", u"job_views": 1}]
         self.populate_mongo_data()
         request_data = {"date_start": "10/18/2012 00:00:00",
                         "date_end": "10/19/2012 00:00:00",
@@ -406,9 +404,8 @@ class TestApi(MyJobsBase):
         self.assertEqual(result['rows'], expected_rows)
 
     def test_2_active_filters_dynamic_charts_request(self):
-        expected_rows = [{u"city": u"Indianapolis", u"job_views": 7,
-                          u"visitors": 1},
-                         {u"city": u"Peru", u"job_views": 2, u"visitors": 1}]
+        expected_rows = [{u"city": u"Indianapolis", u"job_views": 7},
+                         {u"city": u"Peru", u"job_views": 2}]
         self.populate_mongo_data()
         request_data = {"date_start": "10/18/2012 00:00:00",
                         "date_end": "10/19/2012 00:00:00",
@@ -424,8 +421,7 @@ class TestApi(MyJobsBase):
         self.assertEqual(result['rows'], expected_rows)
 
     def test_3_active_filters_dynamic_charts_request(self):
-        expected_rows = [{u"found_on": u"www.google.com", u"job_views": 7,
-                          u"visitors": 1}]
+        expected_rows = [{u"found_on": u"www.google.com", u"job_views": 7}]
         self.populate_mongo_data()
         request_data = {"date_start": "10/18/2012 00:00:00",
                         "date_end": "10/19/2012 00:00:00",
