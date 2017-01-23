@@ -697,6 +697,10 @@ class PartnerSavedSearch(SavedSearch):
 
     @property
     def campaigns(self):
+        """
+        Calcualtes and returns the DE analytics campaigns that should be
+        attached to links in any resulting emails
+        """
         if not self._campaigns:
             self._campaigns = (u"de_n=PRM Saved Search"
                                u"&de_m=email&de_c={partner}").format(
