@@ -11,7 +11,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.http import Http404, QueryDict
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from django.utils.http import urlquote_plus, urlunquote_plus
 from django.utils.safestring import mark_safe
 from django.utils.text import get_text_list, force_unicode, force_text
 from django.utils.timezone import now

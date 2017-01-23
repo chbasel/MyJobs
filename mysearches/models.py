@@ -164,12 +164,11 @@ class SavedSearch(models.Model):
                                                                     extras)
                         self.url = mypartners.helpers.add_extra_params(self.url,
                                                                        extras)
-                    # TODO: make this more generic; it's duplicated twice more.
-                    campaigns = (u"de_n=PRM Saved Search"
-                                 u"&de_m=email&de_c={partner}").format(
-                        partner=self.partnersavedsearch.partner.name)
-                    mypartners.helpers.add_extra_params_to_jobs(items, campaigns)
-                    self.url = mypartners.helpers.add_extra_params(self.url, campaigns)
+                    campaigns = self.partnersavedsearch.campaigns
+                    mypartners.helpers.add_extra_params_to_jobs(
+                        items, campaigns)
+                    self.url = mypartners.helpers.add_extra_params(
+                        self.url, campaigns)
 
                 if self.custom_message and not custom_msg:
                     custom_msg = self.custom_message
@@ -514,11 +513,10 @@ class SavedSearchDigest(models.Model):
                     mypartners.helpers.add_extra_params_to_jobs(items, extras)
                     search.url = mypartners.helpers.add_extra_params(search.url,
                                                                      extras)
-                campaigns = (u"de_n=PRM Saved Search"
-                             u"&de_m=email&de_c={partner}").format(
-                    partner=pss.partner.name)
+                campaigns = pss.campaigns
                 mypartners.helpers.add_extra_params_to_jobs(items, campaigns)
-                search.url = mypartners.helpers.add_extra_params(search.url, campaigns)
+                search.url = mypartners.helpers.add_extra_params(search.url,
+                                                                 campaigns)
 
             search_list.append((search, items, count))
 
@@ -597,6 +595,7 @@ class PartnerSavedSearch(SavedSearch):
     unsubscriber = models.EmailField(max_length=255, blank=True, editable=False,
                                      verbose_name='Unsubscriber')
     last_action_time = models.DateTimeField(default=datetime.now, blank=True)
+    _campaigns = None
 
     def save(self, *args, **kwargs):
         new = not hasattr(self, 'id') or not self.id
@@ -656,9 +655,7 @@ class PartnerSavedSearch(SavedSearch):
                 mypartners.helpers.add_extra_params_to_jobs(items, extras)
                 self.url = mypartners.helpers.add_extra_params(self.url, extras)
 
-            campaigns = (u"de_n=PRM Saved Search"
-                         u"&de_m=email&de_c={partner}").format(
-                partner=self.partner.name)
+            campaigns = self.campaigns
             mypartners.helpers.add_extra_params_to_jobs(items, campaigns)
             self.url = mypartners.helpers.add_extra_params(self.url, campaigns)
 
@@ -697,6 +694,14 @@ class PartnerSavedSearch(SavedSearch):
         self.last_action_time = datetime.now()
         if save:
             self.save()
+
+    @property
+    def campaigns(self):
+        if not self._campaigns:
+            self._campaigns = (u"de_n=PRM Saved Search"
+                               u"&de_m=email&de_c={partner}").format(
+                partner=self.partner.name)
+        return self._campaigns
 
 
 class SavedSearchLog(models.Model):
