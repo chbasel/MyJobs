@@ -15,7 +15,7 @@
           {% if "network" in site_tags and job.company_enhanced %}
               <div class="enhanced_favicon"style="background-image:url('//d2e48ltfsb5exy.cloudfront.net/favicons/{{ job.company_slab|to_slug }}.ico');"></div>
           {% endif %}
-          <h2 class="direct-job-title" itemprop="title" {% if featured %}style="background-image:url('//d2e48ltfsb5exy.cloudfront.net/favicons/{{ job.company_slab|to_slug }}.ico');"{% endif %}><a class="direct-job-title-clk" href="{{ job|joblist_url }}"><span class="resultHeader">{{ job.title|cut:"?"|cut:"~" }}</span></a></h2>
+          <h2 class="direct-job-title" itemprop="title" {% if featured %}style="background-image:url('//d2e48ltfsb5exy.cloudfront.net/favicons/{{ job.company_slab|to_slug }}.ico');"{% endif %}><a class="direct-job-title-clk" href="{% joblist_url job %}"><span class="resultHeader">{{ job.title|cut:"?"|cut:"~" }}</span></a></h2>
           {% if job.country_short|lower == "usa" and site_commitments_string%}
           <meta itemprop="specialCommitments" content="{{site_commitments_string}}" />
           {% endif %}
