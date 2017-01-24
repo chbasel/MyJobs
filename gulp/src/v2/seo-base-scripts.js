@@ -1,7 +1,7 @@
 /* global $ */
 /* eslint-disable */
 /**
- * Legacy es5.1 functions used in seo_base_bootstrap3.html template,
+ * Legacy es5.1 functions used in seo_base_v2.html template,
  * relocated to the gulp directory to utilize es6, webpack, et al, during Sprint 24-2016.
  * ESLint stills complains about coding styles, however, for certain
  * variable/property names, we still need the underscore casing to work with python codes.
