@@ -5,6 +5,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.inclusion_tag('job_result.html', takes_context=True)
 def arrange_jobs(context):
     featured_jobs = context.get('featured_jobs')
@@ -22,6 +23,7 @@ def arrange_jobs(context):
         'title_term': context.get('title_term'),
         'query_string': query_string,
         'site_tags': context.get('site_tags'),
+        'request': request,
     }
 
 
