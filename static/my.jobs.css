@@ -1333,8 +1333,7 @@ ul.header-menu > li > ul > a > li {
     border-bottom: 1px solid #d5d4d0;
 }
 
-ul.header-menu:hover,
-a.text-info {
+ul.header-menu:hover {
     cursor: pointer;
 }
 

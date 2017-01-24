@@ -311,6 +311,7 @@ def build_group_by_query(group_by):
                 }
             },
         {'$sort': {'visitors': -1}},
+        {'$limit': 10}
     ]
 
     return group_query
@@ -474,7 +475,7 @@ def dynamic_chart(request):
             return calculate_error_and_count(total_count, sample_size, count)
 
         records = adjust_records_for_sampling(records, curried_query)
-
+        
     response = {
         "column_names":
             [
