@@ -5,6 +5,7 @@ import Paths from '../Common/Paths';
 import ToolTip from '../Common/ToolTip';
 import Legend from '../Common/Legend';
 import mapData from 'common/resources/maps/us';
+import {isEmpty} from 'lodash-compat/lang';
 
 class USAMap extends Component {
   constructor() {
@@ -51,7 +52,11 @@ class USAMap extends Component {
       return '#E6E6E6';
     };
     const stateClicked = (state) => {
-      return () => {pathClicked(state.properties.STUSPS, 'state');};
+      let returnFunction = () => {};
+      if (!isEmpty(chartData.PageLoadData.remaining_dimensions)) {
+        returnFunction = () => {pathClicked(state.properties.STUSPS, 'state');};
+      }
+      return returnFunction;
     };
     const toolTipData = [];
     for (let i = 0; i < rowData.length; i++) {
