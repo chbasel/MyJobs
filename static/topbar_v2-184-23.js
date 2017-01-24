@@ -122,7 +122,7 @@ function get_companies() {
 
     var label = document.createElement("a");
     // Company id from myjobs_company cookie
-    var cid = readCookie("myjobs_company");
+    var cid = utils.readCookie("myjobs_company");
     var list = document.createElement("ul");
     list.setAttribute("id", "select_company");
 
