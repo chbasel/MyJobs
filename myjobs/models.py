@@ -1430,7 +1430,7 @@ ACTIVITIES = {
         ("update partner saved search",
          "Edit existing partner saved searches."),
         ("delete partner saved search",
-         "remove existing partner saved searches."),
+         "Remove existing partner saved searches."),
     ],
     'User Management': [
         ("create role", "Create new roles."),
