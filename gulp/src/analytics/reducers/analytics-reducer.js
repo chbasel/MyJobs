@@ -98,6 +98,7 @@ export default handleActions({
     if (index > -1) {
       for (let i = 0; i < navigation.length; i++) {
         tabIndex = navigation[i].active ? i : 1;
+        break;
       }
       return {
         ...state,
