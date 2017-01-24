@@ -82,16 +82,14 @@ class ProcessRecordPage extends Component {
 
   handleSelectTag(formName, formKey, formIndex, formContents, tags) {
     const {dispatch} = this.props;
-    const pendingTags = [];
     forEach(tags, (tag) => {
       if (tag.value === tag.display) {
         dispatch(addNewTagAction(formName, tag.display));
       } else {
-        pendingTags.push(tag.value);
+        const value = [...formContents.tags || [], tag.value];
+        dispatch(editFormAction(formKey, 'tags', value, formIndex));
       }
     });
-    const value = pendingTags.concat(formContents.tags || []);
-    dispatch(editFormAction(formKey, 'tags', value, formIndex));
   }
 
   /**

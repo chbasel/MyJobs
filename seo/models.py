@@ -566,8 +566,7 @@ class SeoSiteFacet(models.Model):
     BOOLEAN_CHOICES = (('or', 'OR'), ('and', 'AND'), )
 
     FACET_GROUP_CHOICES = ((1, 'Facet Group 1'), (2, 'Facet Group 2'),
-                           (3, 'Facet Group 3'), (4, 'Facet Group 4'),
-                           (5, 'Facet Group 5'), (6, 'Facet Group 6'))
+                           (3, 'Facet Group 3'), (4, 'Facet Group 4'))
 
     facet_group = models.IntegerField(choices=FACET_GROUP_CHOICES, default=1)
     seosite = models.ForeignKey('SeoSite', verbose_name="Seo Site")
@@ -601,9 +600,12 @@ class Company(models.Model):
         ordering = ['name']
         unique_together = ('name', 'user_created')
 
+
     def __unicode__(self):
         return self.name
+
     natural_key = __unicode__
+
 
     def save(self, *args, **kwargs):
         exists = str(self.pk).isdigit()
@@ -720,6 +722,7 @@ class Company(models.Model):
         """
 
         return "PRM" in self.app_access.values_list("name", flat=True)
+
 
     def user_has_access(self, user):
         """
@@ -950,7 +953,17 @@ class SeoSiteRedirect(models.Model):
 
 
 class Configuration(models.Model):
-    ORDER_CHOICES = [(i, i) for i in range(1, 13)]
+    ORDER_CHOICES = (
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (4, 4),
+        (5, 5),
+        (6, 6),
+        (7, 7),
+        (8, 8),
+        (9, 9),
+    )
 
     STATUS_STAGING = 1
     STATUS_PRODUCTION = 2
@@ -1066,8 +1079,6 @@ class Configuration(models.Model):
     browse_facet_show_2 = models.BooleanField('Show', default=False)
     browse_facet_show_3 = models.BooleanField('Show', default=False)
     browse_facet_show_4 = models.BooleanField('Show', default=False)
-    browse_facet_show_5 = models.BooleanField('Show', default=False)
-    browse_facet_show_6 = models.BooleanField('Show', default=False)
     browse_moc_show = models.BooleanField('Show', default=False)
     browse_company_show = models.BooleanField('Show', default=False)
 
@@ -1095,12 +1106,6 @@ class Configuration(models.Model):
     browse_facet_text_4 = models.CharField('Heading for Custom Facet Group 4',
                                            default='Job Profiles',
                                            max_length=50)
-    browse_facet_text_5 = models.CharField('Heading for Custom Facet Group 5',
-                                           default='Job Profiles',
-                                           max_length=50)
-    browse_facet_text_6 = models.CharField('Heading for Custom Facet Group 6',
-                                           default='Job Profiles',
-                                           max_length=50)
     browse_moc_text = models.CharField('Heading for MOC Facet',
                                        default='Military Titles',
                                        max_length=50)
@@ -1123,10 +1128,6 @@ class Configuration(models.Model):
     browse_facet_order_3 = models.IntegerField('Order', default=3,
                                                choices=ORDER_CHOICES)
     browse_facet_order_4 = models.IntegerField('Order', default=4,
-                                               choices=ORDER_CHOICES)
-    browse_facet_order_5 = models.IntegerField('Order', default=5,
-                                               choices=ORDER_CHOICES)
-    browse_facet_order_6 = models.IntegerField('Order', default=6,
                                                choices=ORDER_CHOICES)
     browse_moc_order = models.IntegerField('Order', default=1,
                                            choices=ORDER_CHOICES)

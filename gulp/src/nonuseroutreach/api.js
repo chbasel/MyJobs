@@ -1,4 +1,4 @@
-import {map} from 'lodash-compat';
+import {map} from 'lodash-compat/collection';
 
 export default class Api {
   constructor(api) {

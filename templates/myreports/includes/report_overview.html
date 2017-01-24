@@ -22,7 +22,22 @@
             <div class="row">
                 <div id="" class="span8 panel">
                     <h2>Create a New Report</h2>
-                    <p><span class="text-error">Classic reporting is no longer supported for new reports. To run a report, please</span> <a id="reporting-version" class="text-info">switch to dynamic reporting</a>.</p>
+                    <div class="choices-header">
+                        <input type="checkbox" checked disabled /> PRM Reports
+                    </div>
+                    <div id="choices">
+                        <label>
+                            <input type="radio" name="report" value="partner" /> Partner
+                        </label>
+                        <label>
+                            <input type="radio" name="report" value="contact" /> Contact
+                        </label>
+                        <label>
+                            <input type="radio" name="report" value="contactrecord" /> Communication Records
+                        </label>
+                    </div>
+                    <div class="clearfix"></div>
+                    <a id="start-report" class="btn disabled pull-right">Next</a>
                 </div>
             </div>
         </div>

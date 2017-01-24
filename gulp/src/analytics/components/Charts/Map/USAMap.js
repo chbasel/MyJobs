@@ -3,7 +3,7 @@ import {Component} from 'react';
 import d3 from 'd3';
 import Paths from '../Common/Paths';
 import ToolTip from '../Common/ToolTip';
-import Legend from '../Common/Legend';
+// import Legend from '../Common/Legend';
 import mapData from 'common/resources/maps/us';
 
 class USAMap extends Component {
@@ -12,14 +12,7 @@ class USAMap extends Component {
     this.state = {
       x: 0,
       y: 0,
-      states: {
-        geometry: {},
-        properties: {
-          STUSPS: '',
-          name: '',
-        },
-        type: '',
-      },
+      state: {},
       showToolTip: false,
     };
   }
@@ -27,7 +20,7 @@ class USAMap extends Component {
     this.setState({
       x: event.pageX,
       y: event.pageY,
-      states: state,
+      state: state,
       showToolTip: true,
     });
   }
@@ -37,45 +30,37 @@ class USAMap extends Component {
     });
   }
   render() {
-    const {chartData, width, height, colorRange, pathClicked} = this.props;
-    const projection = d3.geo.albersUsa().scale(width).translate([width / 2, height / 2]);
+    const {chartData, width, height, scale} = this.props;
+    const projection = d3.geo.albersUsa().scale(scale).translate([width / 2, height / 2]);
     const path = d3.geo.path().projection(projection);
-    const rowData = chartData.PageLoadData.rows;
-    const colors = d3.scale.quantize().range(colorRange).domain([1, d3.max(rowData, (d) => d.job_views)]);
     const fill = (stateData) => {
+      const rowData = chartData.PageLoadData.rows;
+      const color = d3.scale.linear().domain([0, d3.max(rowData, (d) => d.job_views)]).range(['rgb(222,235,247)', 'rgb(90,109,129)', 'rgb(49,130,189)']);
       for (let i = 0; i < rowData.length; i++) {
         if (rowData[i].state === stateData.properties.STUSPS) {
-          return colors(rowData[i].job_views);
+          return color(rowData[i].job_views);
         }
       }
       return '#E6E6E6';
     };
-    const stateClicked = (state) => {
-      return () => {pathClicked(state.properties.STUSPS, 'state');};
-    };
-    const toolTipData = [];
-    for (let i = 0; i < rowData.length; i++) {
-      const getValues = Object.values(rowData[i]);
-      if (getValues[1] === this.state.states.properties.STUSPS) {
-        toolTipData.push({...rowData[i]});
-      }
-    }
     const paths = mapData.features.map((state, i) => {
       return (
-        <Paths onClick={stateClicked(state)} showToolTip={this.showToolTip.bind(this, state)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(state)} class="state" stroke="#5A6D81" fill={fill(state)}/>
+        <Paths showToolTip={this.showToolTip.bind(this, state)} hideToolTip={this.hideToolTip.bind(this)} key={i} d={path(state)} class="state" stroke="#5A6D81" fill={fill(state)}/>
       );
     });
     return (
       <div className="chart-container" style={{width: '100%'}}>
         <svg
           className="chart"
+          version="1.1"
           height={height}
           width={width}
+          viewBox={'0 0 ' + width + ' ' + height + ''}
+          preserveAspectRatio="xMinYMin meet"
          >
          {paths}
-         <Legend mapProps={this.props} legendTitleX={width * 0.035 * 1.33} legendTitleY={height * 0.04 * (-1.5)} borderTransform={`translate(0, ${height * -0.024})`} legendTransform={`translate(${(width - 100) * 1.14}, ${width * 0.035 * 3})`} legendRectX={width * 0.035 * 0.86} legendTextX={width * 0.035 * 2.2} height={(height * 0.04)} width={(width * 0.035)} format=".0f" colorRanges={colors}/>
          </svg>
-         <ToolTip activeToolTip={this.state.showToolTip} data={toolTipData} name={this.state.states} x={this.state.x} y={this.state.y} xPosition={240} yPosition={245}/>
+         <ToolTip activeToolTip={this.state.showToolTip} data={this.state.state} x={this.state.x} y={this.state.y}/>
       </div>
     );
   }
@@ -99,20 +84,16 @@ USAMap.propTypes = {
    */
   margin: React.PropTypes.object,
   /**
-   * pathClicked is a function to be called when a path on the chart is clicked
+   * Scale is a type of number for the scale of the map in terms of how zoomed in or out the display is
    */
-  pathClicked: React.PropTypes.func,
-  /**
-   * Range of colors supplied to the map in the form of an array of rgba values
-   */
-  colorRange: React.PropTypes.array.isRequired,
+  scale: React.PropTypes.number.isRequired,
 };
 
 USAMap.defaultProps = {
   height: 500,
   width: 1920,
+  scale: 1000,
   margin: {top: 50, left: 25, right: 25, bottom: 25},
-  pathClicked: () => {},
 };
 
 export default USAMap;

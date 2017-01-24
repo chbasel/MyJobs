@@ -32,8 +32,7 @@ DATABASES = {
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = [
-    'ec2-54-163-114-250.compute-1.amazonaws.com',
-    'staging.my.jobs',
+    'ec2-54-163-114-250.compute-1.amazonaws.com'
 ]
 
 CACHES = {

@@ -14,8 +14,9 @@ class TableRows extends Component {
     dispatch(doGetSelectedFilterData(tableValue, typeValue));
   }
   render() {
-    const {rowData, tableData} = this.props;
-    const columnData = tableData.PageLoadData.column_names;
+    const {rowData} = this.props;
+    const newRowData = rowData.PageLoadData.rows;
+    const columnData = rowData.PageLoadData.column_names;
     const originalHeader = [];
     const modHeader = [];
     // Looping through the current data and pushing it to a new array to edit it
@@ -25,9 +26,9 @@ class TableRows extends Component {
     });
     originalHeader.shift();
     const mod = modHeader.slice(0, 1);
-    const getHeaders = rowData.map((item, i) => {
+    const getHeaders = newRowData.map((item, i) => {
       const firstCell = mod.map((colData, index) => {
-        if (isEmpty(tableData.PageLoadData.remaining_dimensions)) {
+        if (isEmpty(rowData.PageLoadData.remaining_dimensions)) {
           return (
             <td key={index} className="last-filter">{item[colData.key]}</td>
           );
@@ -46,15 +47,14 @@ class TableRows extends Component {
     });
     return (
       <tbody>
-        {isEmpty(rowData) ? <NoResults type="table" errorMessage="No results found"/> : getHeaders}
+        {isEmpty(newRowData) ? <NoResults type="table" errorMessage="No results found"/> : getHeaders}
       </tbody>
     );
   }
 }
 
 TableRows.propTypes = {
-  rowData: React.PropTypes.array.isRequired,
-  tableData: React.PropTypes.object.isRequired,
+  rowData: React.PropTypes.object.isRequired,
   dispatch: React.PropTypes.func.isRequired,
 };
 
