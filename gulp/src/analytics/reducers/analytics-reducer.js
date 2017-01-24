@@ -97,12 +97,16 @@ export default handleActions({
     let tabIndex;
     if (index > -1) {
       for (let i = 0; i < navigation.length; i++) {
-        tabIndex = navigation[i].active ? i : 1;
-        break;
+        if (navigation[i].active) {
+          tabIndex = i;
+          break;
+        } else {
+          tabIndex = 0;
+        }
       }
       return {
         ...state,
-        navigation: navigation.slice(0, tabIndex + 1),
+        navigation: state.navigation.slice(0, tabIndex + 1),
         activeFilters: state.activeFilters.slice(0, index).concat(action.payload),
       };
     }
