@@ -62,5 +62,5 @@ pymongo==3.2.2
 html5lib==0.999 #Put in place because as of 2016-07-18 bleach depends on html5lib>=0.999 and the latest version of html5lib is screwed up.
 python-dateutil==2.4.2
 freezegun==0.3.7
-git+git://github.com/DirectEmployers/pymongo-env.git@60ccc22cfab857ee5b7288c6fc09207ae43ffdf2
+git+git://github.com/DirectEmployers/pymongo-env.git@b68baa1f479f95bb4b506e68b26813c286a063b9
 boto3==1.4.0
