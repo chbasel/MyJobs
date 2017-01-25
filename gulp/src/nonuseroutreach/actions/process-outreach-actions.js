@@ -1,6 +1,7 @@
 import {createAction} from 'redux-actions';
 import {errorAction} from '../../common/actions/error-actions';
 import {map, isEmpty} from 'lodash-compat';
+import {colorizeTagsInForms} from '../forms';
 
 /**
  * add a new tag to the state
@@ -166,7 +167,7 @@ export function doLoadEmail(outreachId) {
   return async (dispatch, getState, {api}) => {
     try {
       const outreach = await api.getOutreach(outreachId);
-      const forms = await api.getForms(outreachId);
+      const forms = colorizeTagsInForms(await api.getForms(outreachId));
 
       dispatch(
         resetProcessAction(
