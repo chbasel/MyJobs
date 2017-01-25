@@ -20,8 +20,12 @@ def update_relationships(sender, instance, *args, **kwargs):
     is_parent_of.delete()
 
     has_as_child = DenormalizedSiteRelationship.objects.filter(child=site)
+    # Force evaluation here since MySQL doesn't allow for using the same
+    # table (relationships_denormalizedsiterelationship) in the SELECT and
+    # FROM parts of the query.
+    parent_ids = list(has_as_child.values_list('parent_id', flat=True))
     has_as_child = DenormalizedSiteRelationship.objects.filter(
-        parent__id__in=has_as_child.values_list('parent_id', flat=True)
+        parent__id__in=parent_ids
     )
 
     sites_to_update = has_as_child.distinct().values_list('parent', flat=True)
