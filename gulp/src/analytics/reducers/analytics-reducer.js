@@ -239,6 +239,8 @@ export default handleActions({
           currentDateRange: mainDimensionData.loadRange,
         },
       ],
+      globalStartDate: mainDimensionData.startDate,
+      globalEndDate: mainDimensionData.endDate,
       activeFilters: [],
       stateCustomRange: mainDimensionData.loadRange,
     };

@@ -28,11 +28,13 @@ export function doGetPrimaryDimensions() {
 /**
  * This action gets the data when the primary dimensions in the sidebar are changed
  */
-export function doSwitchMainDimension(mainDimension, start, end) {
+export function doSwitchMainDimension(mainDimension) {
   return async (dispatch, getState, {api}) => {
     try {
       dispatch(markNavLoadingAction(true));
       dispatch(storeActiveReport(mainDimension));
+      const start = getState().pageLoadData.globalStartDate;
+      const end = getState().pageLoadData.globalEndDate;
       const currentDimensionData = await api.getMainDimensionData(mainDimension, start, end);
       const splitEnd = end.split(' ')[0];
       const splitStart = start.split(' ')[0];
