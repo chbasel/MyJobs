@@ -54,7 +54,7 @@ CACHES = {
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'seo.search_backend.DESolrEngine',
-        'URL': 'http://ec2-54-174-161-64.compute-1.amazonaws.com:8983/solr/qc',
+        'URL': 'http://ec2-52-7-65-86.compute-1.amazonaws.com:8983/solr/qc',
         'TIMEOUT': 300,
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password']
@@ -111,3 +111,6 @@ CELERY_ROUTES = {
 setattr(secrets, 'MONGO_HOST', secrets.QC_MONGO_HOST)
 setattr(secrets, 'MONGO_DBNAME', secrets.QC_MONGO_DBNAME)
 setattr(secrets, 'MONGO_SSL', secrets.QC_MONGO_SSL)
+
+from pymongoenv import change_db
+change_db(secrets.QC_MONGO_HOST, secrets.QC_MONGO_DBNAME, secrets.QC_MONGO_SSL)

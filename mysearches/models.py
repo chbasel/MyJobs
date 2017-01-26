@@ -164,6 +164,12 @@ class SavedSearch(models.Model):
                                                                     extras)
                         self.url = mypartners.helpers.add_extra_params(self.url,
                                                                        extras)
+                    campaigns = self.partnersavedsearch.campaigns
+                    mypartners.helpers.add_extra_params_to_jobs(
+                        items, campaigns)
+                    self.url = mypartners.helpers.add_extra_params(
+                        self.url, campaigns)
+
                 if self.custom_message and not custom_msg:
                     custom_msg = self.custom_message
 
@@ -212,7 +218,8 @@ class SavedSearch(models.Model):
 
                 if is_pss:
                     record = self.partnersavedsearch.create_record(
-                        custom_msg, failure_message=log_kwargs.get('reason'))
+                        custom_msg, failure_message=log_kwargs.get('reason'),
+                        body=message)
                     log_kwargs['contact_record'] = record
                     log_kwargs['new_jobs'] = len([item for item in items
                                                  if item.get('new')])
@@ -291,7 +298,8 @@ class SavedSearch(models.Model):
                         reason = None
                     self.partnersavedsearch.create_record(
                         "Automatic sending of initial partner saved search",
-                        failure_message=reason
+                        failure_message=reason,
+                        body=message
                     )
         else:
             log_kwargs['reason'] = "User can't receive MyJobs email"
@@ -351,7 +359,8 @@ class SavedSearch(models.Model):
                 reason = None
             self.partnersavedsearch.create_record(
                 "Automatic sending of updated partner saved search.",
-                failure_message=reason
+                failure_message=reason,
+                body=message
             )
 
         SavedSearchLog.objects.create(**log_kwargs)
@@ -504,6 +513,11 @@ class SavedSearchDigest(models.Model):
                     mypartners.helpers.add_extra_params_to_jobs(items, extras)
                     search.url = mypartners.helpers.add_extra_params(search.url,
                                                                      extras)
+                campaigns = pss.campaigns
+                mypartners.helpers.add_extra_params_to_jobs(items, campaigns)
+                search.url = mypartners.helpers.add_extra_params(search.url,
+                                                                 campaigns)
+
             search_list.append((search, items, count))
 
         saved_searches = [(search, items, count)
@@ -547,7 +561,8 @@ class SavedSearchDigest(models.Model):
                 log_kwargs['reason'] = "User can't receive MyJobs email"
         for pss in needs_records:
             pss.create_record(custom_msg,
-                              failure_message=log_kwargs.get('reason'))
+                              failure_message=log_kwargs.get('reason'),
+                              body=message)
         SavedSearchLog.objects.create(**log_kwargs)
 
 
@@ -580,6 +595,7 @@ class PartnerSavedSearch(SavedSearch):
     unsubscriber = models.EmailField(max_length=255, blank=True, editable=False,
                                      verbose_name='Unsubscriber')
     last_action_time = models.DateTimeField(default=datetime.now, blank=True)
+    _campaigns = None
 
     def save(self, *args, **kwargs):
         new = not hasattr(self, 'id') or not self.id
@@ -639,6 +655,10 @@ class PartnerSavedSearch(SavedSearch):
                 mypartners.helpers.add_extra_params_to_jobs(items, extras)
                 self.url = mypartners.helpers.add_extra_params(self.url, extras)
 
+            campaigns = self.campaigns
+            mypartners.helpers.add_extra_params_to_jobs(items, campaigns)
+            self.url = mypartners.helpers.add_extra_params(self.url, campaigns)
+
             custom_msg = self.custom_message if self.custom_message else ''
             context_dict = {
                 'saved_searches': [(self, items, count)],
@@ -674,6 +694,18 @@ class PartnerSavedSearch(SavedSearch):
         self.last_action_time = datetime.now()
         if save:
             self.save()
+
+    @property
+    def campaigns(self):
+        """
+        Calcualtes and returns the DE analytics campaigns that should be
+        attached to links in any resulting emails
+        """
+        if not self._campaigns:
+            self._campaigns = (u"de_n=PRM Saved Search"
+                               u"&de_m=email&de_c={partner}").format(
+                partner=self.partner.name)
+        return self._campaigns
 
 
 class SavedSearchLog(models.Model):

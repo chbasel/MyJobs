@@ -55,7 +55,7 @@ CACHES = {
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'seo.search_backend.DESolrEngine',
-        'URL': 'http://ec2-54-225-127-98.compute-1.amazonaws.com:8983/solr',
+        'URL': 'http://ec2-52-7-65-86.compute-1.amazonaws.com:8983/solr/staging',
         'TIMEOUT': 300,
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password']
@@ -110,3 +110,7 @@ CELERY_ROUTES = {
 setattr(secrets, 'MONGO_HOST', secrets.STAGING_MONGO_HOST)
 setattr(secrets, 'MONGO_DBNAME', secrets.STAGING_MONGO_DBNAME)
 setattr(secrets, 'MONGO_SSL', secrets.STAGING_MONGO_SSL)
+
+from pymongoenv import change_db
+change_db(secrets.STAGING_MONGO_HOST, secrets.STAGING_MONGO_DBNAME,
+          secrets.STAGING_MONGO_SSL)

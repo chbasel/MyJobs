@@ -50,6 +50,9 @@ SOLR = {
 EMAIL_HOST_USER = QC_EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = QC_EMAIL_HOST_PASSWORD
 
-MONGO_HOST = QC_MONGO_HOST
-MONGO_DBNAME = QC_MONGO_DBNAME
-MONGO_SSL = QC_MONGO_SSL
+setattr(secrets, 'MONGO_HOST', secrets.QC_MONGO_HOST)
+setattr(secrets, 'MONGO_DBNAME', secrets.QC_MONGO_DBNAME)
+setattr(secrets, 'MONGO_SSL', secrets.QC_MONGO_SSL)
+
+from pymongoenv import change_db
+change_db(secrets.QC_MONGO_HOST, secrets.QC_MONGO_DBNAME, secrets.QC_MONGO_SSL)

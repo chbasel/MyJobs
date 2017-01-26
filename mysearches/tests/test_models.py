@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from smtplib import SMTPAuthenticationError
 from celery.exceptions import RetryTaskError
 import datetime
@@ -5,6 +6,7 @@ import re
 
 from django.conf import settings
 from django.core import mail
+from django.http import QueryDict
 
 from bs4 import BeautifulSoup
 from freezegun import freeze_time
@@ -19,7 +21,7 @@ from mypartners.models import ContactRecord
 from mypartners.tests.factories import (PartnerFactory, ContactFactory,
                                         TagFactory)
 from myprofile.tests.factories import PrimaryNameFactory
-from mysearches.models import SavedSearch, SavedSearchLog
+from mysearches.models import SavedSearch, SavedSearchLog, PartnerSavedSearch
 from mysearches.templatetags.email_tags import get_activation_link
 from mysearches.tests.local.fake_feed_data import jobs, no_jobs
 from mysearches.tests.factories import (SavedSearchFactory,
@@ -476,6 +478,22 @@ class PartnerSavedSearchTests(MyJobsBase):
         # attached to each are identical.
         self.assertEqual(logs[0].contact_record.notes,
                          logs[1].contact_record.notes)
+
+    def test_partner_saved_search_has_de_campaigns_applied(self):
+        mail.outbox = []
+        self.partner.name = u"Ünicode"
+        self.partner.save()
+        self.partner_search = PartnerSavedSearch.objects.get(
+            pk=self.partner_search.pk)
+        self.partner_search.send_email()
+        email = mail.outbox[0]
+
+        for campaign_tag in ["de_n=PRM+Saved+Search",
+                             "de_m=email",
+                             u"de_c={partner}".format(
+                                partner=self.partner_search.partner.name)]:
+            query = QueryDict(campaign_tag).urlencode()
+            self.assertTrue(query in email.body)
 
     def test_send_partner_saved_search_in_digest(self):
         """
