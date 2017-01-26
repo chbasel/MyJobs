@@ -111,3 +111,6 @@ PRM_EMAIL_HOST = 'qc.my.jobs'
 setattr(secrets, 'MONGO_HOST', secrets.QC_MONGO_HOST)
 setattr(secrets, 'MONGO_DBNAME', secrets.QC_MONGO_DBNAME)
 setattr(secrets, 'MONGO_SSL', secrets.QC_MONGO_SSL)
+
+from pymongoenv import change_db
+change_db(secrets.QC_MONGO_HOST, secrets.QC_MONGO_DBNAME, secrets.QC_MONGO_SSL)
