@@ -8,8 +8,8 @@ import myreports.models as myreports_models
 
 from django.core.urlresolvers import reverse
 
-from analytics.api import (get_available_analytics, get_report_info,
-                           dynamic_chart)
+from analytics.api import (MISSING_VALUE, get_available_analytics,
+                           get_report_info, dynamic_chart)
 
 
 class TestApi(MyJobsBase):
@@ -94,9 +94,9 @@ class TestApi(MyJobsBase):
         myreports_models.ConfigurationColumn.objects.create(
             configuration=self.config_job_titles,
             order=2,
-            column_name="job_guid",
+            column_name="reqid",
             filter_interface_type='string',
-            filter_interface_display='Job Id',
+            filter_interface_display='Requisition Id',
             multi_value_expansion=0,
             is_active=True)
         myreports_models.ConfigurationColumn.objects.create(
@@ -151,9 +151,9 @@ class TestApi(MyJobsBase):
         myreports_models.ConfigurationColumn.objects.create(
             configuration=self.config_found_on,
             order=3,
-            column_name="job_guid",
+            column_name="reqid",
             filter_interface_type='string',
-            filter_interface_display='Job Id',
+            filter_interface_display='Requisition Id',
             multi_value_expansion=0,
             is_active=True)
         myreports_models.ConfigurationColumn.objects.create(
@@ -224,9 +224,9 @@ class TestApi(MyJobsBase):
         myreports_models.ConfigurationColumn.objects.create(
             configuration=self.config_job_locations,
             order=6,
-            column_name="job_guid",
+            column_name="reqid",
             filter_interface_type='string',
-            filter_interface_display='Job Id',
+            filter_interface_display='Requisition Id',
             multi_value_expansion=0,
             is_active=True)
 
@@ -240,6 +240,8 @@ class TestApi(MyJobsBase):
                 "city": "Braunshweiger",
                 "found_on": "www.google.de",
                 "view_count": 3,
+                # reqid explicitly absent
+                "title": "Software Engineer",
              },
             {
                 "time_first_viewed": dateparser.parse("10/18/2012 01:00:00"),
@@ -248,7 +250,9 @@ class TestApi(MyJobsBase):
                 "city": "Braunshweiger",
                 "found_on": "www.google.de",
                 "view_count": 3,
-             },
+                "reqid": "123",
+                "title": "Software Engineer",
+            },
             {
                 "time_first_viewed": dateparser.parse("10/18/2012 01:00:00"),
                 "country": "USA",
@@ -256,7 +260,9 @@ class TestApi(MyJobsBase):
                 "city": "Peru",
                 "found_on": "www.google.com",
                 "view_count": 2,
-             },
+                "reqid": "",
+                "title": "Software Engineer",
+            },
             {
                 "time_first_viewed": dateparser.parse("10/18/2012 01:00:00"),
                 "country": "USA",
@@ -264,7 +270,9 @@ class TestApi(MyJobsBase):
                 "city": "Indianapolis",
                 "found_on": "www.google.com",
                 "view_count": 7,
-             },
+                "reqid": None,
+                "title": "Software Engineer",
+            },
             {
                 "time_first_viewed": dateparser.parse("10/18/2012 01:00:00"),
                 "country": "USA",
@@ -272,7 +280,9 @@ class TestApi(MyJobsBase):
                 "city": "Muskegon",
                 "found_on": "www.google.com",
                 "view_count": 1,
-             },
+                "reqid": "123",
+                "title": "Software Engineer",
+            },
             ]
         job_views.insert_many(mongo_data)
 
@@ -330,8 +340,8 @@ class TestApi(MyJobsBase):
                     'interface_type': 'string',
                 },
                 {
-                    'value': 'job_guid',
-                    'display': 'Job Id',
+                    'value': 'reqid',
+                    'display': 'Requisition Id',
                     'interface_type': 'string',
                 },
             ]
@@ -454,3 +464,20 @@ class TestApi(MyJobsBase):
         self.assertEqual(400, response.status_code)
         message = result[0]['message']
         self.assertEqual(message, 'No data provided.')
+
+    def test_dynamic_charts_data_field_blank(self):
+        expected_rows = [
+            {"reqid": "None", "job_views": 9},
+            {"reqid": "123", "job_views": 4}
+        ]
+        self.populate_mongo_data()
+        request_data = {
+            "date_start": "10/18/2012 00:00:00",
+            "date_end": "10/19/2012 00:00:00",
+            "active_filters": [{"type": "title", "value": "Software Engineer"}],
+            "report": "job-titles"
+        }
+        response = self.client.post(reverse(dynamic_chart),
+                                    {"request": json.dumps(request_data)})
+        response = json.loads(response.content)
+        self.assertItemsEqual(expected_rows, response['rows'])

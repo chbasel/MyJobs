@@ -19,6 +19,11 @@ from myreports.models import (
     ReportTypeDataTypes)
 
 
+# Value displayed to the user when the actual value is not stored in the
+# database or does not exist.
+MISSING_VALUE = 'None'
+
+
 @requires("view analytics")
 def views_last_7_days(request):
     """
@@ -162,6 +167,37 @@ def format_return_dict(record, group_label):
     return return_dict
 
 
+def group_rows(rows, aggregation_key='job_views'):
+    """
+    Groups the rows by duplicate values.
+    We do this because we know some values (specifically MISSING_VALUE)
+    can be duplicated.
+
+    NOTE: If we implement server-side pagination, this method of grouping
+          is no longer recommended.
+
+    :param rows: A list of the dictionaries of results.
+    :param aggregation_key: They column we're aggregating data on when
+                            we display it to the user.
+    :return: The same list of dictionaries, grouped by known duplicate values.
+
+    """
+    grouped_rows = {}
+
+    for row in rows:
+        row_id = row['_id']
+        if not row_id:
+            row_id = MISSING_VALUE
+
+        if row_id in grouped_rows:
+            grouped_rows[row_id] += row[aggregation_key]
+        else:
+            grouped_rows[row_id] = row[aggregation_key]
+
+    return [{'_id': key, aggregation_key: value} for key, value in
+            grouped_rows.iteritems()]
+
+
 def calculate_error_and_count(population, sample_count, row_count):
     """
     take a set of inputs and calculate the standard error and total count
@@ -242,9 +278,19 @@ def build_active_filter_query(query_data):
     """
     filter_match = {'$match': {}}
     for a_filter in query_data.get('active_filters', []):
-        filter_match['$match'][a_filter['type']] = a_filter['value']
+        if a_filter['value'] and a_filter['value'] != MISSING_VALUE:
+            filter_match['$match'][a_filter['type']] = a_filter['value']
+        # If we're searching by the absence of a value, we need to find
+        # anything that's false-y (so in this case: null, size 0, or '').
+        else:
+            if not filter_match['$match'].get('$and'):
+                filter_match['$match']['$and'] = []
+            filter_match['$match']['$and'].append({'$or': [
+                {'$or': [{a_filter['type']: None}, {a_filter['type']: ''}]},
+                {a_filter['type']: {'$size': 0}},
+            ]})
 
-    return [filter_match] if filter_match['$match'] else []
+    return [filter_match] if filter_match else []
 
 
 def determine_data_group_by_and_remaining(query_data, reporttype_datatype):
@@ -482,6 +528,9 @@ def dynamic_chart(request):
 
         records = adjust_records_for_sampling(records, curried_query)
 
+    rows = group_rows(records)
+    rows = [format_return_dict(r, group_by.column_name) for r in rows]
+
     response = {
         "column_names":
             [
@@ -489,8 +538,7 @@ def dynamic_chart(request):
                  "label": group_by.filter_interface_display},
                 {"key": "job_views", "label": "Job Views"},
              ],
-        "rows":
-            [format_return_dict(r, group_by.column_name) for r in records],
+        "rows": rows,
         "chart_type": group_by.filter_interface_type,
         "group_by": group_by.column_name,
         "remaining_dimensions": [{"key": d.column_name,

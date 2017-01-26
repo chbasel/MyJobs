@@ -243,6 +243,10 @@ class ReportTypeDataTypes(models.Model):
     configuration = models.ForeignKey('Configuration', null=True)
     objects = ReportTypeDataTypesManager()
 
+    def __unicode__(self):
+        return "%s %s" % (self.report_type.report_type,
+                          self.data_type.data_type)
+
 
 class Configuration(models.Model):
     name = models.CharField(max_length=50)
@@ -261,6 +265,9 @@ class Configuration(models.Model):
                 self.configurationcolumn_set
                 .filter(is_active=True)
                 .order_by('order'))])
+
+    def __unicode__(self):
+        return self.name
 
 
 class ReportPresentationManager(models.Manager):
@@ -316,6 +323,9 @@ class ConfigurationColumn(models.Model):
     default_value = models.CharField(max_length=500, blank=True, default="")
     is_active = models.BooleanField(default=False)
     objects = ConfigurationColumnManager()
+
+    def __unicode__(self):
+        return self.column_name
 
 
 class DynamicReport(models.Model):
