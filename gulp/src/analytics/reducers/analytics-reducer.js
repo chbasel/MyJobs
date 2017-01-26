@@ -201,6 +201,7 @@ export default handleActions({
   },
   'RESTORE_DELETED_TAB': (state, action) => {
     const replacedTab = action.payload;
+    console.log(replacedTab);
     const newNavigation = state.navigation.slice(0);
     newNavigation.splice(replacedTab.index, 0, replacedTab.deleted);
     return {

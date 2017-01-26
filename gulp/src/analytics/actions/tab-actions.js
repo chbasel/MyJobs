@@ -73,39 +73,61 @@ export function doRemoveSelectedTab(tabId) {
  * This action will also switch the current tab depending on which breadcrumb you actually click on
  */
 export function doBreadCrumbSwitchTab(crumb) {
-  return (dispatch, getState) => {
+  return async (dispatch, getState, {api}) => {
     let tabId;
     let index;
     const navigation = getState().pageLoadData.navigation;
+    const deletedNavigation = getState().pageLoadData.deletedNavigation;
+    const currentGlobalStartDate = getState().pageLoadData.globalStartDate;
+    const currentGlobalEndDate = getState().pageLoadData.globalEndDate;
+    const storedDates = {
+      startDate: currentGlobalStartDate,
+      endDate: currentGlobalEndDate,
+    };
+    const currentReport = getState().pageLoadData.activeReport;
     // Looping through the deleted tabs to see if the crumbs match in case we need to re add the tab back as an undo function
-    if (getState().pageLoadData.deletedNavigation.length > 0) {
-      getState().pageLoadData.deletedNavigation.map((deleted) => {
-        if (deleted.crumbs[deleted.crumbs.length - 1] === crumb) {
-          for (let i = 0; i < navigation.length; i++) {
-            if (navigation[i].navId === deleted.navId + 1) {
-              index = i;
+    if (deletedNavigation.length > 0) {
+      for (let i = 0; i < deletedNavigation.length; i++) {
+        if (deletedNavigation[i].crumbs[deletedNavigation[i].crumbs.length - 1] === crumb) {
+          for (let n = 0; n < navigation.length; n++) {
+            if (navigation[n].navId === deletedNavigation[i].navId + 1) {
+              index = n;
               break;
-            } else if (navigation[i].navId === deleted.navId - 1) {
-              index = i + 1;
+            } else if (navigation[n].navId === deletedNavigation[i].navId - 1) {
+              index = n + 1;
               break;
             } else {
               index = 1;
             }
           }
-          dispatch(restoreDeletedTab({deleted: deleted, index: index}));
-          dispatch(deleteStoredDeletedTab(deleted));
-          tabId = deleted.navId;
+          if (deletedNavigation[i].startDate !== currentGlobalStartDate || deletedNavigation[i].endDate !== currentGlobalEndDate) {
+            dispatch(markNavLoadingAction(true));
+            const storedFilters = deletedNavigation[i].activeFilters;
+            const updateDeleted = await api.getSelectedFilterData(storedFilters, currentReport, storedDates);
+            const newUpdateDeleted = {
+              ...deletedNavigation[i],
+              startDate: currentGlobalStartDate,
+              endDate: currentGlobalEndDate,
+              PageLoadData: updateDeleted,
+            };
+            dispatch(restoreDeletedTab({deleted: newUpdateDeleted, index: index}));
+            dispatch(markNavLoadingAction(false));
+          } else {
+            dispatch(restoreDeletedTab({deleted: deletedNavigation[i], index: index}));
+          }
+          dispatch(deleteStoredDeletedTab(deletedNavigation[i]));
+          tabId = deletedNavigation[i].navId;
         } else {
-          navigation.map((nav) => {
-            if (nav.crumbs.length === 1 && nav.crumbs[0] === crumb) {
+          for (let p = 0; p < navigation.length; p++) {
+            if (navigation[p].crumbs.length === 1 && navigation[p].crumbs[0] === crumb) {
               tabId = 1;
             }
-            if (nav.crumbs[nav.crumbs.length - 1] === crumb) {
-              tabId = nav.navId;
+            if (navigation[p].crumbs[navigation[p].crumbs.length - 1] === crumb) {
+              tabId = navigation[p].navId;
             }
-          });
+          }
         }
-      });
+      }
     } else {
       navigation.map((nav) => {
         if (nav.crumbs.length === 1 && nav.crumbs[0] === crumb) {
