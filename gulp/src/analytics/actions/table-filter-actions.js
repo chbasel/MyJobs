@@ -48,7 +48,7 @@ export function doGetSelectedFilterData(tableValue, typeValue) {
       const range = getState().pageLoadData.stateCustomRange;
       // Grabbing the current report selected from the state to send to the API
       const currentReport = getState().pageLoadData.activeReport;
-      const selectedFilterData = await api.getSelectedFilterData(tableValue, typeValue, storedFilters, currentReport, storedDates);
+      const selectedFilterData = await api.getSelectedFilterData(storedFilters, currentReport, storedDates);
       // Creating object from the filter selection data to send off to the reducer to update
       const navFilterData = {
         data: selectedFilterData,

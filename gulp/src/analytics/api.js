@@ -30,7 +30,7 @@ export default class Api {
     return setStartingPointReport.reports[0].value;
   }
   // Get the data requested from filtering on the table
-  async getSelectedFilterData(tableValue, typeValue, storedFilters, currentReport, date) {
+  async getSelectedFilterData(storedFilters, currentReport, date) {
     const selectedFilterRequest = {
       'date_start': date.startDate,
       'date_end': date.endDate,

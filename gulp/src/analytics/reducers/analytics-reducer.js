@@ -33,6 +33,8 @@ export const initialPageData = {
   endMonth: '',
   endDay: '',
   endYear: '',
+  globalStartDate: '',
+  globalEndDate: '',
   stateCustomRange: '',
   activeReport: '',
   primaryDimensions: {},
@@ -69,9 +71,10 @@ export default handleActions({
           crumbs: [loadData.pageData.column_names[0].label.toLowerCase()],
           activeFilters: [],
           PageLoadData: loadData.pageData,
-          currentDateRange: loadData.loadRange,
         },
       ],
+      globalStartDate: loadData.startDate,
+      globalEndDate: loadData.endDate,
       stateCustomRange: loadData.loadRange,
     };
   },
@@ -138,7 +141,6 @@ export default handleActions({
           activeFilters: filterData.tabFilter,
           endDate: filterData.date.endDate,
           PageLoadData: filterData.data,
-          currentDateRange: filterData.loadRange,
         },
       ],
       stateCustomRange: filterData.loadRange,
@@ -159,6 +161,23 @@ export default handleActions({
           ...nav,
           active: false,
         };
+      }),
+    };
+  },
+  'UPDATE_SWITCHED_TAB_DATA': (state, action) => {
+    const updatedTabData = action.payload;
+    return {
+      ...state,
+      navigation: state.navigation.map(nav => {
+        if (nav.active) {
+          return {
+            ...nav,
+            startDate: updatedTabData.date.startDate,
+            endDate: updatedTabData.date.endDate,
+            PageLoadData: updatedTabData.data,
+          };
+        }
+        return nav;
       }),
     };
   },
@@ -350,6 +369,8 @@ export default handleActions({
         }
         return nav;
       }),
+      globalStartDate: selectedRangeData.startDate,
+      globalEndDate: selectedRangeData.endDate,
       stateCustomRange: selectedRangeData.loadRange,
     };
   },

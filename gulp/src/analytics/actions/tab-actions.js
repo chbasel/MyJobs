@@ -1,4 +1,6 @@
 import {createAction} from 'redux-actions';
+import {markNavLoadingAction} from '../../common/actions/loading-actions';
+import {errorAction} from '../../common/actions/error-actions';
 
 export const switchActiveTab = createAction('SWITCH_ACTIVE_TAB');
 export const breadCrumbSwitchTab = createAction('BREADCRUMB_SWITCH_TAB');
@@ -7,20 +9,46 @@ export const storeDeletedTab = createAction('STORE_DELETED_TAB');
 export const deleteStoredDeletedTab = createAction('DELETE_STORED_DELETED_TAB');
 export const removeSelectedTab = createAction('REMOVE_SELECTED_TAB');
 export const setCurrentRange = createAction('SET_CURRENT_RANGE');
+export const updateSwitchedTabData = createAction('UPDATE_SWITCHED_TAB_DATA');
 
 /**
  * This action switches the current tab to a tab selected using the tabid
  */
 export function doSwitchActiveTab(tabId) {
-  return (dispatch, getState) => {
-    dispatch(switchActiveTab(tabId));
-    let rangeDate;
-    getState().pageLoadData.navigation.map((nav) => {
-      if (nav.active) {
-        rangeDate = nav.currentDateRange;
+  return async (dispatch, getState, {api}) => {
+    try {
+      dispatch(switchActiveTab(tabId));
+      let rangeDate;
+      const stateNavigation = getState().pageLoadData.navigation;
+      const globalStart = getState().pageLoadData.globalStartDate;
+      const globalEnd = getState().pageLoadData.globalEndDate;
+      // Loop through the current states navigation and check to see if the global date has changed
+      for (let i = 0; i < stateNavigation.length; i++) {
+        if (stateNavigation[i].active) {
+          if (stateNavigation[i].startDate !== globalStart || stateNavigation[i].endDate !== globalEnd) {
+            dispatch(markNavLoadingAction(true));
+            const storedFilters = stateNavigation[i].activeFilters;
+            const currentReport = getState().pageLoadData.activeReport;
+            const storedDates = {
+              startDate: globalStart,
+              endDate: globalEnd,
+            };
+            const selectedFilterData = await api.getSelectedFilterData(storedFilters, currentReport, storedDates);
+            const updatedData = {
+              data: selectedFilterData,
+              date: storedDates,
+            };
+            console.log(updatedData);
+            dispatch(updateSwitchedTabData(updatedData));
+            dispatch(markNavLoadingAction(false));
+          }
+          rangeDate = nav.currentDateRange;
+        }
       }
-    });
-    dispatch(setCurrentRange(rangeDate));
+      dispatch(setCurrentRange(rangeDate));
+    } catch (error) {
+      dispatch(errorAction(error.message));
+    }
   };
 }
 
