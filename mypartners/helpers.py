@@ -3,13 +3,12 @@ from datetime import datetime, time
 import json
 import os
 from urlparse import urlparse, parse_qsl, urlunparse
-from urllib import urlencode
 
 from django.db.models import Min, Max, Q, Model
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.http import Http404
+from django.http import Http404, QueryDict
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -55,7 +54,7 @@ def add_extra_params(url, extra_urls):
     :url: Input url with parameters added
     """
     extra_urls = extra_urls.lstrip('?&')
-    new_queries = dict(parse_qsl(extra_urls, keep_blank_values=True))
+    new_queries = QueryDict(extra_urls, mutable=True)
 
     # By default, extra parameters besides vs are discarded by the redirect
     # server. We can get around this by adding &z=1 to the url, which enables
@@ -63,10 +62,10 @@ def add_extra_params(url, extra_urls):
     new_queries['z'] = '1'
 
     parts = list(urlparse(url))
-    query = dict(parse_qsl(parts[4], keep_blank_values=True))
+    query = QueryDict(parts[4], mutable=True)
     query.update(new_queries)
-    parts[4] = urlencode(query)
-    return urlunparse(parts)
+    parts[4] = query.urlencode()
+    return mark_safe(urlunparse(parts))
 
 
 def add_extra_params_to_jobs(items, extra_urls):

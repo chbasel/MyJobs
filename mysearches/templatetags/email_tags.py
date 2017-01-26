@@ -1,8 +1,8 @@
 from django import template
 from django.core.urlresolvers import reverse
 
+from mypartners.helpers import add_extra_params
 from registration.models import ActivationProfile
-from universal.helpers import update_url_param
 
 register = template.Library()
 
@@ -40,7 +40,7 @@ def get_all_jobs_link(saved_search):
         if feed:
             url = feed.replace('/feed/rss', '')
 
-    url = update_url_param(url, 'sort', 'date')
+    url = add_extra_params(url, 'sort=date')
 
     return url
 
