@@ -18,7 +18,6 @@ export function doSwitchActiveTab(tabId) {
   return async (dispatch, getState, {api}) => {
     try {
       dispatch(switchActiveTab(tabId));
-      let rangeDate;
       const stateNavigation = getState().pageLoadData.navigation;
       const globalStart = getState().pageLoadData.globalStartDate;
       const globalEnd = getState().pageLoadData.globalEndDate;
@@ -38,14 +37,11 @@ export function doSwitchActiveTab(tabId) {
               data: selectedFilterData,
               date: storedDates,
             };
-            console.log(updatedData);
             dispatch(updateSwitchedTabData(updatedData));
             dispatch(markNavLoadingAction(false));
           }
-          rangeDate = nav.currentDateRange;
         }
       }
-      dispatch(setCurrentRange(rangeDate));
     } catch (error) {
       dispatch(errorAction(error.message));
     }

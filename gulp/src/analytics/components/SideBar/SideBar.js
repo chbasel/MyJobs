@@ -2,7 +2,6 @@ import React from 'react';
 import {Component} from 'react';
 import {connect} from 'react-redux';
 import {doSwitchMainDimension} from '../../actions/sidebar-actions';
-import moment from 'moment';
 import SideBarDimension from './SideBarDimensionList';
 
 class SideBar extends Component {
