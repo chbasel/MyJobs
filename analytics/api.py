@@ -257,8 +257,6 @@ def determine_data_group_by_and_remaining(query_data, reporttype_datatype):
 
 
     """
-    # TODO: Add DB handling / "filter chain" logic
-
     configuration = reporttype_datatype.configuration
     config_columns = configuration.configurationcolumn_set.all().order_by('order')
     active_filters = [f['type'] for f in query_data.get('active_filters', [])]
@@ -267,9 +265,11 @@ def determine_data_group_by_and_remaining(query_data, reporttype_datatype):
     if group_overwrite:
         overwrite = config_columns.get(column_name=group_overwrite)
         return overwrite, remaining.exclude(id=overwrite.id)
-    else:
+    elif remaining:
         return (remaining.first(),
                 remaining.all().exclude(id=remaining.first().id))
+    else:
+        return None, None
 
 
 def retrieve_sampling_query_and_count(collection, top_query, sample_size):
@@ -306,12 +306,10 @@ def build_group_by_query(group_by):
             "$group":
                 {
                     "_id": "$" + group_by,
-                    "visitors": {"$sum": 1},
                     "job_views": {"$sum": '$view_count'}
                 }
             },
-        {'$sort': {'visitors': -1}},
-        {'$limit': 10}
+        {'$sort': {'job_views': -1}},
     ]
 
     return group_query
@@ -462,6 +460,14 @@ def dynamic_chart(request):
         query_data, report_data
     )
 
+    if not group_by:
+        return HttpResponse(json.dumps({"rows": [],
+                                        "column_names": [],
+                                        "chart_type": None,
+                                        "group_by": None,
+                                        "remaining_dimensions": []
+                                        }))
+
     group_query = build_group_by_query(group_by.column_name)
 
     query = [
@@ -475,14 +481,13 @@ def dynamic_chart(request):
             return calculate_error_and_count(total_count, sample_size, count)
 
         records = adjust_records_for_sampling(records, curried_query)
-        
+
     response = {
         "column_names":
             [
                 {"key": group_by.column_name,
                  "label": group_by.filter_interface_display},
                 {"key": "job_views", "label": "Job Views"},
-                {"key": "visitors", "label": "Visitors"},
              ],
         "rows":
             [format_return_dict(r, group_by.column_name) for r in records],

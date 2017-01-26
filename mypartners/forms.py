@@ -513,6 +513,13 @@ def set_tag_choices(field, company):
         (t.pk, t.name)
         for t in company.tag_set.all()
     ]
+    field.widget.attrs.update({
+        'tag_colors': {
+            t.pk: {'hex_color': t.hex_color}
+            for t in company.tag_set.all()
+        }
+    })
+
 
 class NuoPartnerForm(NormalizedModelForm):
     """

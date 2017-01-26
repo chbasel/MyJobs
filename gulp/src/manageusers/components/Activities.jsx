@@ -28,7 +28,7 @@ class Activities extends React.Component {
                       {activities[app].map(activity =>
                         <tr key={activity.id}>
                           <td>{activity.name}</td>
-                          <td>{activity.name}</td>
+                          <td>{activity.description}</td>
                         </tr>
                       )}
                     </tbody>

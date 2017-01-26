@@ -383,7 +383,7 @@ def saved_search_widget(request):
     }
 
     if use_v2:
-        template_string = 'mysearches/saved_search_widget_bootstrap3.html'
+        template_string = 'mysearches/saved_search_widget_v2.html'
     else:
         template_string = 'mysearches/saved_search_widget.html'
 

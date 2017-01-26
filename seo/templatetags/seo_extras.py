@@ -7,6 +7,8 @@ from slugify import slugify
 import unicodedata
 from bs4 import BeautifulSoup
 import markdown2
+from urlparse import urlparse, urlunparse, parse_qsl
+from urllib import urlencode
 
 from django import template
 from django.conf import settings
@@ -149,11 +151,69 @@ def multiply_value(value, arg):
         return ''
 
 
-@register.filter
-def joblist_url(job):
+def get_params(request):
+    """
+    Given a request, gets all of the parameters that should be persist onto
+    other pages for analytics purposes.
+
+    :param request: A Django request object representing the current request.
+    :return: A dictionary of the params that should be persisted. Formatted:
+             {'param': 'value', ...}
+    """
+    params = {}
+    params_to_persist = [
+        'de_n', 'de_m', 'de_t', 'de_o', 'de_c', 'utm_source', 'utm_medium',
+        'utm_term', 'utm_content', 'utm_campaign'
+    ]
+    # We store some of the params in cookies across the site, but we don't
+    # always us the parameter as the cookie name. This maps cookie name =>
+    # querystring parameter
+    cookie_field_mappings = {
+        'external_utm_campaign': 'utm_campaign',
+        'external_utm_medium': 'utm_medium',
+        'external_utm_content': 'utm_content',
+        'external_utm_source': 'utm_source',
+        'external_utm_term': 'utm_term',
+    }
+    url = request.build_absolute_uri()
+    url = urlparse(url)
+
+    for cookie_name, param in cookie_field_mappings.iteritems():
+        value = request.COOKIES.get(cookie_name, None)
+        # NOTE: Right now there's no check that the param
+        # is in params_to_persist because at this time it always will be.
+        # If the options in cookie_field_mappings ever change, or the
+        # desired params_to_persist ever change, that check will need added.
+        if value:
+            params[param] = value
+
+    current_params = dict(parse_qsl(url.query))
+
+    for param, value in current_params.iteritems():
+        if param in params_to_persist:
+            # Blindly update params with the new value, allowing the current
+            # url parameters to overwrite the ones taken from the cookie,
+            # since the current url is more reliable.
+            params[param] = value
+
+    return params
+
+
+@register.simple_tag(takes_context=True)
+def joblist_url(context, job):
+    params = {}
+
+    request = context.get('request')
+    if request:
+        params = get_params(request)
+
     loc_slug = slugify(job.location)
     title_slug = slugify(job.title)
-    return '/' + loc_slug + '/' + title_slug + '/' + job.guid + '/job/'
+
+    path = '/%s/%s/%s/job/' % (loc_slug, title_slug, job.guid)
+    querystring = urlencode(params)
+
+    return urlunparse(('', '', path, '', querystring, ''))
 
 
 @register.filter

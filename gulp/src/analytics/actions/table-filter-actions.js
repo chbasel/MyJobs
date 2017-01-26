@@ -22,12 +22,19 @@ export function doGetSelectedFilterData(tableValue, typeValue) {
     try {
       dispatch(markNavLoadingAction(true));
       dispatch(doStoreActiveFilter(typeValue, tableValue));
+
       // Storing the current filters inside of the state to send off in the request to the API
       const storedFilters = [];
+      // Storing the current breadcrumbs inside of the state to use for creating breadcrumbs
+      const storedBreadCrumbs = [];
       // Storing the dates in order to update the reducer with them
       let storedDates;
       getState().pageLoadData.activeFilters.map((filter) => {
         storedFilters.push(filter);
+      });
+      storedBreadCrumbs.push(getState().pageLoadData.navigation[0].PageLoadData.column_names[0].label.toLowerCase());
+      getState().pageLoadData.activeFilters.map((filter) => {
+        storedBreadCrumbs.push(filter.value);
       });
       getState().pageLoadData.navigation.map((nav) => {
         if (nav.active) {
@@ -48,6 +55,7 @@ export function doGetSelectedFilterData(tableValue, typeValue) {
         date: storedDates,
         tabFilter: tabFilters,
         loadRange: range,
+        crumbs: storedBreadCrumbs,
       };
       dispatch(setSelectedFilterData(navFilterData));
       dispatch(markNavLoadingAction(false));

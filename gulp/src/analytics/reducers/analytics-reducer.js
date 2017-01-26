@@ -37,6 +37,7 @@ export const initialPageData = {
   activeReport: '',
   primaryDimensions: {},
   activePrimaryDimension: '',
+  deletedNavigation: [],
 };
 
 export default handleActions({
@@ -65,6 +66,7 @@ export default handleActions({
           active: true,
           startDate: loadData.startDate,
           endDate: loadData.endDate,
+          crumbs: [loadData.pageData.column_names[0].label.toLowerCase()],
           activeFilters: [],
           PageLoadData: loadData.pageData,
           currentDateRange: loadData.loadRange,
@@ -89,12 +91,22 @@ export default handleActions({
     };
   },
   'STORE_ACTIVE_FILTER': (state, action) => {
+    const navigation = state.navigation;
     const checkType = action.payload.type;
     const index = findIndex(state.activeFilters, f => f.type === checkType);
+    let tabIndex;
     if (index > -1) {
+      for (let i = 0; i < navigation.length; i++) {
+        if (navigation[i].active) {
+          tabIndex = i;
+          break;
+        } else {
+          tabIndex = 0;
+        }
+      }
       return {
         ...state,
-        navigation: state.navigation.slice(0, index + 1),
+        navigation: state.navigation.slice(0, tabIndex + 1),
         activeFilters: state.activeFilters.slice(0, index).concat(action.payload),
       };
     }
@@ -121,6 +133,7 @@ export default handleActions({
         {
           navId: navCount++,
           active: true,
+          crumbs: filterData.crumbs,
           startDate: filterData.date.startDate,
           activeFilters: filterData.tabFilter,
           endDate: filterData.date.endDate,
@@ -149,6 +162,42 @@ export default handleActions({
       }),
     };
   },
+  'BREADCRUMB_SWITCH_TAB': (state, action) => {
+    const activeTab = action.payload;
+    return {
+      ...state,
+      navigation: state.navigation.map((nav) => {
+        if (nav.navId === activeTab) {
+          return {
+            ...nav,
+            active: true,
+          };
+        }
+        return {
+          ...nav,
+          active: false,
+        };
+      }),
+    };
+  },
+  'RESTORE_DELETED_TAB': (state, action) => {
+    const replacedTab = action.payload;
+    const newNavigation = state.navigation.slice(0);
+    newNavigation.splice(replacedTab.index, 0, replacedTab.deleted);
+    return {
+      ...state,
+      navigation: newNavigation,
+    };
+  },
+  'DELETE_STORED_DELETED_TAB': (state, action) => {
+    const deleteStored = action.payload;
+    return {
+      ...state,
+      deletedNavigation: state.deletedNavigation.filter((deleted) => {
+        return deleted.navId !== deleteStored.navId;
+      }),
+    };
+  },
   'SET_CURRENT_RANGE': (state, action) => {
     const range = action.payload;
     return {
@@ -164,6 +213,7 @@ export default handleActions({
         {
           navId: navCount++,
           active: true,
+          crumbs: [mainDimensionData.pageData.column_names[0].label.toLowerCase()],
           startDate: mainDimensionData.startDate,
           endDate: mainDimensionData.endDate,
           PageLoadData: mainDimensionData.pageData,
@@ -179,6 +229,13 @@ export default handleActions({
     return {
       ...state,
       activePrimaryDimension: activeMainDimension,
+    };
+  },
+  'STORE_DELETED_TAB': (state, action) => {
+    const deleted = action.payload;
+    return {
+      ...state,
+      deletedNavigation: state.deletedNavigation.concat(deleted),
     };
   },
   'REMOVE_SELECTED_TAB': (state, action) => {
