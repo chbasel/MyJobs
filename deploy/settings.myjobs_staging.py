@@ -108,3 +108,7 @@ CELERY_ALWAYS_EAGER = True
 setattr(secrets, 'MONGO_HOST', secrets.STAGING_MONGO_HOST)
 setattr(secrets, 'MONGO_DBNAME', secrets.STAGING_MONGO_DBNAME)
 setattr(secrets, 'MONGO_SSL', secrets.STAGING_MONGO_SSL)
+
+from pymongoenv import change_db
+change_db(secrets.STAGING_MONGO_HOST, secrets.STAGING_MONGO_DBNAME,
+          secrets.STAGING_MONGO_SSL)
