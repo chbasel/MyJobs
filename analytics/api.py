@@ -194,8 +194,10 @@ def group_rows(rows, aggregation_key='job_views'):
         else:
             grouped_rows[row_id] = row[aggregation_key]
 
-    return [{'_id': key, aggregation_key: value} for key, value in
-            grouped_rows.iteritems()]
+    grouped_rows = [{'_id': key, aggregation_key: value} for key, value in
+                    grouped_rows.iteritems()]
+
+    return sorted(grouped_rows, key=lambda x: x[aggregation_key], reverse=True)
 
 
 def calculate_error_and_count(population, sample_count, row_count):
