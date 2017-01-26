@@ -9,6 +9,7 @@ from urlparse import urlparse, urlunparse
 
 from django.apps import apps
 from django.db import connection
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
