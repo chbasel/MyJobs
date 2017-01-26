@@ -1,6 +1,7 @@
 import {createAction} from 'redux-actions';
 import {markNavLoadingAction} from '../../common/actions/loading-actions';
 import {errorAction} from '../../common/actions/error-actions';
+import {markUpdateMessageShown} from './tab-actions';
 
 export const setSelectedEndMonth = createAction('SET_SELECTED_END_MONTH');
 export const setSelectedEndYear = createAction('SET_SELECTED_END_YEAR');
@@ -92,6 +93,7 @@ export function doSetSelectedRange(start, end, mainDimension, activeFilters) {
   return async(dispatch, _, {api}) => {
     try {
       dispatch(markNavLoadingAction(true));
+      const messageDelay = setTimeout(() => {dispatch(markUpdateMessageShown(false));}, 3000);
       const currentStartRange = start;
       const currentEndRange = end;
       const currentDimension = mainDimension;
@@ -109,6 +111,8 @@ export function doSetSelectedRange(start, end, mainDimension, activeFilters) {
       };
       dispatch(setSelectedRange(updatedRangeData));
       dispatch(markNavLoadingAction(false));
+      dispatch(markUpdateMessageShown(true));
+      messageDelay();
     } catch (err) {
       dispatch(errorAction(err.message));
     }
@@ -121,6 +125,7 @@ export function doSetCustomRange(start, end, mainDimension, activeFilters) {
   return async(dispatch, _, {api}) => {
     try {
       dispatch(markNavLoadingAction(true));
+      const messageDelay = setTimeout(() => {dispatch(markUpdateMessageShown(false));}, 3000);
       const currentStartRange = start;
       const currentEndRange = end;
       const currentDimension = mainDimension;
@@ -138,6 +143,8 @@ export function doSetCustomRange(start, end, mainDimension, activeFilters) {
       };
       dispatch(setCustomRange(updatedRangeData));
       dispatch(markNavLoadingAction(false));
+      dispatch(markUpdateMessageShown(true));
+      messageDelay();
     } catch (err) {
       dispatch(errorAction(err.message));
     }

@@ -247,17 +247,32 @@ footer {
 }
 
 /*CSS FOR THE TABS*/
-.tab-content-container {
-
+#update_notification.show-update {
+  position: absolute;
+  width: 100%;
+  z-index: 9;
+  display: block;
+  top: -25px;
+  border-radius: 0;
+}
+#update_notification.hide-update {
+  display: none;
+  position: absolute;
+  width: 100%;
+  z-index: 9;
+  top: -25px;
+  border-radius: 0;
 }
 .tab-labels li:first-of-type .close-tab {
   visibility: hidden;
 }
 .tab-panel {
   display: none;
+  position: relative;
 }
 .tab-panel.active-panel {
   display: block;
+  position: relative;
 }
 .tab-labels {
   margin: -55px 0 -53px -10px;

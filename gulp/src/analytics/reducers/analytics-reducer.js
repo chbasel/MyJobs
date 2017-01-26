@@ -25,6 +25,7 @@ let navCount = 1;
 export const initialPageData = {
   pageFetching: true,
   navFetching: false,
+  messageShown: false,
   navigation: [],
   activeFilters: [],
   startMonth: '',
@@ -55,6 +56,13 @@ export default handleActions({
     return {
       ...state,
       navFetching: navLoad,
+    };
+  },
+  'MARK_UPDATE_MESSAGE_SHOWN': (state, action) => {
+    const messageShown = action.payload;
+    return {
+      ...state,
+      messageShown: messageShown,
     };
   },
   'SET_PAGE_DATA': (state, action) => {
@@ -392,6 +400,8 @@ export default handleActions({
         }
         return nav;
       }),
+      globalStartDate: customRangeData.startDate,
+      globalEndDate: customRangeData.endDate,
       stateCustomRange: customRangeData.loadRange,
     };
   },

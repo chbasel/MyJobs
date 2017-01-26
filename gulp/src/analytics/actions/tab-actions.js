@@ -2,6 +2,7 @@ import {createAction} from 'redux-actions';
 import {markNavLoadingAction} from '../../common/actions/loading-actions';
 import {errorAction} from '../../common/actions/error-actions';
 
+export const markUpdateMessageShown = createAction('MARK_UPDATE_MESSAGE_SHOWN');
 export const switchActiveTab = createAction('SWITCH_ACTIVE_TAB');
 export const breadCrumbSwitchTab = createAction('BREADCRUMB_SWITCH_TAB');
 export const restoreDeletedTab = createAction('RESTORE_DELETED_TAB');
@@ -21,6 +22,7 @@ export function doSwitchActiveTab(tabId) {
       const stateNavigation = getState().pageLoadData.navigation;
       const globalStart = getState().pageLoadData.globalStartDate;
       const globalEnd = getState().pageLoadData.globalEndDate;
+      const messageDelay = setTimeout(() => {dispatch(markUpdateMessageShown(false));}, 3000);
       // Loop through the current states navigation and check to see if the global date has changed
       for (let i = 0; i < stateNavigation.length; i++) {
         if (stateNavigation[i].active) {
@@ -39,6 +41,8 @@ export function doSwitchActiveTab(tabId) {
             };
             dispatch(updateSwitchedTabData(updatedData));
             dispatch(markNavLoadingAction(false));
+            dispatch(markUpdateMessageShown(true));
+            messageDelay();
           }
         }
       }
