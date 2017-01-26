@@ -55,7 +55,7 @@ CACHES = {
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'seo.search_backend.DESolrEngine',
-        'URL': 'http://ec2-54-225-127-98.compute-1.amazonaws.com:8983/solr',
+        'URL': 'http://ec2-52-7-65-86.compute-1.amazonaws.com:8983/solr/staging',
         'TIMEOUT': 300,
         'HTTP_AUTH_USERNAME': SOLR_AUTH['username'],
         'HTTP_AUTH_PASSWORD': SOLR_AUTH['password']
