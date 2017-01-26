@@ -83,7 +83,7 @@ footer {
     100% { transform: rotate(360deg); }
 }
 
-.table-no-results {
+.title-data.rwd-table tbody .table-no-results {
   background: #FCF8E3;
   border-bottom-width: 2px;
   vertical-align: top;
@@ -372,7 +372,7 @@ footer {
 
 .charts {
   background: $white;
-  padding: 10px 10px 0 10px;
+  padding: 10px 15px 0 15px;
 
   .chart-title h2 {
     font-weight: 100;
@@ -486,7 +486,7 @@ path:hover {
 /*CSS FOR THE DATA TABLE*/
 
 .table-data {
-  padding: 10px;
+  padding: 15px;
   background: $white;
   position: relative;
 }
@@ -598,7 +598,7 @@ path:hover {
 .rwd-table tr {
   border-color: #f7f8f9;
 }
-.rwd-table tr:nth-child(even) {
+.rwd-table tbody tr:nth-child(odd) {
   background: #f7f8f9;
 }
 .rwd-table th, .rwd-table td {
@@ -905,6 +905,8 @@ color: $primary-blue;
      }
      #page_wrapper {
        position: static;
+       margin-top: 40px;
+       padding-left: 0px;
      }
      #analytics_content {
        border: none;
@@ -1028,9 +1030,6 @@ color: $primary-blue;
        height: auto;
      }
      #page_wrapper {
-       margin-top: 40px;
-       padding-left: 0px;
-       margin-bottom: 100px;
 
        #menu {
          display: none;
@@ -1073,7 +1072,6 @@ color: $primary-blue;
      }
      .tab-content-container {
        padding: 0;
-       margin-top: 20px;
      }
      .tab-navigation.open {
        left: 0;
@@ -1281,7 +1279,7 @@ color: $primary-blue;
            border: 1px solid $light-gray;
          }
          .tab:first-child {
-           margin-left: 25px;
+           margin-left: 40px;
          }
          .tab.active-tab {
            background: $light-gray;
@@ -1406,8 +1404,23 @@ color: $primary-blue;
      }
      .tab-labels {
        margin: 0 0 0 -5px;
+       width: 71%;
+     }
+     #page_content {
+       .tab:first-child {
+         margin-left: 25px;
+       }
      }
    }
+
+}
+
+@media only screen and (min-width: 1600px) {
+  #page_wrapper {
+    .tab-labels {
+      width: 77%;
+    }
+  }
 }
 
 
