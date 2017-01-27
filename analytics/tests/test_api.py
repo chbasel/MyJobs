@@ -466,8 +466,17 @@ class TestApi(MyJobsBase):
         self.assertEqual(message, 'No data provided.')
 
     def test_dynamic_charts_data_field_blank(self):
+        """
+        For job views where there may be a blank value (specifically null or '')
+        the views should be displayed to the user, with whatever is in
+        MISSING_VALUE as the display value.
+
+        All blank values should also be grouped together, rather than appearing
+        in the results set multiple times.
+
+        """
         expected_rows = [
-            {"reqid": "None", "job_views": 9},
+            {"reqid": MISSING_VALUE, "job_views": 9},
             {"reqid": "123", "job_views": 4}
         ]
         self.populate_mongo_data()
@@ -480,4 +489,4 @@ class TestApi(MyJobsBase):
         response = self.client.post(reverse(dynamic_chart),
                                     {"request": json.dumps(request_data)})
         response = json.loads(response.content)
-        self.assertItemsEqual(expected_rows, response['rows'])
+        self.assertEqual(expected_rows, response['rows'])
