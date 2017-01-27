@@ -21,7 +21,7 @@ class Role extends React.Component {
     if (role) {
       role.activities.forEach(activity => {
         assignedActivities[activity.appAccess].push({
-          display: activity.name,
+          display: this.displayText(activity),
           value: activity.id,
         });
       });
@@ -47,6 +47,9 @@ class Role extends React.Component {
     this.setState({
       roleName: event.target.value,
     });
+  }
+  displayText(activity) {
+    return activity.display_text ? activity.display_text : activity.name;
   }
   async initialApiLoad() {
     const {api} = this.props;
@@ -227,7 +230,7 @@ class Role extends React.Component {
         activity.id === key);
       if (currentActivity) {
         return {
-          display: currentActivity.name,
+          display: this.displayText(currentActivity),
           value: key,
         };
       }
@@ -298,7 +301,7 @@ class Role extends React.Component {
               <FieldWrapper label={key} key={index}>
                 <TagSelect
                   available={activities[key].map(activity => ({
-                    display: activity.name,
+                    display: this.displayText(activity),
                     value: activity.id,
                   }))}
                   selected={this.state.assignedActivities[key]}

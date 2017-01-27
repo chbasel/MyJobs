@@ -603,7 +603,8 @@ def api_get_activities(request):
         activities[activity.app_access.name].append({
             'id': activity.pk,
             'name': unicode(activity),
-            'description': activity.description})
+            'description': activity.description,
+            'display_name': activity.display_name})
 
     return HttpResponse(json.dumps(activities), mimetype='application/json')
 
