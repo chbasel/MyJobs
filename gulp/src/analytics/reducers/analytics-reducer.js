@@ -7,6 +7,7 @@ import {findIndex} from 'lodash-compat';
  *  navCount starts the count of the tabs and increments as they are added
  *  pageFetching is used to show loading when the app initial boots
  *  navFetching is used when there is a new tab being created through filtering or dimension switching
+ *  messageShown is a boolean that is used to display the updated tab message if the global date has changed
  *  navigation holds the tabs and their independent data
  *  activeFilters stores the current filters for sending back to the API
  *  startMonth stores the current month for the calendar when the app boots
@@ -15,6 +16,8 @@ import {findIndex} from 'lodash-compat';
  *  endMonth stores the end month for the calendar when the app boots
  *  endDay stores the end day for the calendar when the app boots
  *  endYear stores the end year for the calendar when the app boots
+ *  gloalStartDate stores the global start date for all of the tabs
+ *  globalEndDate stores the global end date for all of the tabs
  *  activeReport stores the current report type for sending back to the API
  *  primaryDimensions stores the primary dimensions given back from the API to create the sidebar list
  *  activePrimaryDimension stores the current primary dimension that is actively chosen at that time
