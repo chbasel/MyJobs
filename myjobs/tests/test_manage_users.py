@@ -38,7 +38,8 @@ class ManageUsersTests(MyJobsBase):
 
         # ensure that activities are of the correct shape
         activity = results[apps[0]][0]
-        expected_shape = {'id': int, 'name': unicode, 'description': unicode}
+        expected_shape = {'id': int, 'name': unicode, 'description': unicode,
+                          'display_text': unicode}
         actual_shape = {key: type(value) for key, value in activity.items()}
         self.assertEqual(expected_shape, actual_shape)
 
