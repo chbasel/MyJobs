@@ -30,7 +30,7 @@ class Tab extends Component {
         <li
           key={index}
           className={activeTab}>
-          <a className="filter-switch" href="#" onClick={this.activeTab.bind(this, child.props.id)}>
+          <a className="filter-switch" href="#" title={child.props.label} onClick={this.activeTab.bind(this, child.props.id)}>
             <span className="filter-label">{child.props.label}</span>
           </a>
           <span onClick={this.removeSelectedTab.bind(this, child.props.id)} className="close-tab">X</span>

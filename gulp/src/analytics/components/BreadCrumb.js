@@ -7,7 +7,7 @@ class BreadCrumb extends Component {
     const breadcrumbs = crumbs.map((crumb, i) => {
       return (
         <li key={i} onClick={() => breadcrumbClick(crumb)} className="analytics-breadcrumbs">
-          <a className="crumb-title" href="#">{crumb}</a>
+          <a className="crumb-title" href="#" title={crumb}>{crumb}</a>
         </li>
       );
     });

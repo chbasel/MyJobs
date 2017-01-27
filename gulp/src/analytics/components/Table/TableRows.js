@@ -33,7 +33,7 @@ class TableRows extends Component {
           );
         }
         return (
-          <td key={index}><a onClick={this.applyFilterResults.bind(this, item[colData.key], colData.key)} href="#">{item[colData.key]}</a></td>
+          <td key={index}><a onClick={this.applyFilterResults.bind(this, item[colData.key], colData.key)} href="#" title={item[colData.key]}>{item[colData.key]}</a></td>
         );
       });
       const cell = originalHeader.map((colData, ind) => {
