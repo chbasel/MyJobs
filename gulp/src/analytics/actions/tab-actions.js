@@ -22,7 +22,6 @@ export function doSwitchActiveTab(tabId) {
       const stateNavigation = getState().pageLoadData.navigation;
       const globalStart = getState().pageLoadData.globalStartDate;
       const globalEnd = getState().pageLoadData.globalEndDate;
-      const messageDelay = setTimeout(() => {dispatch(markUpdateMessageShown(false));}, 3000);
       let dateChanged = false;
       let storedFilters;
       // Loop through the current states navigation and check to see if the global date has changed
@@ -49,7 +48,7 @@ export function doSwitchActiveTab(tabId) {
         dispatch(updateSwitchedTabData(updatedData));
         dispatch(markNavLoadingAction(false));
         dispatch(markUpdateMessageShown(true));
-        messageDelay();
+        setTimeout(() => {dispatch(markUpdateMessageShown(false));}, 3000);
       }
     } catch (error) {
       dispatch(errorAction(error.message));
@@ -153,6 +152,8 @@ export function doBreadCrumbSwitchTab(crumb) {
       };
       dispatch(restoreDeletedTab({deleted: newUpdateDeleted, index: index}));
       dispatch(markNavLoadingAction(false));
+      dispatch(markUpdateMessageShown(true));
+      setTimeout(() => {dispatch(markUpdateMessageShown(false));}, 3000);
     }
     dispatch(switchActiveTab(tabId));
   };
