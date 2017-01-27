@@ -23,28 +23,33 @@ export function doSwitchActiveTab(tabId) {
       const globalStart = getState().pageLoadData.globalStartDate;
       const globalEnd = getState().pageLoadData.globalEndDate;
       const messageDelay = setTimeout(() => {dispatch(markUpdateMessageShown(false));}, 3000);
+      let dateChanged = false;
+      let storedFilters;
       // Loop through the current states navigation and check to see if the global date has changed
       for (let i = 0; i < stateNavigation.length; i++) {
         if (stateNavigation[i].active) {
           if (stateNavigation[i].startDate !== globalStart || stateNavigation[i].endDate !== globalEnd) {
-            dispatch(markNavLoadingAction(true));
-            const storedFilters = stateNavigation[i].activeFilters;
-            const currentReport = getState().pageLoadData.activeReport;
-            const storedDates = {
-              startDate: globalStart,
-              endDate: globalEnd,
-            };
-            const selectedFilterData = await api.getSelectedFilterData(storedFilters, currentReport, storedDates);
-            const updatedData = {
-              data: selectedFilterData,
-              date: storedDates,
-            };
-            dispatch(updateSwitchedTabData(updatedData));
-            dispatch(markNavLoadingAction(false));
-            dispatch(markUpdateMessageShown(true));
-            messageDelay();
+            dateChanged = true;
+            storedFilters = stateNavigation[i].activeFilters;
           }
         }
+      }
+      if (dateChanged) {
+        dispatch(markNavLoadingAction(true));
+        const currentReport = getState().pageLoadData.activeReport;
+        const storedDates = {
+          startDate: globalStart,
+          endDate: globalEnd,
+        };
+        const selectedFilterData = await api.getSelectedFilterData(storedFilters, currentReport, storedDates);
+        const updatedData = {
+          data: selectedFilterData,
+          date: storedDates,
+        };
+        dispatch(updateSwitchedTabData(updatedData));
+        dispatch(markNavLoadingAction(false));
+        dispatch(markUpdateMessageShown(true));
+        messageDelay();
       }
     } catch (error) {
       dispatch(errorAction(error.message));
@@ -89,6 +94,9 @@ export function doBreadCrumbSwitchTab(crumb) {
       endDate: currentGlobalEndDate,
     };
     const currentReport = getState().pageLoadData.activeReport;
+    let dateChanged = false;
+    let storedFilters;
+    let deletedNavData;
     // Looping through the deleted tabs to see if the crumbs match in case we need to re add the tab back as an undo function
     if (deletedNavigation.length > 0) {
       for (let i = 0; i < deletedNavigation.length; i++) {
@@ -105,17 +113,9 @@ export function doBreadCrumbSwitchTab(crumb) {
             }
           }
           if (deletedNavigation[i].startDate !== currentGlobalStartDate || deletedNavigation[i].endDate !== currentGlobalEndDate) {
-            dispatch(markNavLoadingAction(true));
-            const storedFilters = deletedNavigation[i].activeFilters;
-            const updateDeleted = await api.getSelectedFilterData(storedFilters, currentReport, storedDates);
-            const newUpdateDeleted = {
-              ...deletedNavigation[i],
-              startDate: currentGlobalStartDate,
-              endDate: currentGlobalEndDate,
-              PageLoadData: updateDeleted,
-            };
-            dispatch(restoreDeletedTab({deleted: newUpdateDeleted, index: index}));
-            dispatch(markNavLoadingAction(false));
+            dateChanged = true;
+            storedFilters = deletedNavigation[i].activeFilters;
+            deletedNavData = deletedNavigation[i];
           } else {
             dispatch(restoreDeletedTab({deleted: deletedNavigation[i], index: index}));
           }
@@ -141,6 +141,18 @@ export function doBreadCrumbSwitchTab(crumb) {
           tabId = nav.navId;
         }
       });
+    }
+    if (dateChanged) {
+      dispatch(markNavLoadingAction(true));
+      const updateDeleted = await api.getSelectedFilterData(storedFilters, currentReport, storedDates);
+      const newUpdateDeleted = {
+        ...deletedNavData,
+        startDate: currentGlobalStartDate,
+        endDate: currentGlobalEndDate,
+        PageLoadData: updateDeleted,
+      };
+      dispatch(restoreDeletedTab({deleted: newUpdateDeleted, index: index}));
+      dispatch(markNavLoadingAction(false));
     }
     dispatch(switchActiveTab(tabId));
   };
