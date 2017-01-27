@@ -261,10 +261,10 @@ export default handleActions({
     };
   },
   'STORE_DELETED_TAB': (state, action) => {
-    const deleted = action.payload;
+    const deletedData = action.payload;
     return {
       ...state,
-      deletedNavigation: state.deletedNavigation.concat(deleted),
+      deletedNavigation: state.deletedNavigation.filter(deleted => deleted.PageLoadData.group_by !== deletedData.PageLoadData.group_by).concat(deletedData),
     };
   },
   'REMOVE_SELECTED_TAB': (state, action) => {
